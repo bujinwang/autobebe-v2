@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @db.VarChar(20) // 'STAFF' or 'PATIENT'
+  clinicId  String?  @db.VarChar(50)
+  createdAt DateTime @default(now())
+  
+  clinic    ClinicInfo? @relation(fields: [clinicId], references: [id])
+}
+
+model Patient {
+  id               Int           @id @default(autoincrement())
+  name            String        @db.VarChar(100)
+  healthcareNumber String        @unique @db.VarChar(50)
+  phone           String?       @db.VarChar(20)
+  createdAt       DateTime      @default(now())
+  clinicId        String        @db.VarChar(50)
+  clinic          ClinicInfo    @relation(fields: [clinicId], references: [id])
+  appointments    Appointment[]
+}
+
+model ClinicInfo {
+  id          String     @id
+  name        String     @db.VarChar(100)
+  address     String     @db.VarChar(200)
+  phone       String     @db.VarChar(20)
+  patients    Patient[]
+  appointments Appointment[]
+  users       User[]
+}
+
+model Appointment {
+  id                    Int       @id @default(autoincrement())
+  patientId            Int
+  clinicId             String
+  appointmentDate      DateTime
+  status               String    @db.VarChar(50)
+  followUpQuestions    Json?
+  followUpAnswers      Json?
+  possibleTreatments   Json?
+  suggestedPrescriptions Json?
+  notes                String?   @db.Text
+  createdAt           DateTime  @default(now())
+  
+  patient              Patient   @relation(fields: [patientId], references: [id])
+  clinic              ClinicInfo @relation(fields: [clinicId], references: [id])
+}
