@@ -1,8 +1,9 @@
-import { PrismaClient, Appointment } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { Appointment } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export interface CreateAppointmentData {
+export interface CreateAppointmentInput {
   patientId: number;
   clinicId: string;
   appointmentDate: Date;
@@ -14,105 +15,92 @@ export interface CreateAppointmentData {
   notes?: string;
 }
 
-export interface UpdateAppointmentData {
-  appointmentDate?: Date;
-  status?: string;
-  followUpQuestions?: any;
-  followUpAnswers?: any;
-  possibleTreatments?: any;
-  suggestedPrescriptions?: any;
-  notes?: string;
+export interface UpdateAppointmentInput extends Partial<CreateAppointmentInput> {
+  id: number;
 }
 
-export const appointmentService = {
-  // Create a new appointment
-  create: async (data: CreateAppointmentData): Promise<Appointment> => {
-    return prisma.appointment.create({
-      data,
+class AppointmentService {
+  async getAllAppointments(): Promise<Appointment[]> {
+    return prisma.appointment.findMany({
       include: {
         patient: true,
-        clinic: true,
-      },
+        clinic: true
+      }
     });
-  },
+  }
 
-  // Get an appointment by ID
-  getById: async (id: number): Promise<Appointment | null> => {
+  async getAppointmentById(id: number): Promise<Appointment | null> {
     return prisma.appointment.findUnique({
       where: { id },
       include: {
         patient: true,
-        clinic: true,
-      },
+        clinic: true
+      }
     });
-  },
+  }
 
-  // Get appointments by patient ID
-  getByPatient: async (patientId: number): Promise<Appointment[]> => {
+  async getAppointmentsByPatientId(patientId: number): Promise<Appointment[]> {
     return prisma.appointment.findMany({
       where: { patientId },
       include: {
-        clinic: true,
-      },
-      orderBy: {
-        appointmentDate: 'desc',
-      },
-    });
-  },
-
-  // Get appointments by clinic ID
-  getByClinic: async (clinicId: string): Promise<Appointment[]> => {
-    return prisma.appointment.findMany({
-      where: { clinicId },
-      include: {
         patient: true,
-      },
-      orderBy: {
-        appointmentDate: 'desc',
-      },
+        clinic: true
+      }
     });
-  },
+  }
 
-  // Get appointments by date range
-  getByDateRange: async (startDate: Date, endDate: Date, clinicId?: string): Promise<Appointment[]> => {
+  async getAppointmentsByDate(date: Date): Promise<Appointment[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
     return prisma.appointment.findMany({
       where: {
-        AND: [
-          {
-            appointmentDate: {
-              gte: startDate,
-              lte: endDate,
-            },
-          },
-          clinicId ? { clinicId } : {},
-        ],
+        appointmentDate: {
+          gte: startOfDay,
+          lte: endOfDay
+        }
       },
       include: {
         patient: true,
-        clinic: true,
-      },
-      orderBy: {
-        appointmentDate: 'asc',
-      },
+        clinic: true
+      }
     });
-  },
+  }
 
-  // Update an appointment
-  update: async (id: number, data: UpdateAppointmentData): Promise<Appointment> => {
+  async createAppointment(input: CreateAppointmentInput): Promise<Appointment> {
+    return prisma.appointment.create({
+      data: input,
+      include: {
+        patient: true,
+        clinic: true
+      }
+    });
+  }
+
+  async updateAppointment(input: UpdateAppointmentInput): Promise<Appointment> {
+    const { id, ...updateData } = input;
     return prisma.appointment.update({
       where: { id },
-      data,
+      data: updateData,
       include: {
         patient: true,
-        clinic: true,
-      },
+        clinic: true
+      }
     });
-  },
+  }
 
-  // Delete an appointment
-  delete: async (id: number): Promise<Appointment> => {
-    return prisma.appointment.delete({
-      where: { id },
-    });
-  },
-}; 
+  async deleteAppointment(id: number): Promise<boolean> {
+    try {
+      await prisma.appointment.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+}
+
+export const appointmentService = new AppointmentService(); 

@@ -1,61 +1,71 @@
-import { PrismaClient, ClinicInfo } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { ClinicInfo } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export interface CreateClinicData {
+export interface CreateClinicInput {
   id: string;
   name: string;
   address: string;
   phone: string;
 }
 
-export interface UpdateClinicData {
-  name?: string;
-  address?: string;
-  phone?: string;
+export interface UpdateClinicInput extends Partial<CreateClinicInput> {
+  id: string;
 }
 
-export const clinicService = {
-  // Create a new clinic
-  create: async (data: CreateClinicData): Promise<ClinicInfo> => {
-    return prisma.clinicInfo.create({
-      data,
+class ClinicService {
+  async getAllClinics(): Promise<ClinicInfo[]> {
+    return prisma.clinicInfo.findMany({
+      include: {
+        patients: true,
+        users: true
+      }
     });
-  },
+  }
 
-  // Get a clinic by ID
-  getById: async (id: string): Promise<ClinicInfo | null> => {
+  async getClinicById(id: string): Promise<ClinicInfo | null> {
     return prisma.clinicInfo.findUnique({
       where: { id },
       include: {
         patients: true,
-        appointments: true,
-      },
+        users: true
+      }
     });
-  },
+  }
 
-  // Get all clinics
-  getAll: async (): Promise<ClinicInfo[]> => {
-    return prisma.clinicInfo.findMany({
+  async createClinic(input: CreateClinicInput): Promise<ClinicInfo> {
+    return prisma.clinicInfo.create({
+      data: input,
       include: {
         patients: true,
-        appointments: true,
-      },
+        users: true
+      }
     });
-  },
+  }
 
-  // Update a clinic
-  update: async (id: string, data: UpdateClinicData): Promise<ClinicInfo> => {
+  async updateClinic(input: UpdateClinicInput): Promise<ClinicInfo> {
+    const { id, ...updateData } = input;
     return prisma.clinicInfo.update({
       where: { id },
-      data,
+      data: updateData,
+      include: {
+        patients: true,
+        users: true
+      }
     });
-  },
+  }
 
-  // Delete a clinic
-  delete: async (id: string): Promise<ClinicInfo> => {
-    return prisma.clinicInfo.delete({
-      where: { id },
-    });
-  },
-}; 
+  async deleteClinic(id: string): Promise<boolean> {
+    try {
+      await prisma.clinicInfo.delete({
+        where: { id }
+      });
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+}
+
+export const clinicService = new ClinicService(); 

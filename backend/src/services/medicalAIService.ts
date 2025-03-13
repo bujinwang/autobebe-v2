@@ -121,11 +121,39 @@ class MedicalAIService {
 
   async getTreatmentRecommendations(request: MedicalAIRequest): Promise<MedicalAIResponse> {
     try {
-      const systemPrompt = 'You are a medical decision support system that provides evidence-based treatment recommendations and prescription suggestions. Analyze patient information carefully and provide structured medical advice in Model Communication Protocol(MCP) format. Always include appropriate disclaimers about consulting licensed medical professionals.';
-      const prompt = this.buildMCPPrompt(request);
+      const systemPrompt = 'You are a medical decision support system. Return ONLY a JSON object with possibleTreatments and suggestedPrescriptions arrays. Do not include any markdown formatting or additional text.';
+      
+      let prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n`;
+      if (request.followUpQAPairs.length > 0) {
+        prompt += '\nFollow-up Questions and Answers:\n';
+        request.followUpQAPairs.forEach(qa => {
+          prompt += `Q: ${qa.question}\nA: ${qa.answer}\n`;
+        });
+      }
+      prompt += '\nProvide recommendations in this exact format:\n{"possibleTreatments": ["treatment1", "treatment2"], "suggestedPrescriptions": ["prescription1", "prescription2"]}';
+
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
-      return this.parseMCPResponse(aiResponse);
+      
+      // Try to find JSON content in the response
+      const matches = aiResponse.match(/\{[\s\S]*\}/);
+      if (!matches) {
+        throw new Error('No JSON content found in AI response');
+      }
+
+      const jsonStr = matches[0];
+      const parsedResponse = JSON.parse(jsonStr);
+
+      if (!Array.isArray(parsedResponse.possibleTreatments) || !Array.isArray(parsedResponse.suggestedPrescriptions)) {
+        throw new Error('Invalid response format: treatments or prescriptions is not an array');
+      }
+
+      return {
+        success: true,
+        possibleTreatments: parsedResponse.possibleTreatments,
+        suggestedPrescriptions: parsedResponse.suggestedPrescriptions
+      };
     } catch (error) {
+      console.error('Error in getTreatmentRecommendations:', error);
       if (error instanceof Error) {
         return {
           success: false,
@@ -145,17 +173,30 @@ class MedicalAIService {
 
   async getTopQuestions(request: TopQuestionsRequest): Promise<TopQuestionsResponse> {
     try {
-      const systemPrompt = 'You are a medical assistant AI. Generate the top 3 most relevant follow-up questions based on the patient\'s purpose of visit and symptoms.';
-      const prompt = `Purpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n\nPlease provide 3 relevant follow-up questions in JSON format:\n{"topQuestions": ["question1", "question2", "question3"]}`;
+      const systemPrompt = 'You are a medical assistant AI. Generate exactly 3 relevant follow-up questions based on the patient\'s purpose of visit and symptoms. Return ONLY a JSON object with a topQuestions array containing the 3 questions. Do not include any markdown formatting or additional text.';
+      const prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n\nGenerate 3 follow-up questions and return them in this exact format:\n{"topQuestions": ["question1", "question2", "question3"]}`;
       
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
-      const parsedResponse = JSON.parse(aiResponse);
+      
+      // Try to find JSON content in the response
+      const matches = aiResponse.match(/\{[\s\S]*\}/);
+      if (!matches) {
+        throw new Error('No JSON content found in AI response');
+      }
+
+      const jsonStr = matches[0];
+      const parsedResponse = JSON.parse(jsonStr);
+
+      if (!Array.isArray(parsedResponse.topQuestions)) {
+        throw new Error('Invalid response format: topQuestions is not an array');
+      }
 
       return {
         success: true,
-        topQuestions: parsedResponse.topQuestions || []
+        topQuestions: parsedResponse.topQuestions
       };
     } catch (error) {
+      console.error('Error in getTopQuestions:', error);
       if (error instanceof Error) {
         return {
           success: false,
@@ -173,25 +214,38 @@ class MedicalAIService {
 
   async getWaitingInstructions(request: WaitingInstructionsRequest): Promise<WaitingInstructionsResponse> {
     try {
-      const systemPrompt = 'You are a medical assistant AI providing waiting instructions for patients in a clinic. Generate clear, compassionate instructions that are specific to the patient\'s condition. Include safety precautions and when to alert clinic staff if symptoms worsen.';
+      const systemPrompt = 'You are a medical assistant AI providing waiting instructions for patients in a clinic. Return ONLY a JSON object with an instructions field containing the waiting instructions. Do not include any markdown formatting or additional text.';
       
-      let prompt = `Purpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n`;
+      let prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n`;
       if (request.followUpQAPairs.length > 0) {
         prompt += '\nFollow-up Questions and Answers:\n';
         request.followUpQAPairs.forEach(qa => {
           prompt += `Q: ${qa.question}\nA: ${qa.answer}\n`;
         });
       }
-      prompt += '\nPlease provide personalized waiting instructions in JSON format:\n{"instructions": "your instructions here"}';
+      prompt += '\nProvide waiting instructions in this exact format:\n{"instructions": "your instructions here"}';
 
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
-      const parsedResponse = JSON.parse(aiResponse);
+      
+      // Try to find JSON content in the response
+      const matches = aiResponse.match(/\{[\s\S]*\}/);
+      if (!matches) {
+        throw new Error('No JSON content found in AI response');
+      }
+
+      const jsonStr = matches[0];
+      const parsedResponse = JSON.parse(jsonStr);
+
+      if (typeof parsedResponse.instructions !== 'string') {
+        throw new Error('Invalid response format: instructions is not a string');
+      }
 
       return {
         success: true,
-        instructions: parsedResponse.instructions || 'Please wait in the designated area. A staff member will assist you shortly.'
+        instructions: parsedResponse.instructions
       };
     } catch (error) {
+      console.error('Error in getWaitingInstructions:', error);
       if (error instanceof Error) {
         return {
           success: false,

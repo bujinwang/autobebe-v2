@@ -4,8 +4,8 @@ import { authenticate, authorizeStaff } from '../middlewares/auth';
 
 const router = Router();
 
-// Get treatment recommendations and suggested prescriptions (Staff only)
-router.post('/recommendations', authenticate, authorizeStaff, medicalAIController.getTreatmentRecommendations);
+// Get treatment recommendations and suggested prescriptions (Public)
+router.post('/recommendations', medicalAIController.getTreatmentRecommendations);
 
 // Get top 3 follow-up questions (Public)
 router.post('/topquestions', medicalAIController.getTopQuestions);

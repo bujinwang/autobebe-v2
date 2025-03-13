@@ -3,6 +3,7 @@ import cors from 'cors';
 import { json } from 'body-parser';
 import { PrismaClient } from '@prisma/client';
 import medicalAIRoutes from './routes/medicalAI';
+import userRoutes from './routes/userRoutes';
 
 // Initialize Prisma Client
 const prisma = new PrismaClient();
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(json());
 
 // Routes
+app.use('/api/users', userRoutes);
 app.use('/api/medical-ai', medicalAIRoutes);
 
 // Basic health check endpoint
