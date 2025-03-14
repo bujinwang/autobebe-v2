@@ -29,15 +29,26 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         // Set the first clinic as default if available
         if (clinicList.length > 0) {
           setSelectedClinic(clinicList[0]);
+          console.log(`Default clinic set: ${clinicList[0].name} with ID: ${clinicList[0].id}`);
+        } else {
+          // Set a fallback default clinic if the list is empty
+          const defaultClinic = {
+            id: '4F420955',
+            name: "Default Clinic"
+          };
+          setSelectedClinic(defaultClinic);
+          console.log(`No clinics found, using default: ${defaultClinic.name} with ID: ${defaultClinic.id}`);
         }
       } catch (error) {
         console.error('Failed to load clinics:', error);
         setApiError('Unable to load clinics. Using default clinic.');
         // Set a default clinic when API fails
-        setSelectedClinic({
+        const fallbackClinic = {
           id: '4F420955',
           name: "Naomi's Clinic"
-        });
+        };
+        setSelectedClinic(fallbackClinic);
+        console.log(`Error loading clinics, using fallback: ${fallbackClinic.name} with ID: ${fallbackClinic.id}`);
       } finally {
         setIsLoading(false);
       }
@@ -63,8 +74,13 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
   );
 
   const handleStartCheckin = () => {
+    // Ensure we always have a valid clinic ID
     const clinicId = selectedClinic?.id || '4F420955';
     console.log(`Starting check-in for clinic: ${clinicId}`);
+    
+    // Log the full selected clinic object for debugging
+    console.log('Selected clinic object:', selectedClinic);
+    
     navigation.navigate('PatientInfo', { clinicId });
   };
 
@@ -323,3 +339,19 @@ const styles = StyleSheet.create({
 });
 
 export default HomeScreen;
+
+
+// When navigating to the SymptomsScreen
+const handleContinue = () => {
+  if (validateForm()) {
+    navigation.navigate('Symptoms', {
+      patientInfo: {
+        name: patientName,
+        healthcareNumber: healthcareNumber,
+        phone: phoneNumber,
+        email: email
+      },
+      clinicId: selectedClinicId // Always pass the selected clinic ID
+    });
+  }
+};

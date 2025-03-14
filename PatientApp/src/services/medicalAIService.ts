@@ -58,13 +58,18 @@ export const getTopQuestions = async (request: TopQuestionsRequest): Promise<Top
 // Get personalized waiting instructions based on patient information
 export const getWaitingInstructions = async (request: WaitingInstructionsRequest): Promise<WaitingInstructionsResponse> => {
   try {
+    // Ensure followUpQAPairs is an array before mapping
+    const followUpQAPairs = Array.isArray(request.followUpQAPairs) 
+      ? request.followUpQAPairs.map(qa => ({
+          question: qa.question,
+          answer: qa.answer
+        }))
+      : [];
+      
     const response = await axios.post(`${API_URL}/MedicalAI/waitinginstructions`, {
       purposeOfVisit: request.purposeOfVisit,
       symptoms: request.symptoms,
-      followUpQAPairs: request.followUpQAPairs.map(qa => ({
-        question: qa.question,
-        answer: qa.answer
-      }))
+      followUpQAPairs: followUpQAPairs
     });
     return response.data;
   } catch (error) {
@@ -76,4 +81,4 @@ export const getWaitingInstructions = async (request: WaitingInstructionsRequest
       instructions: 'Please stay in the clinic. A clerk will find you when it\'s your turn. If your symptoms worsen, please alert the clinic staff immediately.'
     };
   }
-}; 
+};
