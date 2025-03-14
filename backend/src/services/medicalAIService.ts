@@ -8,18 +8,32 @@ import {
   WaitingInstructionsResponse
 } from '../models/medicalAI';
 
+interface MedicalAIConfig {
+  aiProvider: string;
+  aiModel: string;
+  aiApiUrl: string;
+  apiKey: string;
+}
+
 class MedicalAIService {
   private readonly aiProvider: string;
   private readonly aiModel: string;
   private readonly aiApiUrl: string;
   private readonly apiKey: string;
 
-  constructor() {
-    // Get AI configuration from environment variables
-    this.aiProvider = process.env.MEDICAL_AI_PROVIDER || 'DeepSeek';
-    this.aiModel = process.env.MEDICAL_AI_MODEL || 'deepseek-chat';
-    this.aiApiUrl = process.env.MEDICAL_AI_URL || 'https://api.deepseek.com/chat/completions';
-    this.apiKey = process.env.MEDICAL_AI_API_KEY || '';
+  constructor(config: MedicalAIConfig) {
+    this.aiProvider = config.aiProvider;
+    this.aiModel = config.aiModel;
+    this.aiApiUrl = config.aiApiUrl;
+    this.apiKey = config.apiKey;
+    
+    // Add logging to debug API key issues
+    console.log('MedicalAIService initialized with:');
+    console.log('- Provider:', this.aiProvider);
+    console.log('- Model:', this.aiModel);
+    console.log('- API URL:', this.aiApiUrl);
+    console.log('- API Key:', this.apiKey ? `${this.apiKey.substring(0, 4)}...${this.apiKey.substring(this.apiKey.length - 4)}` : 'MISSING');
+    console.log('- config:', config.apiKey);
   }
 
   private async callAIApi(prompt: string, systemPrompt: string): Promise<string> {
@@ -39,6 +53,7 @@ class MedicalAIService {
         temperature: 0.3,
         max_tokens: 1000
       };
+      console.log('Authorization...', {'Authorization': `Bearer ${this.apiKey}`});
 
       const response = await axios.post(this.aiApiUrl, payload, {
         headers: {
@@ -46,7 +61,6 @@ class MedicalAIService {
           'Authorization': `Bearer ${this.apiKey}`
         }
       });
-
       if (response.data.choices && response.data.choices.length > 0) {
         return response.data.choices[0].message.content;
       }
@@ -262,4 +276,14 @@ class MedicalAIService {
   }
 }
 
-export const medicalAIService = new MedicalAIService(); 
+// Replace direct export with lazy initialization
+let instance: MedicalAIService | null = null;
+
+export function getMedicalAIService(config: MedicalAIConfig): MedicalAIService {
+  if (!instance) {
+    instance = new MedicalAIService(config);
+  }
+  return instance;
+}
+
+export type { MedicalAIConfig };

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Define the base URL for the API
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'http://localhost:3000/api';
 
 // Define the TopQuestionsRequest interface
 export interface TopQuestionsRequest {

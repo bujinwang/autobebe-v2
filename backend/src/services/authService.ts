@@ -2,13 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production';
-
-// First, let's add User model to our Prisma schema
-// We'll need to update the schema.prisma file
-
-export interface CreateUserData {
+interface CreateUserData {
   email: string;
   password: string;
   name: string;
@@ -16,14 +10,25 @@ export interface CreateUserData {
   clinicId?: string;
 }
 
-export interface LoginData {
+interface LoginData {
   email: string;
   password: string;
 }
 
-export const authService = {
-  // Register a new user
-  register: async (data: CreateUserData) => {
+interface AuthServiceConfig {
+  jwtSecret: string;
+}
+
+const prisma = new PrismaClient();
+
+class AuthService {
+  private readonly jwtSecret: string;
+
+  constructor(config: AuthServiceConfig) {
+    this.jwtSecret = config.jwtSecret;
+  }
+
+  async register(data: CreateUserData) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
     
     const user = await prisma.user.create({
@@ -35,7 +40,7 @@ export const authService = {
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      JWT_SECRET,
+      this.jwtSecret,
       { expiresIn: '24h' }
     );
 
@@ -48,10 +53,9 @@ export const authService = {
       },
       token,
     };
-  },
+  }
 
-  // Login user
-  login: async ({ email, password }: LoginData) => {
+  async login({ email, password }: LoginData) {
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -67,7 +71,7 @@ export const authService = {
 
     const token = jwt.sign(
       { userId: user.id, role: user.role },
-      JWT_SECRET,
+      this.jwtSecret,
       { expiresIn: '24h' }
     );
 
@@ -80,19 +84,17 @@ export const authService = {
       },
       token,
     };
-  },
+  }
 
-  // Verify JWT token
-  verifyToken: (token: string) => {
+  verifyToken(token: string) {
     try {
-      return jwt.verify(token, JWT_SECRET);
+      return jwt.verify(token, this.jwtSecret);
     } catch (error) {
       throw new Error('Invalid token');
     }
-  },
+  }
 
-  // Change password
-  changePassword: async (userId: number, oldPassword: string, newPassword: string) => {
+  async changePassword(userId: number, oldPassword: string, newPassword: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
@@ -111,5 +113,13 @@ export const authService = {
       where: { id: userId },
       data: { password: hashedPassword },
     });
-  },
-}; 
+  }
+}
+
+const config = {
+  jwtSecret: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-this-in-production',
+};
+
+const authService = new AuthService(config);
+
+export { authService, CreateUserData, LoginData };
