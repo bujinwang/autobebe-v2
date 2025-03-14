@@ -13,7 +13,18 @@ export const clinicController = {
 
   async getClinicById(req: Request, res: Response) {
     try {
-      const id = req.params.id;
+      // Handle both query param and path param
+      const id = req.query.id || req.params.id;
+      
+      if (!id) {
+        return res.status(400).json({ error: 'Missing clinic ID parameter' });
+      }
+      
+      // Add ID format validation
+      if (!/^[A-Z0-9]{8}$/.test(id)) {
+        return res.status(400).json({ error: 'Invalid clinic ID format' });
+      }
+
       const clinic = await clinicService.getClinicById(id);
       if (!clinic) {
         return res.status(404).json({ error: 'Clinic not found' });
@@ -59,5 +70,17 @@ export const clinicController = {
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete clinic' });
     }
-  }
-}; 
+  },
+  async getClinicsForSelection(req: Request, res: Response) {
+      try {
+        const clinics = await clinicService.getAllClinics();
+        const simplifiedClinics = clinics.map(clinic => ({
+          id: clinic.id,
+          name: clinic.name
+        }));
+        res.json(simplifiedClinics);
+      } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch clinics for selection' });
+      }
+    },
+};

@@ -4,6 +4,7 @@ import { json } from 'body-parser';
 import { PrismaClient } from '@prisma/client';
 import medicalAIRoutes from './routes/medicalAI';
 import userRoutes from './routes/userRoutes';
+import clinicRoutes from './routes/clinicRoutes';
 
 // Initialize Prisma Client
 const prisma = new PrismaClient();
@@ -40,4 +41,8 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-export default app; 
+// Mount routes
+// Change mount path to match frontend request
+app.use('/api/Clinic', clinicRoutes);
+
+export default app;
