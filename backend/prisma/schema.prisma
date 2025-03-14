@@ -51,19 +51,22 @@ model ClinicInfo {
   users          User[]
 }
 
+// Update the Appointment model to match sanya-service
 model Appointment {
-  id                    Int       @id @default(autoincrement())
-  patientId            Int
-  clinicId             String
-  appointmentDate      DateTime
-  status               String    @db.VarChar(50)
-  followUpQuestions    Json?
-  followUpAnswers      Json?
-  possibleTreatments   Json?
-  suggestedPrescriptions Json?
-  notes                String?   @db.Text
-  createdAt           DateTime  @default(now())
+  id                     Int      @id @default(autoincrement())
+  patientId              Int
+  appointmentDate        DateTime
+  status                 String   @db.Text
+  purposeOfVisit         String?  @db.Text
+  symptoms               String?  @db.Text
+  followUpAnswers        String   @db.Text
+  followUpQuestions      String   @db.Text
+  possibleTreatments     String   @db.Text
+  suggestedPrescriptions String   @db.Text
+  clinicId               String
   
-  patient              Patient   @relation(fields: [patientId], references: [id])
-  clinic              ClinicInfo @relation(fields: [clinicId], references: [id])
+  patient                Patient    @relation(fields: [patientId], references: [id])
+  clinic                 ClinicInfo @relation(fields: [clinicId], references: [id])
+
+  @@index([patientId], name: "IX_Appointments_PatientId")
 }

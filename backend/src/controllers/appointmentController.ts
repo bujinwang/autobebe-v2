@@ -46,14 +46,22 @@ export const appointmentController = {
 
   async createAppointment(req: Request, res: Response) {
     try {
+      // Ensure required fields have default values
       const input: CreateAppointmentInput = {
         ...req.body,
-        appointmentDate: new Date(req.body.appointmentDate)
+        appointmentDate: new Date(req.body.appointmentDate),
+        followUpAnswers: req.body.followUpAnswers || '',
+        followUpQuestions: req.body.followUpQuestions || '',
+        possibleTreatments: req.body.possibleTreatments || '',
+        suggestedPrescriptions: req.body.suggestedPrescriptions || ''
       };
+      
+      console.log('Creating appointment with input:', input);
       const appointment = await appointmentService.createAppointment(input);
       res.status(201).json(appointment);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to create appointment' });
+      console.error('Detailed error creating appointment:', error);
+      res.status(500).json({ error: 'Failed to create appointment', details: error.message });
     }
   },
 
@@ -68,7 +76,8 @@ export const appointmentController = {
       const appointment = await appointmentService.updateAppointment(input);
       res.json(appointment);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to update appointment' });
+      console.error('Error updating appointment:', error);
+      res.status(500).json({ error: 'Failed to update appointment', details: error.message });
     }
   },
 
@@ -84,4 +93,4 @@ export const appointmentController = {
       res.status(500).json({ error: 'Failed to delete appointment' });
     }
   }
-}; 
+};

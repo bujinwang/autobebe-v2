@@ -8,11 +8,12 @@ export interface CreateAppointmentInput {
   clinicId: string;
   appointmentDate: Date;
   status: string;
-  followUpQuestions?: any;
-  followUpAnswers?: any;
-  possibleTreatments?: any;
-  suggestedPrescriptions?: any;
-  notes?: string;
+  purposeOfVisit?: string;
+  symptoms?: string;
+  followUpAnswers: string;
+  followUpQuestions: string;
+  possibleTreatments: string;
+  suggestedPrescriptions: string;
 }
 
 export interface UpdateAppointmentInput extends Partial<CreateAppointmentInput> {
@@ -70,8 +71,28 @@ class AppointmentService {
   }
 
   async createAppointment(input: CreateAppointmentInput): Promise<Appointment> {
+    // Extract the fields that should be handled as relations
+    const { patientId, clinicId, ...appointmentData } = input;
+    
+    // Ensure required fields have default values
+    const data = {
+      ...appointmentData,
+      followUpAnswers: input.followUpAnswers || '',
+      followUpQuestions: input.followUpQuestions || '',
+      possibleTreatments: input.possibleTreatments || '',
+      suggestedPrescriptions: input.suggestedPrescriptions || '',
+      // Connect the appointment to an existing patient
+      patient: {
+        connect: { id: patientId }
+      },
+      // Connect to clinic
+      clinic: {
+        connect: { id: clinicId }
+      }
+    };
+    
     return prisma.appointment.create({
-      data: input,
+      data,
       include: {
         patient: true,
         clinic: true
@@ -80,10 +101,23 @@ class AppointmentService {
   }
 
   async updateAppointment(input: UpdateAppointmentInput): Promise<Appointment> {
-    const { id, ...updateData } = input;
+    const { id, patientId, clinicId, ...updateData } = input;
+    
+    // Build the update data object
+    const data: any = { ...updateData };
+    
+    // Handle relations if they're provided
+    if (patientId) {
+      data.patient = { connect: { id: patientId } };
+    }
+    
+    if (clinicId) {
+      data.clinic = { connect: { id: clinicId } };
+    }
+    
     return prisma.appointment.update({
       where: { id },
-      data: updateData,
+      data,
       include: {
         patient: true,
         clinic: true
@@ -103,4 +137,4 @@ class AppointmentService {
   }
 }
 
-export const appointmentService = new AppointmentService(); 
+export const appointmentService = new AppointmentService();

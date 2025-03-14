@@ -26,17 +26,21 @@ type SymptomsScreenProps = {
         phone: string;
         email: string;
         existingAppointmentId?: number;
-      }
+      },
+      clinicId: string; // Add clinicId to route params
     }
   };
 };
 
 const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
-  const { patientInfo } = route.params;
-  const existingAppointmentId = patientInfo.existingAppointmentId;
+  const { patientInfo, existingAppointmentId, clinicId } = route.params || {};
   
-  console.log('SymptomsScreen - patientInfo:', patientInfo);
-  console.log('SymptomsScreen - existingAppointmentId:', existingAppointmentId);
+  // Log only once when component mounts, not on every render
+  useEffect(() => {
+    console.log('SymptomsScreen - patientInfo:', patientInfo);
+    console.log('SymptomsScreen - existingAppointmentId:', existingAppointmentId);
+    console.log('SymptomsScreen - clinicId:', clinicId);
+  }, []);  // Empty dependency array ensures this runs only once
   
   const [formData, setFormData] = useState({
     purpose: '',
@@ -215,7 +219,7 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
           name: patientInfo.name,
           healthcareNumber: patientInfo.healthcareNumber,
           phone: patientInfo.phone,
-          clinicId: '4F420955' // Default clinic ID
+          clinicId: clinicId || '4F420955' // Use dynamic clinicId with fallback
         });
         patientId = newPatient.id!;
         console.log(`Created new patient with ID: ${patientId}`);
@@ -228,6 +232,7 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
       // Prepare appointment data
       const appointmentData = {
         patientId,
+        clinicId: clinicId || '4F420955', // Use dynamic clinicId with fallback
         appointmentDate: new Date().toISOString(),
         status: 'Scheduled',
         purposeOfVisit: formData.purpose,
@@ -472,4 +477,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SymptomsScreen; 
+export default SymptomsScreen;
