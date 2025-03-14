@@ -82,6 +82,19 @@ const ScheduledScreen = ({ navigation, route }: ScheduledScreenProps) => {
           </Text>
         </View>
 
+        {/* Waiting Instructions Section - Moved above appointment details */}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4A90E2" />
+            <Text style={styles.loadingText}>Loading care instructions...</Text>
+          </View>
+        ) : waitingInstructions ? (
+          <View style={styles.instructionContainer}>
+            <Text style={styles.instructionTitle}>While You Wait</Text>
+            <Text style={styles.instruction}>{waitingInstructions}</Text>
+          </View>
+        ) : null}
+
         <View style={styles.detailsContainer}>
           <Text style={styles.sectionTitle}>Appointment Details</Text>
           
@@ -107,19 +120,6 @@ const ScheduledScreen = ({ navigation, route }: ScheduledScreenProps) => {
             </View>
           )}
         </View>
-        
-        {/* Waiting Instructions Section */}
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4A90E2" />
-            <Text style={styles.loadingText}>Loading care instructions...</Text>
-          </View>
-        ) : waitingInstructions ? (
-          <View style={styles.instructionContainer}>
-            <Text style={styles.instructionTitle}>While You Wait</Text>
-            <Text style={styles.instruction}>{waitingInstructions}</Text>
-          </View>
-        ) : null}
         
         <TouchableOpacity 
           style={styles.doneButton} 
