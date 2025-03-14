@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, SafeAreaView } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
 import { fetchClinicsForSelection } from '../api/client';
 
 interface Clinic {
@@ -76,16 +77,16 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
 
       {/* Clinic Info Section */}
       <View style={styles.clinicInfoContainer}>
-        <Text style={styles.clinicName}>{selectedClinic?.name || "Naomi's Clinic"}</Text>
-        <Text style={styles.clinicAddress}>123 Healthcare Drive, Vancouver, BC V6B 1S4</Text>
-        <Text style={styles.clinicPhone}>604-555-0123</Text>
-        <Text style={styles.clinicHours}>Mon-Fri: 9:00 AM - 5:00 PM, Sat: 10:00 AM - 2:00 PM, Sun: Closed</Text>
+        <Text style={styles.clinicName}>{selectedClinic?.name || "Select a clinic"}</Text>
+        <Text style={styles.clinicAddress}>{selectedClinic?.address || "Address information will appear here"}</Text>
+        <Text style={styles.clinicPhone}>{selectedClinic?.phone || "Phone information will appear here"}</Text>
+        <Text style={styles.clinicHours}>{selectedClinic?.hours || "Hours information will appear here"}</Text>
       </View>
 
       {/* Welcome Message */}
       <View style={styles.welcomeContainer}>
         <Text style={styles.welcomeText}>
-          Welcome to {selectedClinic?.name || "Naomi's Clinic"}. We are committed to providing exceptional healthcare services to our community.
+          Welcome to {selectedClinic?.name || "our clinic"}. We are committed to providing exceptional healthcare services to our community.
         </Text>
         <Text style={styles.tagline}>Your trusted healthcare partner</Text>
       </View>

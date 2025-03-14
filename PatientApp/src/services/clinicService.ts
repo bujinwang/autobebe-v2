@@ -29,7 +29,7 @@ export const clearClinicInfoCache = async (): Promise<void> => {
 export const getClinicInfoById = async (clinicId: string): Promise<ClinicInfo> => {
   try {
     console.log('Fetching clinic info for ID:', clinicId);
-    const response = await axios.get(`${API_BASE_URL}/clinic/info?id=${clinicId}`);
+    const response = await axios.get(`${API_BASE_URL}/clinics/info?id=${clinicId}`);
     if (!response.data) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

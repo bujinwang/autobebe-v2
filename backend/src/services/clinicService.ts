@@ -66,6 +66,15 @@ class ClinicService {
       return false;
     }
   }
+  
+  async getClinicsForSelection() {
+    return prisma.clinicInfo.findMany({
+      select: {
+        id: true,
+        name: true
+      }
+    });
+  }
 }
 
-export const clinicService = new ClinicService(); 
+export const clinicService = new ClinicService();

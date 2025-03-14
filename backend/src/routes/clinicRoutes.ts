@@ -3,13 +3,16 @@ import { clinicController } from "../controllers/clinicController";
 
 const router = Router();
 
+// Route to get all clinics
 router.get('/', clinicController.getAllClinics);
-router.get('/info', clinicController.getClinicById);
-router.get('/selection', clinicController.getClinicsForSelection);
 
-// Add other routes as needed
-// router.post('/', clinicController.createClinic);
-// router.put('/:id', clinicController.updateClinic);
-// router.delete('/:id', clinicController.deleteClinic);
+// Add debugging middleware for this specific route
+router.get('/info', (req, res, next) => {
+  console.log('Request to /info endpoint received:', req.query);
+  next();
+}, clinicController.getClinicById);
+
+// Route to get clinics for selection
+router.get('/selection', clinicController.getClinicsForSelection);
 
 export default router;

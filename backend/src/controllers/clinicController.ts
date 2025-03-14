@@ -1,86 +1,69 @@
 import { Request, Response } from 'express';
-import { clinicService, CreateClinicInput, UpdateClinicInput } from '../services/clinicService';
+import { clinicService } from '../services/clinicService';
 
 export const clinicController = {
-  async getAllClinics(req: Request, res: Response) {
+  getAllClinics: async (req: Request, res: Response) => {
     try {
+      console.log('Fetching all clinics');
       const clinics = await clinicService.getAllClinics();
+      
+      if (!clinics || clinics.length === 0) {
+        return res.status(404).json({ error: 'No clinics found' });
+      }
+      
+      console.log(`Found ${clinics.length} clinics`);
       res.json(clinics);
     } catch (error) {
+      console.error('Error in getAllClinics:', error);
       res.status(500).json({ error: 'Failed to fetch clinics' });
     }
   },
-
+  // Add timeout handling to prevent hanging requests
   async getClinicById(req: Request, res: Response) {
     try {
-      // Handle both query param and path param
-      const id = req.query.id || req.params.id;
+      console.log('getClinicById called with query:', req.query);
+      const clinicId = req.query.id as string;
       
-      if (!id) {
-        return res.status(400).json({ error: 'Missing clinic ID parameter' });
+      if (!clinicId) {
+        return res.status(400).json({ error: 'Clinic ID is required' });
       }
       
-      // Add ID format validation
-      if (!/^[A-Z0-9]{8}$/.test(id)) {
-        return res.status(400).json({ error: 'Invalid clinic ID format' });
-      }
-
-      const clinic = await clinicService.getClinicById(id);
+      console.log('Fetching clinic with ID:', clinicId);
+      
+      // Add a timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 5000)
+      );
+      
+      const clinicPromise = clinicService.getClinicById(clinicId);
+      
+      const clinic = await Promise.race([clinicPromise, timeoutPromise]);
+      
       if (!clinic) {
         return res.status(404).json({ error: 'Clinic not found' });
       }
+      
+      console.log('Clinic found:', clinic);
       res.json(clinic);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch clinic' });
+      console.error('Error in getClinicById:', error);
+      res.status(500).json({ error: 'Failed to fetch clinic info' });
     }
   },
-
-  async createClinic(req: Request, res: Response) {
+  getClinicsForSelection: async (req: Request, res: Response) => {
     try {
-      const input: CreateClinicInput = req.body;
-      const clinic = await clinicService.createClinic(input);
-      res.status(201).json(clinic);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to create clinic' });
-    }
-  },
-
-  async updateClinic(req: Request, res: Response) {
-    try {
-      const id = req.params.id;
-      const input: UpdateClinicInput = {
-        id,
-        ...req.body
-      };
-      const clinic = await clinicService.updateClinic(input);
-      res.json(clinic);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to update clinic' });
-    }
-  },
-
-  async deleteClinic(req: Request, res: Response) {
-    try {
-      const id = req.params.id;
-      const success = await clinicService.deleteClinic(id);
-      if (!success) {
-        return res.status(404).json({ error: 'Clinic not found' });
+      console.log('Fetching clinics for selection');
+      const clinics = await clinicService.getClinicsForSelection();
+      
+      if (!clinics || clinics.length === 0) {
+        return res.status(404).json({ error: 'No clinics found for selection' });
       }
-      res.status(204).send();
+      
+      console.log(`Found ${clinics.length} clinics for selection`);
+      res.json(clinics);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to delete clinic' });
+      console.error('Error in getClinicsForSelection:', error);
+      res.status(500).json({ error: 'Failed to fetch clinics for selection' });
     }
   },
-  async getClinicsForSelection(req: Request, res: Response) {
-      try {
-        const clinics = await clinicService.getAllClinics();
-        const simplifiedClinics = clinics.map(clinic => ({
-          id: clinic.id,
-          name: clinic.name
-        }));
-        res.json(simplifiedClinics);
-      } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch clinics for selection' });
-      }
-    },
 };

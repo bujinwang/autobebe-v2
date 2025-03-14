@@ -1,48 +1,28 @@
 import express from 'express';
 import cors from 'cors';
-import { json } from 'body-parser';
-import { PrismaClient } from '@prisma/client';
-import medicalAIRoutes from './routes/medicalAI';
-import userRoutes from './routes/userRoutes';
+import patientRoutes from './routes/patientRoutes';
 import clinicRoutes from './routes/clinicRoutes';
+import appointmentRoutes from './routes/appointmentRoutes';
+import medicalAIRoutes from './routes/medicalAIRoutes';
 
-// Initialize Prisma Client
-const prisma = new PrismaClient();
-
-// Create Express app
 const app = express();
 
-// Middleware
+// Add CORS middleware
 app.use(cors());
-app.use(json());
 
-// Routes
-app.use('/api/users', userRoutes);
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Use the patient routes
+app.use('/api/patients', patientRoutes);
+
+// Use the clinic routes
+app.use('/api/clinics', clinicRoutes);
+
+// Use the appointment routes
+app.use('/api/appointments', appointmentRoutes);
+
+// Use the medical AI routes
 app.use('/api/medical-ai', medicalAIRoutes);
-
-// Basic health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    message: err.message
-  });
-});
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM signal received: closing HTTP server');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-// Mount routes
-// Change mount path to match frontend request
-app.use('/api/Clinic', clinicRoutes);
 
 export default app;

@@ -29,14 +29,12 @@ type PatientInfoScreenProps = {
 const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   const [formData, setFormData] = useState({
     name: '',
-    healthcareNumber: '',
     phone: '',
-    clinicId: '4F420955'
+    clinicId: route.params?.clinicId || ''
   });
 
   const [errors, setErrors] = useState({
-    name: '',
-    healthcareNumber: ''
+    name: ''
   });
 
   const [showScanner, setShowScanner] = useState(false);
@@ -50,8 +48,14 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     const initializeScreen = async () => {
       try {
         console.log('Initializing PatientInfoScreen...');
-        // First, fetch clinic info
-        const clinicId = '4F420955'; // Using the known clinic ID
+        // Get clinic ID from route params instead of hardcoding
+        const clinicId = route.params?.clinicId;
+        console.log(`Fetching clinic info for ID: ${clinicId}`);
+        
+        if (!clinicId) {
+          throw new Error('No clinic ID provided');
+        }
+        
         const clinic = await getClinicInfoById(clinicId);
         
         // Check if we have route params with existing appointment or patient info
@@ -112,17 +116,11 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      name: '',
-      healthcareNumber: ''
+      name: ''
     };
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
-      isValid = false;
-    }
-
-    if (!formData.healthcareNumber.trim()) {
-      newErrors.healthcareNumber = 'Health Care Number is required';
       isValid = false;
     }
 
@@ -134,7 +132,6 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     try {
       const patientData = {
         name: formData.name,
-        healthcareNumber: formData.healthcareNumber,
         phone: formData.phone,
         clinicId: formData.clinicId
       };
@@ -262,17 +259,6 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Health Care Number <Text style={styles.required}>*</Text></Text>
-              <TextInput
-                style={[styles.input, errors.healthcareNumber ? styles.inputError : null]}
-                value={formData.healthcareNumber}
-                onChangeText={(text) => setFormData({ ...formData, healthcareNumber: text })}
-                placeholder="Enter your health care number"
-              />
-              {errors.healthcareNumber ? <Text style={styles.errorText}>{errors.healthcareNumber}</Text> : null}
-            </View>
-
             {/* Optional Fields */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Phone Number</Text>
@@ -284,7 +270,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
                 keyboardType="phone-pad"
               />
             </View>
-
+            
             <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
               <Text style={styles.nextButtonText}>{existingAppointmentId ? 'Update & Continue' : 'Next'}</Text>
             </TouchableOpacity>
@@ -430,4 +416,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PatientInfoScreen; 
+export default PatientInfoScreen;
