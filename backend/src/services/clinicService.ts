@@ -8,6 +8,9 @@ export interface CreateClinicInput {
   name: string;
   address: string;
   phone: string;
+  company: string;
+  hours: string;
+  welcomeMessage: string;
 }
 
 export interface UpdateClinicInput extends Partial<CreateClinicInput> {

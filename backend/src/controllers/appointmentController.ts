@@ -61,7 +61,8 @@ export const appointmentController = {
       res.status(201).json(appointment);
     } catch (error) {
       console.error('Detailed error creating appointment:', error);
-      res.status(500).json({ error: 'Failed to create appointment', details: error.message });
+      const err = error as Error;
+      res.status(500).json({ error: 'Failed to create appointment', details: err.message });
     }
   },
 
@@ -77,7 +78,8 @@ export const appointmentController = {
       res.json(appointment);
     } catch (error) {
       console.error('Error updating appointment:', error);
-      res.status(500).json({ error: 'Failed to update appointment', details: error.message });
+      const err = error as Error;
+      res.status(500).json({ error: 'Failed to update appointment', details: err.message });
     }
   },
 

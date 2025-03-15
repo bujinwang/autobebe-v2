@@ -22,13 +22,19 @@ export interface Doctor {
   isActive: boolean;
 }
 
+// Add this if it doesn't exist already
 export interface Patient {
   id: number;
   name: string;
-  dateOfBirth: string;
-  gender: string;
-  phone: string;
   email: string;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  address?: string;
+  medicalHistory?: string;
+  allergies?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Appointment {

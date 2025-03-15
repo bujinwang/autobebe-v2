@@ -1,6 +1,9 @@
-import './axiosConfig';
+import authService from './authService';
+import appointmentService from './appointmentService';
+import patientService from './patientService';
 
-export { default as authService } from './authService';
-export { default as appointmentService } from './appointmentService';
-export { default as doctorService } from './doctorService';
-export { default as clinicService } from './clinicService';
+export {
+  authService,
+  appointmentService,
+  patientService
+};

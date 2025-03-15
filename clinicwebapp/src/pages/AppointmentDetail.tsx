@@ -213,7 +213,7 @@ const AppointmentDetail: React.FC = () => {
 
         <Grid item xs={12}>
           <Card>
-            // Fix the CardHeader action with IconButton
+            {/* Fix the CardHeader action with IconButton */}
             <CardHeader
               title="Treatment Recommendations"
               action={
@@ -235,7 +235,7 @@ const AppointmentDetail: React.FC = () => {
 
         <Grid item xs={12}>
           <Card>
-            // Fix the CardHeader for prescriptions
+            {/* Fix the CardHeader for prescriptions */}
             <CardHeader
               title="Prescription Recommendations"
               action={

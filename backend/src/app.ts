@@ -5,6 +5,7 @@ import patientRoutes from './routes/patientRoutes';
 import clinicRoutes from './routes/clinicRoutes';
 import appointmentRoutes from './routes/appointmentRoutes';
 import medicalAIRoutes from './routes/medicalAIRoutes';
+import authRoutes from './routes/authRoutes';
 
 const app = express();
 
@@ -24,6 +25,9 @@ if (config.nodeEnv === 'development') {
     }
   });
 }
+
+// Use the auth routes
+app.use('/api/auth', authRoutes);
 
 // Use the patient routes
 app.use('/api/patients', patientRoutes);

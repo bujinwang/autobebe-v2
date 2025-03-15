@@ -108,6 +108,11 @@ export const generateMedicalResponse = async (req: Request, res: Response) => {
     const model = config.medicalAI.model;
     
     // Your API call logic here
+    // For example:
+    // const response = await axios.post(apiUrl, { ... });
+    
+    // Define the result variable before using it
+    const result = "Medical response generated successfully"; // Replace with actual result
     
     // Return response
     res.status(200).json({ result });

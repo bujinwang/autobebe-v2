@@ -45,19 +45,33 @@ export const doctors: Doctor[] = [
 export const patients: Patient[] = [
   {
     id: 1,
+    name: "John Doe",
+    dateOfBirth: "1985-05-15",
+    gender: "Male",
+    phone: "555-123-4567",
+    email: "john.doe@example.com",
+    createdAt: "2023-01-15T10:30:00Z",
+    updatedAt: "2023-01-15T10:30:00Z"
+  },
+  {
+    id: 2,
     name: 'Emma Wilson',
     dateOfBirth: '2018-05-15',
     gender: 'Female',
     phone: '555-111-2222',
-    email: 'parent@example.com'
+    email: 'parent@example.com',
+    createdAt: "2023-02-10T14:20:00Z",
+    updatedAt: "2023-02-10T14:20:00Z"
   },
   {
-    id: 2,
+    id: 3,
     name: 'Noah Garcia',
     dateOfBirth: '2020-02-10',
     gender: 'Male',
     phone: '555-333-4444',
-    email: 'parent2@example.com'
+    email: 'parent2@example.com',
+    createdAt: "2023-03-05T09:15:00Z",
+    updatedAt: "2023-03-05T09:15:00Z"
   }
 ];
 

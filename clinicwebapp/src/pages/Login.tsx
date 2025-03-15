@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Box, 
   Button, 
@@ -7,55 +7,81 @@ import {
   TextField, 
   Typography, 
   Paper, 
-  CircularProgress 
+  CircularProgress,
+  Avatar,
+  CssBaseline,
+  Link,
+  Grid
 } from '@mui/material';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState('');
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
 
-    if (!username || !password) {
-      setFormError('Please enter both username and password');
+    if (!email || !password) {
+      setFormError('Please enter both email and password');
       return;
     }
 
     try {
-      await login(username, password);
-      navigate('/appointments');
-    } catch (err) {
-      console.error('Login failed:', err);
+      await login(email, password);
+      navigate(from, { replace: true });
+    } catch (err: any) {
+      setFormError(err.response?.data?.message || 'Login failed');
     }
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Clinic Staff Login
-          </Typography>
-          
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          AutoBebe Clinic Login
+        </Typography>
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            p: 4, 
+            width: '100%', 
+            mt: 2,
+            borderRadius: 2,
+            backgroundColor: 'white'
+          }}
+        >
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
               fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
+              id="email"
+              label="Email Address"
+              name="email"
+              autoComplete="email"
               autoFocus
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              error={!!formError && !username}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={!!formError}
             />
             <TextField
               margin="normal"
@@ -68,7 +94,7 @@ const Login: React.FC = () => {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              error={!!formError && !password}
+              error={!!formError}
             />
             
             {(formError || error) && (
@@ -86,8 +112,21 @@ const Login: React.FC = () => {
             >
               {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
+            
+            <Grid container justifyContent="flex-end">
+              <Grid item>
+                <Link href="#" variant="body2" color="primary.main">
+                  Forgot password?
+                </Link>
+              </Grid>
+            </Grid>
           </Box>
         </Paper>
+        <Box sx={{ mt: 5, textAlign: 'center' }}>
+          <Typography variant="body2" color="text.secondary">
+            © {new Date().getFullYear()} AutoBebe Clinic Management System
+          </Typography>
+        </Box>
       </Box>
     </Container>
   );
