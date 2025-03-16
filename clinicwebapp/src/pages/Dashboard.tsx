@@ -14,8 +14,6 @@ import {
   ListItemAvatar,
   Divider,
   CircularProgress,
-  Button,
-  IconButton,
   useTheme
 } from '@mui/material';
 import { 
@@ -26,7 +24,8 @@ import {
   Event as EventIcon,
   Person as PersonIcon,
   ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon
+  // Remove the unused import:
+  // ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import { 
   BarChart, 
@@ -419,3 +418,8 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+// Remove these unused imports:
+// import Button from '@mui/material/Button';
+// import IconButton from '@mui/material/IconButton';
+// import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
