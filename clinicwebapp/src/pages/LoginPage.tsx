@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Paper, Container, Alert, CircularProgress } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-// Update this import to use the service from index.ts
-import { authService } from '../services/api';
+// Remove direct import of authService since we'll use the context
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +10,8 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // Get the login function from AuthContext
+  const { login } = useAuth();
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -38,17 +39,16 @@ const LoginPage: React.FC = () => {
       // Log the attempt for debugging
       console.log('Attempting login with:', { email });
       
-      // Use the authService from index.ts
-      const responseData = await authService.login(email, password);
+      // Use the login function from AuthContext instead of direct authService call
+      await login(email, password);
       
-      if (responseData.token) {
-        localStorage.setItem('token', responseData.token);
-        localStorage.setItem('user', JSON.stringify(responseData.user));
-        navigate('/dashboard');
-      }
+      // Navigate to dashboard after successful login
+      navigate('/dashboard');
     } catch (err: any) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -85,17 +85,18 @@ const LoginPage: React.FC = () => {
       
       <button 
         onClick={handleSubmit}
+        disabled={loading}
         style={{ 
           backgroundColor: '#0066cc', 
           color: 'white', 
           padding: '10px 15px', 
           border: 'none', 
           borderRadius: '4px',
-          cursor: 'pointer',
+          cursor: loading ? 'not-allowed' : 'pointer',
           width: '100%'
         }}
       >
-        SIGN IN
+        {loading ? 'SIGNING IN...' : 'SIGN IN'}
       </button>
       
       <div style={{ marginTop: '15px', textAlign: 'right' }}>
