@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
+import Appointments from './pages/Appointments';
+import AppointmentDetail from './pages/AppointmentDetail';
+import ProtectedRoute from './components/ProtectedRoute';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -12,8 +16,26 @@ function App() {
           {/* Set Login as the default route */}
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* Add other routes as needed */}
+          
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/appointments" element={
+            <ProtectedRoute>
+              <Appointments />
+            </ProtectedRoute>
+          } />
+          <Route path="/appointments/:id" element={
+            <ProtectedRoute>
+              <AppointmentDetail />
+            </ProtectedRoute>
+          } />
+          
+          {/* 404 Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </AuthProvider>

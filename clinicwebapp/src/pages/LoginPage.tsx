@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:3000/api';
+import { Box, TextField, Button, Typography, Paper, Container, Alert, CircularProgress } from '@mui/material';
+import { useAuth } from '../contexts/AuthContext';
+// Update this import to use the service from index.ts
+import { authService } from '../services/api';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,19 +20,30 @@ const LoginPage: React.FC = () => {
     setPassword(e.target.value);
   };
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt with:', { email, password });
+    
+    // Reset error state
+    setError('');
+    
+    // Validate inputs
+    if (!email || !password) {
+      setError('Email and password are required');
+      return;
+    }
     
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, { 
-        email, 
-        password 
-      });
+      setLoading(true);
       
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+      // Log the attempt for debugging
+      console.log('Attempting login with:', { email });
+      
+      // Use the authService from index.ts
+      const responseData = await authService.login(email, password);
+      
+      if (responseData.token) {
+        localStorage.setItem('token', responseData.token);
+        localStorage.setItem('user', JSON.stringify(responseData.user));
         navigate('/dashboard');
       }
     } catch (err: any) {

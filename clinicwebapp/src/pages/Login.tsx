@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useAuth } from '../contexts/AuthContext';
+// Import authService from the centralized services index
+import { authService } from '../services/api';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -35,6 +37,7 @@ const Login: React.FC = () => {
     }
 
     try {
+      // Use the login method from the auth context, which should internally use authService
       await login(email, password);
       navigate(from, { replace: true });
     } catch (err: any) {

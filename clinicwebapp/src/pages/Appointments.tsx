@@ -17,53 +17,151 @@ import {
   Card,
   CardContent,
   CardActions,
-  Grid
+  Grid,
+  Tabs,
+  Tab,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Tooltip,
+  Divider
 } from '@mui/material';
+import { 
+  Search as SearchIcon,
+  CalendarToday as CalendarIcon,
+  Refresh as RefreshIcon,
+  FilterList as FilterIcon,
+  Person as PersonIcon
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
+import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
 import { Appointment } from '../types';
-import { appointmentService } from '../services/api';
+import appointmentService from '../services/api/appointmentService';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
 
+// Define tab values
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+const TabPanel = (props: TabPanelProps) => {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`appointment-tabpanel-${index}`}
+      aria-labelledby={`appointment-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ pt: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+};
+
 const Appointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        setLoading(true);
-        // Get today's date in YYYY-MM-DD format
-        const today = new Date().toISOString().split('T')[0];
-        const data = await appointmentService.getAppointmentsByDate(today);
-        
-        // Filter appointments by clinic if user has a default clinic
-        const filteredData = user?.defaultClinicId 
-          ? data.filter(appointment => appointment.clinicId === user.defaultClinicId)
-          : data;
-          
-        // Sort by appointment time (ascending)
-        const sortedData = filteredData.sort((a, b) => 
-          new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
-        );
-        
-        setAppointments(sortedData);
-      } catch (err) {
-        console.error('Failed to fetch appointments:', err);
-        setError('Failed to load appointments. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
   }, [user?.defaultClinicId]);
+
+  // Filter appointments based on tab and search term
+  useEffect(() => {
+    if (!appointments.length) {
+      setFilteredAppointments([]);
+      return;
+    }
+
+    let filtered = [...appointments];
+    
+    // Apply tab filter
+    if (tabValue === 0) { // Today
+      filtered = filtered.filter(appointment => 
+        isToday(parseISO(appointment.appointmentDate))
+      );
+    } else if (tabValue === 1) { // Upcoming
+      filtered = filtered.filter(appointment => 
+        isFuture(parseISO(appointment.appointmentDate)) && 
+        !isToday(parseISO(appointment.appointmentDate))
+      );
+    } else if (tabValue === 2) { // Past
+      filtered = filtered.filter(appointment => 
+        isPast(parseISO(appointment.appointmentDate)) && 
+        !isToday(parseISO(appointment.appointmentDate))
+      );
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(appointment => 
+        (appointment.patient?.name?.toLowerCase().includes(term)) ||
+        appointment.chiefComplaint.toLowerCase().includes(term) ||
+        (appointment.symptoms?.toLowerCase().includes(term))
+      );
+    }
+    
+    // Sort by date (most recent first for past, soonest first for today/upcoming)
+    filtered = filtered.sort((a, b) => {
+      if (tabValue === 2) { // Past - most recent first
+        return new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime();
+      } else { // Today/Upcoming - soonest first
+        return new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime();
+      }
+    });
+    
+    setFilteredAppointments(filtered);
+  }, [appointments, tabValue, searchTerm]);
+
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      const data = await appointmentService.getAllAppointments();
+      
+      // Filter appointments by clinic if user has a default clinic
+      const filteredData = user?.defaultClinicId 
+        ? data.filter(appointment => appointment.clinicId === user.defaultClinicId)
+        : data;
+      
+      setAppointments(filteredData);
+    } catch (err) {
+      console.error('Failed to fetch appointments:', err);
+      setError('Failed to load appointments. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
+
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleRefresh = () => {
+    fetchAppointments();
+  };
 
   const handleViewDetails = (id: number) => {
     navigate(`/appointments/${id}`);
@@ -72,7 +170,7 @@ const Appointments: React.FC = () => {
   const getStatusChip = (status: string) => {
     let color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' = 'default';
     
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'scheduled':
         color = 'info';
         break;
@@ -90,6 +188,14 @@ const Appointments: React.FC = () => {
     return <Chip label={status} color={color} size="small" />;
   };
 
+  const getFormattedDate = (dateString: string) => {
+    const date = parseISO(dateString);
+    if (isToday(date)) {
+      return `Today, ${format(date, 'h:mm a')}`;
+    }
+    return format(date, 'MMM d, yyyy h:mm a');
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -105,6 +211,15 @@ const Appointments: React.FC = () => {
       <Layout>
         <Box sx={{ my: 4 }}>
           <Typography color="error" align="center">{error}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Button 
+              variant="contained" 
+              startIcon={<RefreshIcon />}
+              onClick={handleRefresh}
+            >
+              Try Again
+            </Button>
+          </Box>
         </Box>
       </Layout>
     );
@@ -114,90 +229,183 @@ const Appointments: React.FC = () => {
     <Layout>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Today's Appointments
+          Appointments
         </Typography>
         <Typography variant="subtitle1" color="text.secondary">
-          {format(new Date(), 'MMMM d, yyyy')}
+          Manage and view patient appointments
         </Typography>
       </Box>
 
-      {appointments.length === 0 ? (
+      {/* Search and Filter Bar */}
+      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+        <TextField
+          placeholder="Search patients or symptoms"
+          variant="outlined"
+          size="small"
+          value={searchTerm}
+          onChange={handleSearchChange}
+          sx={{ flexGrow: 1 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        
+        <Tooltip title="Refresh appointments">
+          <IconButton onClick={handleRefresh} color="primary">
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange}
+          aria-label="appointment tabs"
+          variant={isMobile ? "fullWidth" : "standard"}
+        >
+          <Tab 
+            icon={isMobile ? <CalendarIcon /> : undefined}
+            iconPosition="start"
+            label={isMobile ? "Today" : "Today's Appointments"} 
+          />
+          <Tab 
+            icon={isMobile ? <FilterIcon /> : undefined}
+            iconPosition="start"
+            label={isMobile ? "Upcoming" : "Upcoming Appointments"} 
+          />
+          <Tab 
+            icon={isMobile ? <PersonIcon /> : undefined}
+            iconPosition="start"
+            label={isMobile ? "Past" : "Past Appointments"} 
+          />
+        </Tabs>
+      </Box>
+
+      {/* Tab Panels */}
+      <TabPanel value={tabValue} index={0}>
+        {renderAppointmentList("Today's Appointments")}
+      </TabPanel>
+      <TabPanel value={tabValue} index={1}>
+        {renderAppointmentList("Upcoming Appointments")}
+      </TabPanel>
+      <TabPanel value={tabValue} index={2}>
+        {renderAppointmentList("Past Appointments")}
+      </TabPanel>
+    </Layout>
+  );
+
+  function renderAppointmentList(title: string) {
+    if (filteredAppointments.length === 0) {
+      return (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography>No appointments scheduled for today.</Typography>
+          <Typography>No {title.toLowerCase()} found.</Typography>
         </Paper>
-      ) : isMobile ? (
-        // Mobile view - cards
-        <Grid container spacing={2}>
-          {appointments.map((appointment) => (
-            <Grid item xs={12} key={appointment.id}>
-              <Card>
-                <CardContent>
+      );
+    }
+
+    return isMobile ? renderMobileView() : renderDesktopView();
+  }
+
+  function renderMobileView() {
+    return (
+      <Grid container spacing={2}>
+        {filteredAppointments.map((appointment) => (
+          <Grid item xs={12} key={appointment.id}>
+            <Card>
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Typography variant="h6">
                     {appointment.patient?.name || 'Unknown Patient'}
                   </Typography>
-                  <Typography color="text.secondary" gutterBottom>
-                    {format(new Date(appointment.appointmentDate), 'h:mm a')}
+                  {getStatusChip(appointment.status)}
+                </Box>
+                <Typography color="text.secondary" gutterBottom>
+                  {getFormattedDate(appointment.appointmentDate)}
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  <strong>Chief Complaint:</strong> {appointment.chiefComplaint}
+                </Typography>
+                {appointment.doctor && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    <strong>Doctor:</strong> {appointment.doctor.name}
                   </Typography>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
-                    <Typography variant="body2">
-                      Chief Complaint: {appointment.chiefComplaint}
-                    </Typography>
-                    {getStatusChip(appointment.status)}
-                  </Box>
-                </CardContent>
-                <CardActions>
+                )}
+              </CardContent>
+              <CardActions>
+                <Button 
+                  size="small" 
+                  variant="contained" 
+                  onClick={() => handleViewDetails(appointment.id)}
+                  fullWidth
+                >
+                  View Details
+                </Button>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    );
+  }
+
+  function renderDesktopView() {
+    return (
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Date & Time</TableCell>
+              <TableCell>Patient</TableCell>
+              <TableCell>Chief Complaint</TableCell>
+              <TableCell>Doctor</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredAppointments.map((appointment) => (
+              <TableRow 
+                key={appointment.id}
+                hover
+                sx={{ 
+                  cursor: 'pointer',
+                  '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+                }}
+                onClick={() => handleViewDetails(appointment.id)}
+              >
+                <TableCell>
+                  {getFormattedDate(appointment.appointmentDate)}
+                </TableCell>
+                <TableCell>{appointment.patient?.name || 'Unknown Patient'}</TableCell>
+                <TableCell>{appointment.chiefComplaint}</TableCell>
+                <TableCell>{appointment.doctor?.name || 'Unassigned'}</TableCell>
+                <TableCell>{getStatusChip(appointment.status)}</TableCell>
+                <TableCell align="right">
                   <Button 
-                    size="small" 
                     variant="contained" 
-                    onClick={() => handleViewDetails(appointment.id)}
-                    fullWidth
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewDetails(appointment.id);
+                    }}
                   >
                     View Details
                   </Button>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        // Desktop view - table
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Time</TableCell>
-                <TableCell>Patient</TableCell>
-                <TableCell>Chief Complaint</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {appointments.map((appointment) => (
-                <TableRow key={appointment.id}>
-                  <TableCell>
-                    {format(new Date(appointment.appointmentDate), 'h:mm a')}
-                  </TableCell>
-                  <TableCell>{appointment.patient?.name || 'Unknown Patient'}</TableCell>
-                  <TableCell>{appointment.chiefComplaint}</TableCell>
-                  <TableCell>{getStatusChip(appointment.status)}</TableCell>
-                  <TableCell align="right">
-                    <Button 
-                      variant="contained" 
-                      size="small"
-                      onClick={() => handleViewDetails(appointment.id)}
-                    >
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </Layout>
-  );
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }
 };
 
 export default Appointments;
