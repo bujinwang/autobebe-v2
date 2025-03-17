@@ -133,7 +133,7 @@ class MedicalAIService {
     }
   }
 
-  async getTreatmentRecommendations(request: MedicalAIRequest): Promise<MedicalAIResponse> {
+  async getRecommendations(request: MedicalAIRequest): Promise<MedicalAIResponse> {
     try {
       const systemPrompt = 'You are a medical decision support system. Return ONLY a JSON object with possibleTreatments and suggestedPrescriptions arrays. Do not include any markdown formatting or additional text.';
       

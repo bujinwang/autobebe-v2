@@ -107,7 +107,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ListItemText primary="Appointments" />
           </ListItemButton>
         </ListItem>
-        {user && user.role === 'admin' && (
           <ListItem onClick={() => navigate('/doctors')}>
             <ListItemButton>
               <ListItemIcon>
@@ -116,7 +115,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <ListItemText primary="Manage Doctors" />
             </ListItemButton>
           </ListItem>
-        )}
       </List>
       <Divider />
       <List>

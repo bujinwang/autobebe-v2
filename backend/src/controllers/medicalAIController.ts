@@ -15,7 +15,7 @@ class MedicalAIController {
   }
 
   // Convert to arrow functions to preserve 'this' context
-  getTreatmentRecommendations = async (req: Request, res: Response) => {
+  getRecommendations = async (req: Request, res: Response) => {
     try {
       const request = req.body as MedicalAIRequest;
       
@@ -26,7 +26,7 @@ class MedicalAIController {
         });
       }
 
-      const response = await this.medicalAIService.getTreatmentRecommendations(request);
+      const response = await this.medicalAIService.getRecommendations(request);
       return res.json(response);
     } catch (error) {
       if (error instanceof Error) {

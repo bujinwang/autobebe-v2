@@ -21,7 +21,7 @@ const medicalAIController = new MedicalAIController(medicalAIConfig);
 const router = Router();
 
 // Get treatment recommendations and suggested prescriptions (Public)
-router.post('/recommendations', medicalAIController.getTreatmentRecommendations);
+router.post('/recommendations', medicalAIController.getRecommendations);
 
 // Get top 3 follow-up questions (Public)
 router.post('/topquestions', medicalAIController.getTopQuestions);

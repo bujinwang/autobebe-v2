@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import AppointmentDetail from './pages/AppointmentDetail';
+import DoctorManagement from './pages/DoctorManagement';
 import ProtectedRoute from './components/ProtectedRoute';
 import NotFound from './pages/NotFound';
 
@@ -31,6 +32,11 @@ function App() {
           <Route path="/appointments/:id" element={
             <ProtectedRoute>
               <AppointmentDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctors" element={
+            <ProtectedRoute>
+              <DoctorManagement />
             </ProtectedRoute>
           } />
           
