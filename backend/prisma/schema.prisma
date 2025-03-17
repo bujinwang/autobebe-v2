@@ -23,6 +23,7 @@ model User {
   createdAt DateTime @default(now())
   
   clinic    ClinicInfo? @relation(fields: [clinicId], references: [id])
+  appointments Appointment[]
 }
 
 model Patient {
@@ -55,6 +56,7 @@ model ClinicInfo {
 model Appointment {
   id                     Int      @id @default(autoincrement())
   patientId              Int
+  doctorId               Int?
   appointmentDate        DateTime
   status                 String   @db.Text
   purposeOfVisit         String?  @db.Text
@@ -66,7 +68,9 @@ model Appointment {
   clinicId               String
   
   patient                Patient    @relation(fields: [patientId], references: [id])
+  doctor                 User?      @relation(fields: [doctorId], references: [id])
   clinic                 ClinicInfo @relation(fields: [clinicId], references: [id])
 
   @@index([patientId], name: "IX_Appointments_PatientId")
+  @@index([doctorId], name: "IX_Appointments_DoctorId")
 }

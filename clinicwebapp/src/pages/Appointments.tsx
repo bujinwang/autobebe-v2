@@ -31,7 +31,8 @@ import {
   CalendarToday as CalendarIcon,
   Refresh as RefreshIcon,
   FilterList as FilterIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  PlayArrow as PlayArrowIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
@@ -114,9 +115,10 @@ const Appointments: React.FC = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(appointment => 
-        (appointment.patient?.name?.toLowerCase().includes(term)) ||
-        appointment.chiefComplaint.toLowerCase().includes(term) ||
-        (appointment.symptoms?.toLowerCase().includes(term))
+        (appointment.patient?.name?.toLowerCase()?.includes(term)) ||
+        (appointment.purposeOfVisit?.toLowerCase()?.includes(term)) ||
+        (appointment.chiefComplaint?.toLowerCase()?.includes(term)) ||
+        (appointment.symptoms?.toLowerCase()?.includes(term))
       );
     }
     
@@ -164,7 +166,41 @@ const Appointments: React.FC = () => {
   };
 
   const handleViewDetails = (id: number) => {
-    navigate(`/appointments/${id}`);
+    navigate(`/appointments/${id}`, { state: { source: tabValue === 0 ? 'today' : tabValue === 1 ? 'upcoming' : 'past' } });
+  };
+
+  const handleTakeIn = async (e: React.MouseEvent, appointment: Appointment) => {
+    e.stopPropagation(); // Prevent row click event
+    
+    try {
+      if (!user) {
+        console.error('No user logged in');
+        return;
+      }
+      
+      // Create a doctor object from the current user
+      const doctor = {
+        id: user.id,
+        name: user.name
+      };
+      
+      // Update appointment status to in-progress and assign the current user as doctor
+      await appointmentService.updateAppointment(appointment.id, { 
+        status: 'in-progress',
+        doctorId: user.id,
+      });
+      
+      // Navigate to appointment details with takenIn flag
+      navigate(`/appointments/${appointment.id}`, { 
+        state: { 
+          source: 'today',
+          takenIn: true
+        } 
+      });
+    } catch (err) {
+      console.error('Failed to take in appointment:', err);
+      // Could add error handling here if needed
+    }
   };
 
   const getStatusChip = (status: string) => {
@@ -330,7 +366,7 @@ const Appointments: React.FC = () => {
                 </Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  <strong>Chief Complaint:</strong> {appointment.chiefComplaint}
+                  <strong>Purpose of Visit:</strong> {appointment.purposeOfVisit || appointment.chiefComplaint}
                 </Typography>
                 {appointment.doctor && (
                   <Typography variant="body2" sx={{ mt: 1 }}>
@@ -338,12 +374,24 @@ const Appointments: React.FC = () => {
                   </Typography>
                 )}
               </CardContent>
-              <CardActions>
+              <CardActions sx={{ display: 'flex', gap: 1 }}>
+                {tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' && (
+                  <Button 
+                    size="small" 
+                    variant="contained"
+                    color="warning"
+                    startIcon={<PlayArrowIcon />}
+                    onClick={(e) => handleTakeIn(e, appointment)}
+                    sx={{ flex: 1 }}
+                  >
+                    Take In
+                  </Button>
+                )}
                 <Button 
                   size="small" 
                   variant="contained" 
                   onClick={() => handleViewDetails(appointment.id)}
-                  fullWidth
+                  sx={{ flex: 1 }}
                 >
                   View Details
                 </Button>
@@ -363,7 +411,7 @@ const Appointments: React.FC = () => {
             <TableRow>
               <TableCell>Date & Time</TableCell>
               <TableCell>Patient</TableCell>
-              <TableCell>Chief Complaint</TableCell>
+              <TableCell>Purpose of Visit</TableCell>
               <TableCell>Doctor</TableCell>
               <TableCell>Status</TableCell>
               <TableCell align="right">Actions</TableCell>
@@ -384,20 +432,33 @@ const Appointments: React.FC = () => {
                   {getFormattedDate(appointment.appointmentDate)}
                 </TableCell>
                 <TableCell>{appointment.patient?.name || 'Unknown Patient'}</TableCell>
-                <TableCell>{appointment.chiefComplaint}</TableCell>
+                <TableCell>{appointment.purposeOfVisit || appointment.chiefComplaint}</TableCell>
                 <TableCell>{appointment.doctor?.name || 'Unassigned'}</TableCell>
                 <TableCell>{getStatusChip(appointment.status)}</TableCell>
                 <TableCell align="right">
-                  <Button 
-                    variant="contained" 
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleViewDetails(appointment.id);
-                    }}
-                  >
-                    View Details
-                  </Button>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                    {tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' && (
+                      <Button 
+                        variant="contained" 
+                        color="warning"
+                        size="small"
+                        startIcon={<PlayArrowIcon />}
+                        onClick={(e) => handleTakeIn(e, appointment)}
+                      >
+                        Take In
+                      </Button>
+                    )}
+                    <Button 
+                      variant="contained" 
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(appointment.id);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

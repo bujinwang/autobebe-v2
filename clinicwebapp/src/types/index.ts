@@ -45,12 +45,15 @@ export interface Appointment {
   appointmentDate: string;
   status: string;
   chiefComplaint: string;
+  purposeOfVisit?: string;
   symptoms: string;
   medicalHistory?: string;
   currentMedications?: string;
   allergies?: string;
   possibleTreatments?: string;
   suggestedPrescriptions?: string;
+  followUpQuestions?: string;
+  followUpAnswers?: string;
   patient?: Patient;
   doctor?: Doctor;
   clinic?: Clinic;

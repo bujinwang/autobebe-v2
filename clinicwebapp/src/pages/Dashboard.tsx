@@ -355,7 +355,7 @@ const Dashboard: React.FC = () => {
                             >
                               {format(new Date(appointment.appointmentDate), 'MMM d, yyyy h:mm a')}
                             </Typography>
-                            {` — ${appointment.chiefComplaint || 'No complaint specified'}`}
+                            {` — ${appointment.purposeOfVisit || appointment.chiefComplaint || 'No purpose specified'}`}
                           </>
                         }
                       />

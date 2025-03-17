@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 export interface CreateAppointmentInput {
   patientId: number;
   clinicId: string;
+  doctorId?: number;
   appointmentDate: Date;
   status: string;
   purposeOfVisit?: string;
@@ -25,7 +26,8 @@ class AppointmentService {
     return prisma.appointment.findMany({
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }
@@ -35,7 +37,8 @@ class AppointmentService {
       where: { id },
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }
@@ -45,7 +48,8 @@ class AppointmentService {
       where: { patientId },
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }
@@ -65,14 +69,15 @@ class AppointmentService {
       },
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }
 
   async createAppointment(input: CreateAppointmentInput): Promise<Appointment> {
     // Extract the fields that should be handled as relations
-    const { patientId, clinicId, ...appointmentData } = input;
+    const { patientId, clinicId, doctorId, ...appointmentData } = input;
     
     // Ensure required fields have default values
     const data = {
@@ -88,20 +93,23 @@ class AppointmentService {
       // Connect to clinic
       clinic: {
         connect: { id: clinicId }
-      }
+      },
+      // Connect to doctor if provided
+      ...(doctorId ? { doctor: { connect: { id: doctorId } } } : {})
     };
     
     return prisma.appointment.create({
       data,
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }
 
   async updateAppointment(input: UpdateAppointmentInput): Promise<Appointment> {
-    const { id, patientId, clinicId, ...updateData } = input;
+    const { id, patientId, clinicId, doctorId, ...updateData } = input;
     
     // Build the update data object
     const data: any = { ...updateData };
@@ -115,12 +123,21 @@ class AppointmentService {
       data.clinic = { connect: { id: clinicId } };
     }
     
+    if (doctorId !== undefined) {
+      if (doctorId === null) {
+        data.doctor = { disconnect: true };
+      } else {
+        data.doctor = { connect: { id: doctorId } };
+      }
+    }
+    
     return prisma.appointment.update({
       where: { id },
       data,
       include: {
         patient: true,
-        clinic: true
+        clinic: true,
+        doctor: true
       }
     });
   }

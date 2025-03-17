@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -54,7 +54,12 @@ import Layout from '../components/Layout';
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const theme = useTheme();
+  // Check if coming from Today's appointments and if it was taken in
+  const isFromTodayTab = location.state && location.state.source === 'today';
+  const wasTakenIn = location.state && location.state.takenIn === true;
+  
   // Remove isMobile if not using it
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -348,9 +353,9 @@ const AppointmentDetail: React.FC = () => {
             />
             <CardContent>
               <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>Chief Complaint</Typography>
+                <Typography variant="subtitle1" gutterBottom>Purpose of Visit</Typography>
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                  <Typography>{appointment.chiefComplaint}</Typography>
+                  <Typography>{appointment.purposeOfVisit || appointment.chiefComplaint}</Typography>
                 </Paper>
               </Box>
               
@@ -362,44 +367,6 @@ const AppointmentDetail: React.FC = () => {
               </Box>
               
               <Divider sx={{ my: 3 }} />
-              
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-                      <NotesIcon fontSize="small" sx={{ mr: 1 }} />
-                      Medical History
-                    </Box>
-                  </Typography>
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', height: '100%' }}>
-                    <Typography>{appointment.medicalHistory || 'None provided'}</Typography>
-                  </Paper>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-                      <MedicationIcon fontSize="small" sx={{ mr: 1 }} />
-                      Current Medications
-                    </Box>
-                  </Typography>
-                  <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', height: '100%' }}>
-                    <Typography>{appointment.currentMedications || 'None provided'}</Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-              
-              <Box sx={{ mt: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-                    <WarningIcon fontSize="small" sx={{ mr: 1 }} />
-                    Allergies
-                  </Box>
-                </Typography>
-                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                  <Typography>{appointment.allergies || 'None provided'}</Typography>
-                </Paper>
-              </Box>
             </CardContent>
           </Card>
         </Grid>
@@ -466,42 +433,80 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
+        {/* Follow-up Questions and Answers Card */}
+        <Grid item xs={12}>
+          <Card elevation={3}>
+            <CardHeader
+              title="Follow-up Questions and Answers"
+              avatar={
+                <Avatar sx={{ bgcolor: theme.palette.warning.main }}>
+                  <NotesIcon />
+                </Avatar>
+              }
+              action={
+                <Tooltip title="Copy to clipboard">
+                  <IconButton
+                    aria-label="copy follow-up questions and answers"
+                    onClick={() => {
+                      const content = appointment.followUpQuestions && appointment.followUpAnswers ? 
+                        formatFollowUpContent(appointment.followUpQuestions, appointment.followUpAnswers) : 
+                        'No follow-up information available';
+                      handleCopyToClipboard(content, 'Follow-up questions and answers');
+                    }}
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </Tooltip>
+              }
+            />
+            <CardContent>
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', minHeight: 150 }}>
+                {appointment.followUpQuestions && appointment.followUpAnswers ? (
+                  <Typography sx={{ whiteSpace: 'pre-line' }}>
+                    {formatFollowUpContent(appointment.followUpQuestions, appointment.followUpAnswers)}
+                  </Typography>
+                ) : (
+                  <Typography>No follow-up information available</Typography>
+                )}
+              </Paper>
+            </CardContent>
+          </Card>
+        </Grid>
+
         {/* Action Buttons */}
         <Grid item xs={12}>
           <Paper elevation={0} sx={{ p: 3, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-            {appointment.status !== 'completed' && (
+            {/* Show action buttons if the appointment is in-progress and was taken in */}
+            {wasTakenIn && appointment.status.toLowerCase() === 'in-progress' ? (
+              <>
+                <Button
+                  variant="contained"
+                  color="success"
+                  size="large"
+                  startIcon={<CheckCircleIcon />}
+                  onClick={() => handleOpenConfirmDialog('complete')}
+                >
+                  Finish Appointment
+                </Button>
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="large"
+                  startIcon={<CancelIcon />}
+                  onClick={() => handleOpenConfirmDialog('cancel')}
+                >
+                  Cancel Appointment
+                </Button>
+              </>
+            ) : (
               <Button
                 variant="contained"
-                color="success"
+                color="primary"
                 size="large"
-                startIcon={<CheckCircleIcon />}
-                onClick={() => handleOpenConfirmDialog('complete')}
+                startIcon={<BackIcon />}
+                onClick={() => navigate('/appointments')}
               >
-                Mark as Completed
-              </Button>
-            )}
-            
-            {appointment.status !== 'in-progress' && appointment.status !== 'completed' && (
-              <Button
-                variant="contained"
-                color="warning"
-                size="large"
-                startIcon={<EditIcon />}
-                onClick={() => handleOpenConfirmDialog('in-progress')}
-              >
-                Mark as In Progress
-              </Button>
-            )}
-            
-            {appointment.status !== 'cancelled' && (
-              <Button
-                variant="outlined"
-                color="error"
-                size="large"
-                startIcon={<CancelIcon />}
-                onClick={() => handleOpenConfirmDialog('cancel')}
-              >
-                Cancel Appointment
+                Back to Appointments
               </Button>
             )}
           </Paper>
@@ -565,6 +570,47 @@ const AppointmentDetail: React.FC = () => {
       </Snackbar>
     </Layout>
   );
+};
+
+// Function to format follow-up questions and answers into readable pairs
+const formatFollowUpContent = (questions: string, answers: string): string => {
+  try {
+    // Try to parse as JSON first
+    let questionArray: string[] = [];
+    let answerArray: string[] = [];
+    
+    try {
+      questionArray = JSON.parse(questions);
+    } catch {
+      // If parsing fails, fall back to splitting by newline
+      questionArray = questions.split('\n').filter(line => line.trim() !== '');
+    }
+    
+    try {
+      answerArray = JSON.parse(answers);
+    } catch {
+      // If parsing fails, fall back to splitting by newline
+      answerArray = answers.split('\n').filter(line => line.trim() !== '');
+    }
+    
+    // Create pairs of questions and answers
+    let formattedContent = '';
+    
+    // Handle case where we have different number of questions and answers
+    const maxLength = Math.max(questionArray.length, answerArray.length);
+    
+    for (let i = 0; i < maxLength; i++) {
+      const question = i < questionArray.length ? questionArray[i] : 'Question not available';
+      const answer = i < answerArray.length ? answerArray[i] : 'Answer not available';
+      
+      formattedContent += `Q: ${question}\nA: ${answer}\n\n`;
+    }
+    
+    return formattedContent.trim();
+  } catch (error) {
+    console.error('Error formatting follow-up content:', error);
+    return 'Error displaying follow-up questions and answers';
+  }
 };
 
 export default AppointmentDetail;

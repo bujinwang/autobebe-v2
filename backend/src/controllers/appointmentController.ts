@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { appointmentService, CreateAppointmentInput, UpdateAppointmentInput } from '../services/appointmentService';
+import { AuthRequest } from '../middlewares/auth';
 
 export const appointmentController = {
   async getAllAppointments(req: Request, res: Response) {
@@ -93,6 +94,34 @@ export const appointmentController = {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete appointment' });
+    }
+  },
+
+  async takeInAppointment(req: AuthRequest, res: Response) {
+    try {
+      const id = parseInt(req.params.id);
+      
+      // Ensure user is authenticated
+      if (!req.user || !req.user.userId) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+      
+      // Get the current user ID from the auth token
+      const doctorId = req.user.userId;
+      
+      // Update the appointment with in-progress status and assign the doctor
+      const input: UpdateAppointmentInput = {
+        id,
+        status: 'in-progress',
+        doctorId
+      };
+      
+      const appointment = await appointmentService.updateAppointment(input);
+      res.json(appointment);
+    } catch (error) {
+      console.error('Error taking in appointment:', error);
+      const err = error as Error;
+      res.status(500).json({ error: 'Failed to take in appointment', details: err.message });
     }
   }
 };
