@@ -87,15 +87,7 @@ const authService = {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-        
-        // Update on the server
-        await axios.put(`${API_URL}/users/${user.id}/clinic`, { 
-          defaultClinicId: clinicId 
-        }, {
-          headers: {
-            Authorization: `Bearer ${authService.getToken()}`
-          }
-        });
+  
         
         // Update locally
         user.defaultClinicId = clinicId;
