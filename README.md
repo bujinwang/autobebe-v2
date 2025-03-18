@@ -71,7 +71,7 @@ The application uses a PostgreSQL database with the following main entities:
 ### Deployment Architecture
 - Backend: Node.js server with PM2 process manager
 - Database: PostgreSQL with automated backups
-- Mobile Apps: App Store and Play Store distribution
+- Mobile App: App Store and Play Store distribution
 - Web App: Static hosting with CDN
 - CI/CD: Automated testing and deployment pipeline
 
@@ -98,17 +98,16 @@ autobebe-v2/
 │   │   ├── types/
 │   │   └── assets/
 │   └── App.tsx
-└── StaffApp/        # React Native staff mobile app
+└── clinicwebapp/    # React clinic web application
     ├── src/
-    │   ├── screens/
     │   ├── components/
-    │   ├── navigation/
+    │   ├── pages/
     │   ├── services/
-    │   ├── utils/
-    │   ├── hooks/
+    │   ├── contexts/
     │   ├── types/
-    │   └── assets/
-    └── App.tsx
+    │   ├── styles/
+    │   └── App.tsx
+    └── public/
 ```
 
 ## Getting Started
@@ -117,7 +116,6 @@ autobebe-v2/
 
 - Node.js (v14 or later)
 - PostgreSQL
-- Expo CLI
 - npm or yarn
 
 ### Backend Setup
@@ -158,16 +156,16 @@ autobebe-v2/
    npm install
    ```
 
-3. Start the Expo development server:
+3. Start the development server:
    ```bash
    npm start
    ```
 
-### Staff App Setup
+### Clinic Web App Setup
 
-1. Navigate to the StaffApp directory:
+1. Navigate to the clinicwebapp directory:
    ```bash
-   cd StaffApp
+   cd clinicwebapp
    ```
 
 2. Install dependencies:
@@ -175,7 +173,11 @@ autobebe-v2/
    npm install
    ```
 
-3. Start the Expo development server:
+3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the API endpoint and other required variables
+
+4. Start the development server:
    ```bash
    npm start
    ```
@@ -189,13 +191,14 @@ autobebe-v2/
 - Prescription tracking
 - Notifications for appointments and medications
 
-### Staff App
-- Staff authentication
-- Patient management
-- Appointment management
+### Clinic Web App
+- Staff authentication and authorization
+- Patient management interface
+- Appointment scheduling and management
 - Medical records management
-- Treatment planning
-- Prescription management
+- Treatment plan creation and tracking
+- Dashboard analytics
+- Real-time updates
 
 ## Contributing
 

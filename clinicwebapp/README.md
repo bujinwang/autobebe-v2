@@ -1,6 +1,24 @@
-# Getting Started with Create React App
+# AutoBebe Clinic Web Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the clinic-facing web application component of the AutoBebe v2 healthcare system. Built with React and TypeScript, it provides a comprehensive interface for clinic staff to manage patients, appointments, and medical records.
+
+## Features
+
+- Staff authentication and authorization
+- Patient management interface
+- Appointment scheduling and management
+- Medical records management
+- Treatment plan creation and tracking
+- Dashboard analytics
+- Real-time updates
+
+## Tech Stack
+
+- React with TypeScript
+- Material-UI for components
+- React Context API for state management
+- JWT for authentication
+- RESTful API integration
 
 ## Available Scripts
 
@@ -27,20 +45,52 @@ It correctly bundles React in production mode and optimizes the build for the be
 The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Project Structure
 
-### `npm run eject`
+```
+clinicwebapp/
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/         # Page components
+│   ├── services/      # API and other services
+│   ├── contexts/      # React Context providers
+│   ├── types/         # TypeScript type definitions
+│   ├── styles/        # CSS and style-related files
+│   ├── App.tsx        # Main App component
+│   ├── App.css        # App-specific styles
+│   ├── index.tsx      # Application entry point
+│   ├── index.css      # Global styles
+│   └── logo.svg       # Application logo
+├── public/            # Public assets
+├── .next/             # Next.js build output
+├── node_modules/      # Project dependencies
+├── package.json       # Project configuration and dependencies
+├── package-lock.json  # Dependency lock file
+├── tsconfig.json      # TypeScript configuration
+├── .env              # Environment variables
+└── .gitignore        # Git ignore rules
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## Getting Started
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+2. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the API endpoint and other required variables
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+3. Start the development server:
+   ```bash
+   npm start
+   ```
 
-## Learn More
+## Related Projects
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- Backend API Service: Located in `/backend`
+- Patient Mobile App: Located in `/PatientApp`
+- Clinic Web App: You are here (`/clinicwebapp`)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+For more information about the overall project architecture and setup, please refer to the main project README in the root directory.
