@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,64 +7,69 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  SUPER_ADMIN
+  CLINIC_ADMIN
+  STAFF
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @db.VarChar(20) // 'STAFF' or 'PATIENT'
-  clinicId  String?  @db.VarChar(50)
-  createdAt DateTime @default(now())
-  
-  clinic    ClinicInfo? @relation(fields: [clinicId], references: [id])
-  appointments Appointment[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  name         String
+  role         UserRole      @default(STAFF)
+  clinicId     String?       @db.VarChar(50)
+  position     String?       // Job title/position
+  specialty    String?       // Medical specialty
+  isActive     Boolean       @default(true) // Employment status
+  createdAt    DateTime      @default(now())
+  appointments Appointment[] @relation("DoctorAppointments")
+  clinic       ClinicInfo?   @relation(fields: [clinicId], references: [id])
 }
 
 model Patient {
-  id               Int           @id @default(autoincrement())
-  name             String        @db.VarChar(100)
-  // Remove the healthcareNumber field
-  phone            String?       @db.VarChar(20)
-  createdAt        DateTime      @default(now())
-  clinicId         String        @db.VarChar(50)
-  clinic           ClinicInfo    @relation(fields: [clinicId], references: [id])
-  appointments     Appointment[]
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)
+  phone        String?       @db.VarChar(20)
+  createdAt    DateTime      @default(now())
+  clinicId     String        @db.VarChar(50)
+  appointments Appointment[]
+  clinic       ClinicInfo    @relation(fields: [clinicId], references: [id])
 }
 
 model ClinicInfo {
   id             String        @id
   name           String        @db.VarChar(100)
-  company        String        @db.VarChar(100)
   address        String        @db.VarChar(200)
   phone          String        @db.VarChar(20)
-  hours          String        @db.VarChar(200)
-  welcomeMessage String        @db.Text
+  company        String        @db.VarChar(100)
   createdAt      DateTime      @default(now())
+  hours          String        @db.VarChar(200)
   updatedAt      DateTime      @default(now()) @updatedAt
-  patients       Patient[]
+  welcomeMessage String
   appointments   Appointment[]
+  patients       Patient[]
   users          User[]
 }
 
-// Update the Appointment model to match sanya-service
 model Appointment {
-  id                     Int      @id @default(autoincrement())
+  id                     Int        @id @default(autoincrement())
   patientId              Int
-  doctorId               Int?
-  appointmentDate        DateTime
-  status                 String   @db.Text
-  purposeOfVisit         String?  @db.Text
-  symptoms               String?  @db.Text
-  followUpAnswers        String   @db.Text
-  followUpQuestions      String   @db.Text
-  possibleTreatments     String   @db.Text
-  suggestedPrescriptions String   @db.Text
   clinicId               String
-  
-  patient                Patient    @relation(fields: [patientId], references: [id])
-  doctor                 User?      @relation(fields: [doctorId], references: [id])
+  appointmentDate        DateTime
+  status                 String
+  followUpQuestions      String
+  followUpAnswers        String
+  possibleTreatments     String
+  suggestedPrescriptions String
+  purposeOfVisit         String?
+  symptoms               String?
+  doctorId               Int?
   clinic                 ClinicInfo @relation(fields: [clinicId], references: [id])
+  doctor                 User?      @relation("DoctorAppointments", fields: [doctorId], references: [id])
+  patient                Patient    @relation(fields: [patientId], references: [id])
 
-  @@index([patientId], name: "IX_Appointments_PatientId")
-  @@index([doctorId], name: "IX_Appointments_DoctorId")
+  @@index([patientId], map: "IX_Appointments_PatientId")
+  @@index([doctorId], map: "IX_Appointments_DoctorId")
 }
