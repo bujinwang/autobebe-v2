@@ -104,7 +104,7 @@ const Dashboard: React.FC = () => {
         const appointments = await appointmentService.getAllAppointments();
         
         // Fetch patients data
-        const patients = await patientService.getPatients();
+        const patients = await patientService.getAllPatients();
         
         // Calculate statistics
         const today = new Date();

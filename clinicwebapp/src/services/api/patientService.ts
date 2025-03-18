@@ -1,39 +1,30 @@
-import axios from 'axios';
+import axiosInstance from './axiosConfig';
 import { Patient } from '../../types';
-import authService from './authService';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-
-const getAuthHeader = () => ({
-  headers: {
-    Authorization: `Bearer ${authService.getToken()}`
-  }
-});
 
 const patientService = {
-  getPatients: async (): Promise<Patient[]> => {
+  getAllPatients: async (): Promise<Patient[]> => {
     try {
-      const response = await axios.get(`${API_URL}/patients`, getAuthHeader());
+      const response = await axiosInstance.get('/patients');
       return response.data;
     } catch (error) {
       console.error('Error fetching patients:', error);
-      return [];
+      throw error;
     }
   },
 
-  getPatientById: async (id: number): Promise<Patient | null> => {
+  getPatientById: async (id: number): Promise<Patient> => {
     try {
-      const response = await axios.get(`${API_URL}/patients/${id}`, getAuthHeader());
+      const response = await axiosInstance.get(`/patients/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`Error fetching patient with id ${id}:`, error);
-      return null;
+      console.error(`Error fetching patient with ID ${id}:`, error);
+      throw error;
     }
   },
 
-  createPatient: async (patientData: Partial<Patient>): Promise<Patient> => {
+  createPatient: async (data: Partial<Patient>): Promise<Patient> => {
     try {
-      const response = await axios.post(`${API_URL}/patients`, patientData, getAuthHeader());
+      const response = await axiosInstance.post('/patients', data);
       return response.data;
     } catch (error) {
       console.error('Error creating patient:', error);
@@ -41,21 +32,21 @@ const patientService = {
     }
   },
 
-  updatePatient: async (id: number, patientData: Partial<Patient>): Promise<Patient> => {
+  updatePatient: async (id: number, data: Partial<Patient>): Promise<Patient> => {
     try {
-      const response = await axios.put(`${API_URL}/patients/${id}`, patientData, getAuthHeader());
+      const response = await axiosInstance.put(`/patients/${id}`, data);
       return response.data;
     } catch (error) {
-      console.error(`Error updating patient with id ${id}:`, error);
+      console.error(`Error updating patient with ID ${id}:`, error);
       throw error;
     }
   },
-  
+
   deletePatient: async (id: number): Promise<void> => {
     try {
-      await axios.delete(`${API_URL}/patients/${id}`, getAuthHeader());
+      await axiosInstance.delete(`/patients/${id}`);
     } catch (error) {
-      console.error(`Error deleting patient with id ${id}:`, error);
+      console.error(`Error deleting patient with ID ${id}:`, error);
       throw error;
     }
   }

@@ -49,6 +49,7 @@ import { format, parseISO } from 'date-fns';
 import { Appointment } from '../types';
 // Update this import to use the service from index.ts
 import { appointmentService } from '../services/api';
+import { getRecommendations } from '../services/api/medicalAIService';
 import Layout from '../components/Layout';
 
 const AppointmentDetail: React.FC = () => {
@@ -68,19 +69,48 @@ const AppointmentDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, action: '' });
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   // Remove notes if not using it
   // const [notes, setNotes] = useState('');
 
   // Define fetchAppointment before using it in useEffect
   const fetchAppointment = useCallback(async () => {
+    console.log('appointment id:', id);
+
     if (!id) return;
     
     try {
       setLoading(true);
       const data = await appointmentService.getAppointmentById(parseInt(id));
       setAppointment(data);
-      // If not using notes, remove this line
-      // setNotes(data.possibleTreatments || '');
+
+      // Parse the JSON strings into arrays
+      let possibleTreatments: string[] = [];
+      let suggestedPrescriptions: string[] = [];
+
+      try {
+        if (data.possibleTreatments) {
+          possibleTreatments = JSON.parse(data.possibleTreatments);
+        }
+      } catch (e) {
+        console.error('Error parsing possibleTreatments:', e);
+      }
+
+      try {
+        if (data.suggestedPrescriptions) {
+          suggestedPrescriptions = JSON.parse(data.suggestedPrescriptions);
+        }
+      } catch (e) {
+        console.error('Error parsing suggestedPrescriptions:', e);
+      }
+
+      // Check if recommendations are missing or empty and fetch them asynchronously
+      if (!possibleTreatments.length || !suggestedPrescriptions.length) {
+        // Don't await here, let it run in the background
+        fetchRecommendations(data).catch(err => {
+          console.error('Background fetch recommendations failed:', err);
+        });
+      }
     } catch (err) {
       console.error('Failed to fetch appointment:', err);
       setError('Failed to load appointment details. Please try again later.');
@@ -88,6 +118,81 @@ const AppointmentDetail: React.FC = () => {
       setLoading(false);
     }
   }, [id]);
+
+  const fetchRecommendations = async (appointmentData: Appointment) => {
+    try {
+      console.log('Fetching recommendations for appointment:', appointmentData.id);
+      setLoadingRecommendations(true);
+      
+      // Parse follow-up questions and answers
+      let followUpQAPairs: { question: string; answer: string }[] = [];
+      try {
+        if (appointmentData.followUpQuestions && appointmentData.followUpAnswers) {
+          const questions = JSON.parse(appointmentData.followUpQuestions);
+          const answers = JSON.parse(appointmentData.followUpAnswers);
+          
+          // Create pairs of questions and answers
+          followUpQAPairs = questions.map((question: string, index: number) => ({
+            question,
+            answer: answers[index] || ''
+          }));
+        }
+      } catch (e) {
+        console.error('Error parsing follow-up Q&A:', e);
+      }
+      
+      const request = {
+        purposeOfVisit: appointmentData.purposeOfVisit || appointmentData.chiefComplaint || '',
+        symptoms: appointmentData.symptoms || '',
+        followUpQAPairs
+      };
+      
+      console.log('Sending request to medical AI:', request);
+      const response = await getRecommendations(request);
+      console.log('Received response from medical AI:', response);
+
+      if (response.success) {
+        // Update the appointment with new recommendations
+        console.log('Updating appointment with recommendations');
+        await appointmentService.updateAppointment(appointmentData.id, {
+          possibleTreatments: JSON.stringify(response.possibleTreatments),
+          suggestedPrescriptions: JSON.stringify(response.suggestedPrescriptions)
+        });
+
+        // Update local state
+        setAppointment(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            possibleTreatments: JSON.stringify(response.possibleTreatments),
+            suggestedPrescriptions: JSON.stringify(response.suggestedPrescriptions)
+          };
+        });
+
+        setSnackbar({
+          open: true,
+          message: 'Treatment recommendations updated successfully',
+          severity: 'success'
+        });
+      } else {
+        console.error('Failed to get recommendations:', response.errorMessage);
+        setSnackbar({
+          open: true,
+          message: response.errorMessage || 'Failed to fetch recommendations',
+          severity: 'error'
+        });
+      }
+    } catch (err) {
+      console.error('Failed to fetch recommendations:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to fetch recommendations. Please try again later.',
+        severity: 'error'
+      });
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
 
   // Now use fetchAppointment in useEffect
   useEffect(() => {
@@ -382,20 +487,45 @@ const AppointmentDetail: React.FC = () => {
                 </Avatar>
               }
               action={
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    aria-label="copy treatment recommendations"
-                    onClick={() => handleCopyToClipboard(appointment.possibleTreatments || '', 'Treatment recommendations')}
-                  >
-                    <CopyIcon />
-                  </IconButton>
-                </Tooltip>
+                <Box>
+                  {loadingRecommendations ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Tooltip title="Copy to clipboard">
+                      <IconButton
+                        aria-label="copy treatment recommendations"
+                        onClick={() => {
+                          try {
+                            const treatments = JSON.parse(appointment.possibleTreatments || '[]');
+                            const formattedContent = treatments.map((treatment: string, index: number) => 
+                              `${treatment}${index < treatments.length - 1 ? ',' : ''}`
+                            ).join('\n');
+                            handleCopyToClipboard(formattedContent, 'Treatment recommendations');
+                          } catch (e) {
+                            handleCopyToClipboard('No treatment recommendations available', 'Treatment recommendations');
+                          }
+                        }}
+                      >
+                        <CopyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
               }
             />
             <CardContent>
               <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', minHeight: 150 }}>
                 <Typography sx={{ whiteSpace: 'pre-line' }}>
-                  {appointment.possibleTreatments || 'No treatment recommendations available'}
+                  {(() => {
+                    try {
+                      const treatments = JSON.parse(appointment.possibleTreatments || '[]');
+                      return treatments.map((treatment: string, index: number) => 
+                        `${treatment}${index < treatments.length - 1 ? ',' : ''}`
+                      ).join('\n');
+                    } catch (e) {
+                      return 'No treatment recommendations available';
+                    }
+                  })()}
                 </Typography>
               </Paper>
             </CardContent>
@@ -413,20 +543,45 @@ const AppointmentDetail: React.FC = () => {
                 </Avatar>
               }
               action={
-                <Tooltip title="Copy to clipboard">
-                  <IconButton
-                    aria-label="copy prescription recommendations"
-                    onClick={() => handleCopyToClipboard(appointment.suggestedPrescriptions || '', 'Prescription recommendations')}
-                  >
-                    <CopyIcon />
-                  </IconButton>
-                </Tooltip>
+                <Box>
+                  {loadingRecommendations ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Tooltip title="Copy to clipboard">
+                      <IconButton
+                        aria-label="copy prescription recommendations"
+                        onClick={() => {
+                          try {
+                            const prescriptions = JSON.parse(appointment.suggestedPrescriptions || '[]');
+                            const formattedContent = prescriptions.map((prescription: string, index: number) => 
+                              `${prescription}${index < prescriptions.length - 1 ? ',' : ''}`
+                            ).join('\n');
+                            handleCopyToClipboard(formattedContent, 'Prescription recommendations');
+                          } catch (e) {
+                            handleCopyToClipboard('No prescription recommendations available', 'Prescription recommendations');
+                          }
+                        }}
+                      >
+                        <CopyIcon />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
               }
             />
             <CardContent>
               <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default', minHeight: 150 }}>
                 <Typography sx={{ whiteSpace: 'pre-line' }}>
-                  {appointment.suggestedPrescriptions || 'No prescription recommendations available'}
+                  {(() => {
+                    try {
+                      const prescriptions = JSON.parse(appointment.suggestedPrescriptions || '[]');
+                      return prescriptions.map((prescription: string, index: number) => 
+                        `${prescription}${index < prescriptions.length - 1 ? ',' : ''}`
+                      ).join('\n');
+                    } catch (e) {
+                      return 'No prescription recommendations available';
+                    }
+                  })()}
                 </Typography>
               </Paper>
             </CardContent>

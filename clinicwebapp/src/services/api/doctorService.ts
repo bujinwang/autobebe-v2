@@ -1,66 +1,52 @@
-import axios from 'axios';
+import axiosInstance from './axiosConfig';
 import { Doctor } from '../../types';
-import authService from './authService';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
-
-// Configure axios with auth token
-const getAuthHeader = () => {
-  const token = authService.getToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
 
 const doctorService = {
   getAllDoctors: async (): Promise<Doctor[]> => {
     try {
-      const response = await axios.get(`${API_URL}/doctors`, {
-        headers: getAuthHeader()
-      });
+      const response = await axiosInstance.get('/doctors');
       return response.data;
     } catch (error) {
+      console.error('Error fetching doctors:', error);
       throw error;
     }
   },
 
   getDoctorById: async (id: number): Promise<Doctor> => {
     try {
-      const response = await axios.get(`${API_URL}/doctors/${id}`, {
-        headers: getAuthHeader()
-      });
+      const response = await axiosInstance.get(`/doctors/${id}`);
       return response.data;
     } catch (error) {
+      console.error(`Error fetching doctor with ID ${id}:`, error);
       throw error;
     }
   },
 
   createDoctor: async (data: Partial<Doctor>): Promise<Doctor> => {
     try {
-      const response = await axios.post(`${API_URL}/doctors`, data, {
-        headers: getAuthHeader()
-      });
+      const response = await axiosInstance.post('/doctors', data);
       return response.data;
     } catch (error) {
+      console.error('Error creating doctor:', error);
       throw error;
     }
   },
 
   updateDoctor: async (id: number, data: Partial<Doctor>): Promise<Doctor> => {
     try {
-      const response = await axios.patch(`${API_URL}/doctors/${id}`, data, {
-        headers: getAuthHeader()
-      });
+      const response = await axiosInstance.put(`/doctors/${id}`, data);
       return response.data;
     } catch (error) {
+      console.error(`Error updating doctor with ID ${id}:`, error);
       throw error;
     }
   },
 
   deleteDoctor: async (id: number): Promise<void> => {
     try {
-      await axios.delete(`${API_URL}/doctors/${id}`, {
-        headers: getAuthHeader()
-      });
+      await axiosInstance.delete(`/doctors/${id}`);
     } catch (error) {
+      console.error(`Error deleting doctor with ID ${id}:`, error);
       throw error;
     }
   }
