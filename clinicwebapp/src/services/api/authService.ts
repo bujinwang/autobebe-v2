@@ -1,25 +1,31 @@
+import axiosInstance from './axiosConfig';
 import axios from 'axios';
 import { User } from '../../types';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+// Add auth token to requests
+axiosInstance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const authService = {
   login: async (email: string, password: string) => {
     try {
-      console.log('Attempting login with:', { email, url: `${API_URL}/auth/login` });
       
-      const response = await axios.post(`${API_URL}/auth/login`, {
+      const response = await axiosInstance.post('/auth/login', {
         email,
         password
       });
       
       console.log('Login response:', response.data);
       
-      // Check if response has the expected structure
       if (response.data && response.data.token) {
         localStorage.setItem('token', response.data.token);
         
-        // Make sure user data exists before storing it
         if (response.data.user) {
           localStorage.setItem('user', JSON.stringify(response.data.user));
         } else {
@@ -35,19 +41,14 @@ const authService = {
     } catch (error) {
       console.error('Login error:', error);
       
-      // Provide more specific error message based on the error type
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          // The request was made and the server responded with a status code
-          // that falls out of the range of 2xx
           console.error('Server response:', error.response.data);
           throw new Error(error.response.data.message || `Login failed: Server error (${error.response.status})`);
         } else if (error.request) {
-          // The request was made but no response was received
           console.error('No response received:', error.request);
           throw new Error('Login failed: No response from server. Please check your connection.');
         } else {
-          // Something happened in setting up the request
           throw new Error(`Login failed: ${error.message}`);
         }
       }
@@ -87,7 +88,11 @@ const authService = {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const user = JSON.parse(userStr);
-  
+        
+        // Update on the server
+        await axiosInstance.put(`/users/${user.id}`, { 
+          defaultClinicId: clinicId 
+        });
         
         // Update locally
         user.defaultClinicId = clinicId;
