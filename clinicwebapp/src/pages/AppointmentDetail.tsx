@@ -22,7 +22,6 @@ import {
   ListItemText,
   ListItemIcon,
   useTheme,
-  // useMediaQuery, // Remove if not using isMobile
   Dialog,
   DialogTitle,
   DialogContent,
@@ -33,21 +32,18 @@ import {
   ContentCopy as CopyIcon,
   ArrowBack as BackIcon,
   CheckCircle as CheckCircleIcon,
-  Edit as EditIcon,
   Cancel as CancelIcon,
   MedicalServices as MedicalIcon,
   CalendarToday as CalendarIcon,
   Person as PersonIcon,
   LocalHospital as HospitalIcon,
   Medication as MedicationIcon,
-  Warning as WarningIcon,
   Notes as NotesIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
 import { Appointment } from '../types';
-// Update this import to use the service from index.ts
 import { appointmentService } from '../services/api';
 import { getRecommendations } from '../services/api/medicalAIService';
 import Layout from '../components/Layout';
@@ -57,12 +53,8 @@ const AppointmentDetail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  // Check if coming from Today's appointments and if it was taken in
-  const isFromTodayTab = location.state && location.state.source === 'today';
+  // Check if appointment was taken in
   const wasTakenIn = location.state && location.state.takenIn === true;
-  
-  // Remove isMobile if not using it
-  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,10 +62,7 @@ const AppointmentDetail: React.FC = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const [confirmDialog, setConfirmDialog] = useState({ open: false, action: '' });
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  // Remove notes if not using it
-  // const [notes, setNotes] = useState('');
 
-  // Define fetchAppointment before using it in useEffect
   const fetchAppointment = useCallback(async () => {
     console.log('appointment id:', id);
 
@@ -84,7 +73,6 @@ const AppointmentDetail: React.FC = () => {
       const data = await appointmentService.getAppointmentById(parseInt(id));
       setAppointment(data);
 
-      // Parse the JSON strings into arrays
       let possibleTreatments: string[] = [];
       let suggestedPrescriptions: string[] = [];
 
@@ -104,9 +92,7 @@ const AppointmentDetail: React.FC = () => {
         console.error('Error parsing suggestedPrescriptions:', e);
       }
 
-      // Check if recommendations are missing or empty and fetch them asynchronously
       if (!possibleTreatments.length || !suggestedPrescriptions.length) {
-        // Don't await here, let it run in the background
         fetchRecommendations(data).catch(err => {
           console.error('Background fetch recommendations failed:', err);
         });
@@ -124,14 +110,12 @@ const AppointmentDetail: React.FC = () => {
       console.log('Fetching recommendations for appointment:', appointmentData.id);
       setLoadingRecommendations(true);
       
-      // Parse follow-up questions and answers
       let followUpQAPairs: { question: string; answer: string }[] = [];
       try {
         if (appointmentData.followUpQuestions && appointmentData.followUpAnswers) {
           const questions = JSON.parse(appointmentData.followUpQuestions);
           const answers = JSON.parse(appointmentData.followUpAnswers);
           
-          // Create pairs of questions and answers
           followUpQAPairs = questions.map((question: string, index: number) => ({
             question,
             answer: answers[index] || ''
@@ -152,14 +136,12 @@ const AppointmentDetail: React.FC = () => {
       console.log('Received response from medical AI:', response);
 
       if (response.success) {
-        // Update the appointment with new recommendations
         console.log('Updating appointment with recommendations');
         await appointmentService.updateAppointment(appointmentData.id, {
           possibleTreatments: JSON.stringify(response.possibleTreatments),
           suggestedPrescriptions: JSON.stringify(response.suggestedPrescriptions)
         });
 
-        // Update local state
         setAppointment(prev => {
           if (!prev) return null;
           return {
@@ -194,7 +176,6 @@ const AppointmentDetail: React.FC = () => {
     }
   };
 
-  // Now use fetchAppointment in useEffect
   useEffect(() => {
     fetchAppointment();
   }, [fetchAppointment]);
@@ -361,7 +342,6 @@ const AppointmentDetail: React.FC = () => {
       </Box>
 
       <Grid container spacing={3}>
-        {/* Patient Information Card */}
         <Grid item xs={12} md={4}>
           <Card elevation={3}>
             <CardHeader 
@@ -445,7 +425,6 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Medical Information Card */}
         <Grid item xs={12} md={8}>
           <Card elevation={3}>
             <CardHeader 
@@ -476,7 +455,6 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Treatment Recommendations Card */}
         <Grid item xs={12} md={6}>
           <Card elevation={3}>
             <CardHeader
@@ -532,7 +510,6 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Prescription Recommendations Card */}
         <Grid item xs={12} md={6}>
           <Card elevation={3}>
             <CardHeader
@@ -588,7 +565,6 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Follow-up Questions and Answers Card */}
         <Grid item xs={12}>
           <Card elevation={3}>
             <CardHeader
@@ -628,10 +604,8 @@ const AppointmentDetail: React.FC = () => {
           </Card>
         </Grid>
 
-        {/* Action Buttons */}
         <Grid item xs={12}>
           <Paper elevation={0} sx={{ p: 3, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-            {/* Show action buttons if the appointment is in-progress and was taken in */}
             {wasTakenIn && appointment.status.toLowerCase() === 'in-progress' ? (
               <>
                 <Button
@@ -668,7 +642,6 @@ const AppointmentDetail: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Confirmation Dialog */}
       <Dialog
         open={confirmDialog.open}
         onClose={handleCloseConfirmDialog}
@@ -708,7 +681,6 @@ const AppointmentDetail: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar for notifications */}
       <Snackbar 
         open={snackbar.open}
         autoHideDuration={6000}
@@ -727,31 +699,25 @@ const AppointmentDetail: React.FC = () => {
   );
 };
 
-// Function to format follow-up questions and answers into readable pairs
 const formatFollowUpContent = (questions: string, answers: string): string => {
   try {
-    // Try to parse as JSON first
     let questionArray: string[] = [];
     let answerArray: string[] = [];
     
     try {
       questionArray = JSON.parse(questions);
     } catch {
-      // If parsing fails, fall back to splitting by newline
       questionArray = questions.split('\n').filter(line => line.trim() !== '');
     }
     
     try {
       answerArray = JSON.parse(answers);
     } catch {
-      // If parsing fails, fall back to splitting by newline
       answerArray = answers.split('\n').filter(line => line.trim() !== '');
     }
     
-    // Create pairs of questions and answers
     let formattedContent = '';
     
-    // Handle case where we have different number of questions and answers
     const maxLength = Math.max(questionArray.length, answerArray.length);
     
     for (let i = 0; i < maxLength; i++) {
