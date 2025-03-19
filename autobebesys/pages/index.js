@@ -34,10 +34,10 @@ export default function Home() {
 
   // Feature icons paths
   const iconPaths = {
-    security: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z",
-    records: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2",
-    appointments: "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
-    telehealth: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+    security: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+    records: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+    telehealth: "M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z",
+    aiMedical: "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
   };
 
   return (
@@ -62,15 +62,74 @@ export default function Home() {
                 </Link>
               </div>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:items-center">
+            <div className="hidden sm:ml-6 sm:flex sm:items-center space-x-3">
+              <Link href="/joytriage" 
+                className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-blue-700 border border-blue-600 hover:bg-blue-50 transition-all duration-200">
+                JoyTriage Login
+              </Link>
               <Link href="https://www.autobebesys.com/joytriage/signup" 
                 className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md transition-all duration-200">
                 Get Started Free
               </Link>
             </div>
+            <div className="flex items-center sm:hidden">
+              <button 
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <span className="sr-only">Open main menu</span>
+                {!isMenuOpen ? (
+                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                ) : (
+                  <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile menu */}
+      <div className={`sm:hidden ${isMenuOpen ? 'block' : 'hidden'} fixed top-16 inset-x-0 z-50 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out`}>
+        <div className="px-2 pt-2 pb-3 space-y-1">
+          <Link href="#features" 
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Features
+          </Link>
+          <Link href="#testimonials" 
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Testimonials
+          </Link>
+          <Link href="#faq" 
+            className="block px-3 py-2 rounded-md text-base font-medium text-gray-900 hover:bg-gray-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            FAQ
+          </Link>
+          <div className="pt-4 pb-2 border-t border-gray-200">
+            <Link href="/joytriage" 
+              className="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-blue-700 border border-blue-600 hover:bg-blue-50 transition-all duration-200 mb-2"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              JoyTriage Login
+            </Link>
+            <Link href="https://www.autobebesys.com/joytriage/signup" 
+              className="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md transition-all duration-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Get Started Free
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <div className="relative overflow-hidden pt-16 pb-24">
@@ -89,7 +148,7 @@ export default function Home() {
                 </span>
               </h1>
               <p className="mt-5 text-lg text-gray-500 leading-relaxed">
-                Streamline your pediatric practice with our comprehensive healthcare management system. 
+                Streamline your medical practice with our comprehensive healthcare management system. 
                 Designed for both healthcare providers and parents.
               </p>
               <div className="mt-8 flex justify-center gap-3">
@@ -127,7 +186,7 @@ export default function Home() {
             >
               <h2 className="text-sm text-blue-600 font-semibold tracking-wide uppercase mb-2">Features</h2>
               <p className="text-3xl font-bold text-gray-900 mb-4">
-                Everything you need to manage your pediatric practice
+                Everything you need to manage your medical practice
               </p>
               <div className="w-20 h-1 bg-blue-600 mx-auto rounded-full"></div>
             </motion.div>
@@ -146,14 +205,14 @@ export default function Home() {
                 description: "Comprehensive digital health records accessible anytime, anywhere"
               },
               {
-                icon: iconPaths.appointments,
-                title: "Smart Scheduling",
-                description: "AI-powered appointment management with automated reminders"
-              },
-              {
                 icon: iconPaths.telehealth,
                 title: "Telehealth Integration",
                 description: "Secure video consultations with built-in health monitoring"
+              },
+              {
+                icon: iconPaths.aiMedical,
+                title: "AI Medical Assistant",
+                description: "AI-powered dynamic doctor-like questions, specialized waiting instructions, suggested treatments and prescriptions"
               }
             ].map((feature, index) => (
               <motion.div
@@ -202,7 +261,7 @@ export default function Home() {
               {
                 quote: "AutoBebeSys has completely transformed our practice. Our staff saves hours each day on administrative tasks.",
                 author: "Dr. Sarah Johnson",
-                role: "Pediatrician, Sunshine Children's Clinic"
+                role: "Physician, Sunshine Children's Clinic"
               },
               {
                 quote: "As a first-time parent, having all my baby's health information in one place has been incredible.",
@@ -217,7 +276,7 @@ export default function Home() {
               {
                 quote: "The vaccination tracking system has dramatically improved our compliance rates by 30%.",
                 author: "Lisa Patel",
-                role: "Practice Manager, Little Stars Pediatrics"
+                role: "Practice Manager, Little Stars Medical"
               }
             ].map((testimonial, index) => (
               <motion.div
@@ -317,6 +376,110 @@ export default function Home() {
         </div>
       </div>
 
+      {/* JoyTriage Section */}
+      <div className="bg-gradient-to-tr from-blue-50 to-white py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="lg:w-1/2">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+              >
+                <h2 className="text-sm text-blue-600 font-semibold tracking-wide uppercase mb-2">Introducing</h2>
+                <h3 className="text-3xl font-bold text-gray-900 mb-4">JoyTriage</h3>
+                <div className="w-16 h-1 bg-blue-600 rounded-full mb-6"></div>
+                <p className="text-gray-600 mb-6 text-lg">
+                  JoyTriage is our powerful clinic management portal, designed specifically for healthcare providers. 
+                  Access your clinical dashboard, manage patient records, and streamline your practice workflows from one secure platform.
+                </p>
+                <div className="flex space-x-4">
+                  <motion.a
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    href="/joytriage"
+                    className="inline-flex items-center px-5 py-3 rounded-lg text-white bg-gradient-to-r from-blue-700 to-blue-800 hover:from-blue-800 hover:to-blue-900 shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Login to JoyTriage
+                  </motion.a>
+                  <motion.a
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    href="#"
+                    className="inline-flex items-center px-5 py-3 rounded-lg text-blue-700 border border-blue-600 hover:bg-blue-50 transition-all duration-200"
+                  >
+                    Learn More
+                  </motion.a>
+                </div>
+              </motion.div>
+            </div>
+            <div className="lg:w-1/2">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8 }}
+                className="bg-white rounded-2xl shadow-xl overflow-hidden"
+              >
+                <div className="p-2 bg-gradient-to-r from-blue-600 to-blue-800">
+                  <div className="flex space-x-1.5 px-3 py-1">
+                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="bg-blue-700 text-white p-4 rounded-lg mb-4 flex items-center justify-between">
+                    <span className="font-medium">JoyTriage Dashboard</span>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                    </svg>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-gray-100 p-3 rounded-lg">
+                      <div className="text-sm text-gray-500">Today's Patients</div>
+                      <div className="text-2xl font-bold text-gray-900">18</div>
+                    </div>
+                    <div className="bg-gray-100 p-3 rounded-lg">
+                      <div className="text-sm text-gray-500">Pending Reviews</div>
+                      <div className="text-2xl font-bold text-gray-900">7</div>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="bg-gray-100 p-3 rounded-lg flex items-center space-x-3">
+                      <div className="bg-blue-100 p-2 rounded-md">
+                        <svg className="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">Emma Thompson</div>
+                        <div className="text-xs text-gray-500">9:30 AM - Annual Checkup</div>
+                      </div>
+                    </div>
+                    <div className="bg-gray-100 p-3 rounded-lg flex items-center space-x-3">
+                      <div className="bg-blue-100 p-2 rounded-md">
+                        <svg className="w-5 h-5 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">James Wilson</div>
+                        <div className="text-xs text-gray-500">10:15 AM - Follow-up</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* CTA Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800">
         <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 lg:py-20">
@@ -328,7 +491,7 @@ export default function Home() {
             className="text-center"
           >
             <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl mb-6">
-              Ready to transform your pediatric practice?
+              Ready to transform your medical practice?
             </h2>
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <motion.a
@@ -361,7 +524,7 @@ export default function Home() {
                 AutoBebeSys
               </h3>
               <p className="text-gray-400 mb-4 max-w-md">
-                Modern pediatric healthcare management for clinics and families.
+                Modern medical healthcare management for clinics and families.
               </p>
               <div className="flex space-x-4">
                 {['facebook', 'twitter', 'instagram', 'linkedin'].map((social) => (
