@@ -14,11 +14,28 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Typography,
+  Box,
+  Grid,
+  InputAdornment,
+  Card,
+  CardContent,
 } from '@mui/material';
 import { staffService, type StaffMember } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  Edit as EditIcon,
+  CheckCircle as ActiveIcon,
+  Cancel as InactiveIcon,
+  Badge as RoleIcon,
+  Work as PositionIcon,
+  LocalHospital as SpecialtyIcon
+} from '@mui/icons-material';
 
 export default function StaffList() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -72,101 +89,142 @@ export default function StaffList() {
   return (
     <Layout>
       <Container maxWidth="xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Staff Management</h1>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => navigate('/staff/new')}
-          >
-            Add New Staff Member
-          </Button>
-        </div>
+        {/* Header Section */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h4" component="h1">
+              Staff Management
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={() => navigate('/staff/new')}
+            >
+              Add New Staff Member
+            </Button>
+          </Box>
+          
+          {/* Filters Section */}
+          <Card variant="outlined">
+            <CardContent>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={4}>
+                  <TextField
+                    fullWidth
+                    placeholder="Search by name or email"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>Role</InputLabel>
+                    <Select
+                      value={roleFilter}
+                      label="Role"
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <RoleIcon />
+                        </InputAdornment>
+                      }
+                    >
+                      <MenuItem value="all">All Roles</MenuItem>
+                      <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+                      <MenuItem value="CLINIC_ADMIN">Clinic Admin</MenuItem>
+                      <MenuItem value="STAFF">Staff</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                      value={statusFilter}
+                      label="Status"
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <FilterListIcon />
+                        </InputAdornment>
+                      }
+                    >
+                      <MenuItem value="all">All Status</MenuItem>
+                      <MenuItem value="active">Active</MenuItem>
+                      <MenuItem value="inactive">Inactive</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Box>
 
-        <Paper className="p-4 mb-4">
-          <div className="flex gap-4 mb-6">
-            <TextField
-              label="Search by name or email"
-              variant="outlined"
-              size="small"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1"
-            />
-            
-            <FormControl size="small" style={{ minWidth: 200 }}>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                label="Role"
-              >
-                <MenuItem value="all">All Roles</MenuItem>
-                <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
-                <MenuItem value="CLINIC_ADMIN">Clinic Admin</MenuItem>
-                <MenuItem value="STAFF">Staff</MenuItem>
-              </Select>
-            </FormControl>
-
-            <FormControl size="small" style={{ minWidth: 200 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                label="Status"
-              >
-                <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-        </Paper>
-
-        <Paper>
+        {/* Staff List Table */}
+        <Paper sx={{ width: '100%', overflow: 'hidden' }}>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Position</TableCell>
-                <TableCell>Specialty</TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <RoleIcon sx={{ mr: 1 }} />
+                    Role
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <PositionIcon sx={{ mr: 1 }} />
+                    Position
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <SpecialtyIcon sx={{ mr: 1 }} />
+                    Specialty
+                  </Box>
+                </TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredStaff.map((member) => (
-                <TableRow key={member.id}>
+                <TableRow key={member.id} hover>
                   <TableCell>{member.name}</TableCell>
                   <TableCell>{member.email}</TableCell>
                   <TableCell>{member.role}</TableCell>
-                  <TableCell>{member.position}</TableCell>
-                  <TableCell>{member.specialty}</TableCell>
+                  <TableCell>{member.position || '-'}</TableCell>
+                  <TableCell>{member.specialty || '-'}</TableCell>
                   <TableCell>
-                    <span className={member.isActive ? 'text-green-600' : 'text-red-600'}>
+                    <Button
+                      variant="outlined"
+                      color={member.isActive ? 'success' : 'error'}
+                      onClick={() => handleToggleStatus(member)}
+                      size="small"
+                      startIcon={member.isActive ? <ActiveIcon /> : <InactiveIcon />}
+                    >
                       {member.isActive ? 'Active' : 'Inactive'}
-                    </span>
+                    </Button>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => navigate(`/staff/${member.id}`)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        color={member.isActive ? 'error' : 'primary'}
-                        onClick={() => handleToggleStatus(member)}
-                      >
-                        {member.isActive ? 'Deactivate' : 'Activate'}
-                      </Button>
-                    </div>
+                  <TableCell align="right">
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate(`/staff/${member.id}`)}
+                      size="small"
+                      startIcon={<EditIcon />}
+                    >
+                      Edit
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

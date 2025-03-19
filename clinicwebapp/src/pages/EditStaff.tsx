@@ -11,7 +11,12 @@ import {
   IconButton,
   InputAdornment,
   Divider,
-  Alert
+  Alert,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { StaffForm } from '../components/staff/StaffForm';
 import { staffService, authService } from '../services';
@@ -20,6 +25,19 @@ import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import {
+  Person as PersonIcon,
+  Email as EmailIcon,
+  Badge as RoleIcon,
+  Work as PositionIcon,
+  LocalHospital as SpecialtyIcon,
+  Key as KeyIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon,
+  ArrowBack as BackIcon,
+  CheckCircle as ActiveIcon,
+  Cancel as InactiveIcon
+} from '@mui/icons-material';
 
 export default function EditStaff() {
   const [isLoading, setIsLoading] = useState(false);
@@ -95,6 +113,26 @@ export default function EditStaff() {
     }
   };
 
+  const handleToggleStatus = async (member: any) => {
+    if (!id || !user?.defaultClinicId) return;
+
+    setIsLoading(true);
+    try {
+      await staffService.updateStaffMember(parseInt(id), {
+        ...member,
+        isActive: !member.isActive,
+        clinicId: user.defaultClinicId,
+      });
+      toast.success('Staff member status updated successfully');
+      loadStaffMember();
+    } catch (error) {
+      console.error('Error updating staff member status:', error);
+      toast.error('Failed to update staff member status');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!staffMember) {
     return (
       <Layout>
@@ -108,24 +146,49 @@ export default function EditStaff() {
   return (
     <Layout>
       <Container maxWidth="lg">
-        <Box className="flex justify-between items-center mb-6">
-          <Typography variant="h4">Edit Staff Member</Typography>
+        <Box sx={{ mb: 4 }}>
           <Button
             variant="outlined"
             onClick={() => navigate('/staff')}
+            startIcon={<BackIcon />}
+            sx={{ mb: 2 }}
           >
-            Cancel
+            Back to Staff List
           </Button>
+          <Typography variant="h4" component="h1">
+            Edit Staff Member
+          </Typography>
         </Box>
 
-        <Paper className="p-6 mb-4">
+        <Paper sx={{ p: 4, mb: 3 }}>
           {user?.defaultClinicId ? (
-            <StaffForm
-              initialData={staffMember}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
-              clinicId={user.defaultClinicId.toString()}
-            />
+            <>
+              <StaffForm
+                initialData={staffMember}
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                clinicId={user.defaultClinicId.toString()}
+              />
+              
+              {/* Active Status Section */}
+              <Box sx={{ mt: 4 }}>
+                <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                  <ActiveIcon sx={{ mr: 1, color: staffMember.isActive ? 'success.main' : 'error.main' }} />
+                  Active Status
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  Determine if this staff member is currently active
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color={staffMember.isActive ? 'success' : 'error'}
+                  onClick={() => handleToggleStatus(staffMember)}
+                  startIcon={staffMember.isActive ? <ActiveIcon /> : <InactiveIcon />}
+                >
+                  {staffMember.isActive ? 'Active' : 'Inactive'}
+                </Button>
+              </Box>
+            </>
           ) : (
             <Typography color="error">
               Please select a clinic before editing staff members
@@ -134,15 +197,26 @@ export default function EditStaff() {
         </Paper>
 
         {/* Password Change Section */}
-        <Paper className="p-6">
-          <Typography variant="h6" className="mb-4">Change Password</Typography>
+        <Paper sx={{ p: 4 }}>
+          <Typography variant="h6" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+            <KeyIcon sx={{ mr: 1 }} />
+            Change Password
+          </Typography>
+          
           {passwordError && (
-            <Alert severity="error" className="mb-3">
+            <Alert severity="error" sx={{ mb: 3 }}>
               {passwordError}
             </Alert>
           )}
-          <Box className="flex gap-4 items-start">
+          
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            alignItems: 'flex-start',
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
             <TextField
+              fullWidth
               label="New Password"
               type={showPassword ? 'text' : 'password'}
               value={newPassword}
@@ -164,8 +238,12 @@ export default function EditStaff() {
               variant="contained"
               onClick={handlePasswordChange}
               disabled={isLoading || !newPassword}
+              sx={{ 
+                minWidth: { xs: '100%', sm: '200px' },
+                height: '56px'  // Match TextField height
+              }}
             >
-              {isLoading ? <CircularProgress size={24} /> : 'Update Password'}
+              {isLoading ? <CircularProgress size={24} /> : 'UPDATE PASSWORD'}
             </Button>
           </Box>
         </Paper>

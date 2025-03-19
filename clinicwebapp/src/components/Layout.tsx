@@ -28,6 +28,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Using this as ClinicIcon
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
@@ -150,6 +151,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </Typography>
         </ListItem>
         <Divider />
+        <ListItem onClick={() => navigate('/dashboard')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <DashboardIcon />
+            </ListItemIcon>
+            <ListItemText primary="Dashboard" />
+          </ListItemButton>
+        </ListItem>
         <ListItem onClick={() => navigate('/appointments')}>
           <ListItemButton>
             <ListItemIcon>
