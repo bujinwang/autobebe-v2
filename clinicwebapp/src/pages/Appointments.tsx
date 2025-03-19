@@ -33,7 +33,15 @@ import {
   Refresh as RefreshIcon,
   FilterList as FilterIcon,
   Person as PersonIcon,
-  PlayArrow as PlayArrowIcon
+  PlayArrow as PlayArrowIcon,
+  Event as DateIcon,
+  MedicalServices as PurposeIcon,
+  LocalHospital as DoctorIcon,
+  CircleOutlined as StatusIcon,
+  Settings as ActionsIcon,
+  Today as TodayIcon,
+  Upcoming as UpcomingIcon,
+  History as PastIcon
 } from '@mui/icons-material';
 import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
 import { appointmentService, type Appointment } from '../services';
@@ -304,17 +312,17 @@ const Appointments: React.FC = () => {
           variant={isMobile ? "fullWidth" : "standard"}
         >
           <Tab 
-            icon={isMobile ? <CalendarIcon /> : undefined}
+            icon={<TodayIcon />}
             iconPosition="start"
             label={isMobile ? "Today" : "Today's Appointments"} 
           />
           <Tab 
-            icon={isMobile ? <FilterIcon /> : undefined}
+            icon={<UpcomingIcon />}
             iconPosition="start"
             label={isMobile ? "Upcoming" : "Upcoming Appointments"} 
           />
           <Tab 
-            icon={isMobile ? <PersonIcon /> : undefined}
+            icon={<PastIcon />}
             iconPosition="start"
             label={isMobile ? "Past" : "Past Appointments"} 
           />
@@ -407,12 +415,42 @@ const Appointments: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Date & Time</TableCell>
-              <TableCell>Patient</TableCell>
-              <TableCell>Purpose of Visit</TableCell>
-              <TableCell>Doctor</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <DateIcon sx={{ mr: 1 }} />
+                  Date & Time
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon sx={{ mr: 1 }} />
+                  Patient
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <PurposeIcon sx={{ mr: 1 }} />
+                  Purpose of Visit
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <DoctorIcon sx={{ mr: 1 }} />
+                  Doctor
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <StatusIcon sx={{ mr: 1 }} />
+                  Status
+                </Box>
+              </TableCell>
+              <TableCell align="right">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <ActionsIcon sx={{ mr: 1 }} />
+                  Actions
+                </Box>
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

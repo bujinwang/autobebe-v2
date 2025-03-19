@@ -34,7 +34,11 @@ import {
   Cancel as InactiveIcon,
   Badge as RoleIcon,
   Work as PositionIcon,
-  LocalHospital as SpecialtyIcon
+  LocalHospital as SpecialtyIcon,
+  Email as EmailIcon,
+  ToggleOn as StatusIcon,
+  Settings as ActionsIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
 
 export default function StaffList() {
@@ -173,8 +177,18 @@ export default function StaffList() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <PersonIcon sx={{ mr: 1 }} />
+                    Name
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <EmailIcon sx={{ mr: 1 }} />
+                    Email
+                  </Box>
+                </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <RoleIcon sx={{ mr: 1 }} />
@@ -193,8 +207,18 @@ export default function StaffList() {
                     Specialty
                   </Box>
                 </TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="right">Actions</TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <StatusIcon sx={{ mr: 1 }} />
+                    Status
+                  </Box>
+                </TableCell>
+                <TableCell align="right">
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                    <ActionsIcon sx={{ mr: 1 }} />
+                    Actions
+                  </Box>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

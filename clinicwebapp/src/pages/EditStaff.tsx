@@ -10,13 +10,7 @@ import {
   TextField,
   IconButton,
   InputAdornment,
-  Divider,
-  Alert,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem
+  Alert
 } from '@mui/material';
 import { StaffForm } from '../components/staff/StaffForm';
 import { staffService, authService } from '../services';
@@ -26,18 +20,13 @@ import Layout from '../components/Layout';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
-  Person as PersonIcon,
-  Email as EmailIcon,
-  Badge as RoleIcon,
-  Work as PositionIcon,
-  LocalHospital as SpecialtyIcon,
   Key as KeyIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
   ArrowBack as BackIcon,
   CheckCircle as ActiveIcon,
   Cancel as InactiveIcon
 } from '@mui/icons-material';
+
+/* eslint-disable react-hooks/exhaustive-deps */
 
 export default function EditStaff() {
   const [isLoading, setIsLoading] = useState(false);
