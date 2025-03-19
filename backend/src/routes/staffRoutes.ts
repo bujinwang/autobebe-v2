@@ -1,22 +1,22 @@
-import express from 'express';
+import { Router } from 'express';
 import staffController from '../controllers/staffController';
-import { authenticate } from '../middlewares/auth';
+import { authenticate, authorizeClinicAdmin } from '../middlewares/auth';
 
-const router = express.Router();
+const router = Router();
 
-// Protected routes - require authentication
+// Protect all staff routes with authentication
 router.use(authenticate);
 
 // Get all staff members for a clinic
-router.get('/', staffController.getStaffMembers);
+router.get('/', authorizeClinicAdmin, staffController.getStaffMembers);
 
 // Create a new staff member
-router.post('/', staffController.createStaffMember);
+router.post('/', authorizeClinicAdmin, staffController.createStaffMember);
 
 // Update a staff member
-router.patch('/', staffController.updateStaffMember);
+router.patch('/', authorizeClinicAdmin, staffController.updateStaffMember);
 
 // Delete a staff member
-router.delete('/:id', staffController.deleteStaffMember);
+router.delete('/:id', authorizeClinicAdmin, staffController.deleteStaffMember);
 
 export default router; 

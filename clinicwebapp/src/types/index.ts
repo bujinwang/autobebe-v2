@@ -3,12 +3,12 @@ export interface User {
   username: string;
   name: string;
   role: string;
-  defaultClinicId?: number;
+  defaultClinicId?: string;
   clinics?: Clinic[];
 }
 
 export interface Clinic {
-  id: number;
+  id: string;
   name: string;
   address: string;
   phone: string;

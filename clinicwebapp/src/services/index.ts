@@ -3,7 +3,6 @@ export { default as axiosInstance } from './axiosConfig';
 export { default as authService } from './authService';
 export { default as appointmentService } from './appointmentService';
 export { default as clinicService } from './clinicService';
-export { default as doctorService } from './doctorService';
 export { default as patientService } from './patientService';
 export { default as staffService } from './staffService';
 

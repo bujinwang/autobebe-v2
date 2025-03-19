@@ -39,7 +39,12 @@ class AuthService {
     });
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { 
+        userId: user.id, 
+        email: user.email,
+        role: user.role,
+        clinicId: user.clinicId 
+      },
       this.jwtSecret,
       { expiresIn: '24h' }
     );
@@ -50,6 +55,7 @@ class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        clinicId: user.clinicId
       },
       token,
     };
@@ -70,7 +76,12 @@ class AuthService {
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { 
+        userId: user.id, 
+        email: user.email,
+        role: user.role,
+        clinicId: user.clinicId 
+      },
       this.jwtSecret,
       { expiresIn: '24h' }
     );
@@ -81,6 +92,7 @@ class AuthService {
         email: user.email,
         name: user.name,
         role: user.role,
+        clinicId: user.clinicId
       },
       token,
     };

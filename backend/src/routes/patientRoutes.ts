@@ -1,12 +1,25 @@
-import express from 'express';
+import { Router } from 'express';
 import { patientController } from '../controllers/patientController';
+import { authenticate, authorizeClinicAdmin } from '../middlewares/auth';
 
-const router = express.Router();
+const router = Router();
 
-// Define the route without the /api prefix since that's likely added when mounting the router
-router.post('/', patientController.createPatient);
+// Protect all patient routes with authentication
+router.use(authenticate);
 
-// Also add a GET endpoint for testing connectivity
-router.get('/', patientController.getAllPatients);
+// Get all patients for a clinic
+router.get('/', authorizeClinicAdmin, patientController.getAllPatients);
+
+// Get patient by ID
+router.get('/:id', authorizeClinicAdmin, patientController.getPatientById);
+
+// Create new patient
+router.post('/', authorizeClinicAdmin, patientController.createPatient);
+
+// Update patient
+router.put('/:id', authorizeClinicAdmin, patientController.updatePatient);
+
+// Delete patient
+router.delete('/:id', authorizeClinicAdmin, patientController.deletePatient);
 
 export default router;

@@ -75,6 +75,17 @@ class AppointmentService {
     });
   }
 
+  async getAppointmentsByClinic(clinicId: string): Promise<Appointment[]> {
+    return prisma.appointment.findMany({
+      where: { clinicId },
+      include: {
+        patient: true,
+        clinic: true,
+        doctor: true
+      }
+    });
+  }
+
   async createAppointment(input: CreateAppointmentInput): Promise<Appointment> {
     // Extract the fields that should be handled as relations
     const { patientId, clinicId, doctorId, ...appointmentData } = input;

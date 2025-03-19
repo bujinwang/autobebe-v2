@@ -118,7 +118,7 @@ class AuthService {
     }
   }
 
-  setCurrentClinic(clinicId: number) {
+  setCurrentClinic(clinicId: string) {
     const user = this.getCurrentUser();
     if (user) {
       const updatedUser = { ...user, defaultClinicId: clinicId };

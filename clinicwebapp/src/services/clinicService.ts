@@ -15,7 +15,9 @@ class ClinicService {
 
   async getClinicById(id: string): Promise<Clinic> {
     try {
-      const response = await axiosInstance.get(`${this.baseUrl}/${id}`);
+      const response = await axiosInstance.get(`${this.baseUrl}/info`, {
+        params: { id }
+      });
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to fetch clinic');

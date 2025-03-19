@@ -10,7 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
-  setCurrentClinic: (clinicId: number) => void; // Add this method to the interface
+  setCurrentClinic: (clinicId: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,7 +43,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response && response.token && response.user) {
         console.log('AuthContext: JWT token received successfully');
         // Store user data from the JWT payload
-        setUser(response.user);
+        const userData = {
+          ...response.user,
+          // Ensure defaultClinicId is set for non-super admin users
+          defaultClinicId: response.user.role !== 'SUPER_ADMIN' ? response.user.clinicId : response.user.defaultClinicId
+        };
+        setUser(userData);
         setIsAuthenticated(true);
       } else {
         console.error('AuthContext: Invalid JWT response format', response);
@@ -65,7 +70,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Add the setCurrentClinic method
-  const setCurrentClinic = (clinicId: number) => {
+  const setCurrentClinic = (clinicId: string) => {
     if (user) {
       // Update the user's defaultClinicId in local state
       setUser({

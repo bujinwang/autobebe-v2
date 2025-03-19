@@ -3,11 +3,25 @@ import { appointmentService, CreateAppointmentInput, UpdateAppointmentInput } fr
 import { AuthRequest } from '../middlewares/auth';
 
 export const appointmentController = {
-  async getAllAppointments(req: Request, res: Response) {
+  async getAllAppointments(req: AuthRequest, res: Response) {
     try {
-      const appointments = await appointmentService.getAllAppointments();
+      const { clinicId } = req.query;
+      
+      // For super admins with clinicId=all, fetch all appointments
+      if (req.user?.role === 'SUPER_ADMIN' && (!clinicId || clinicId === 'all')) {
+        const appointments = await appointmentService.getAllAppointments();
+        return res.json(appointments);
+      }
+      
+      // For other cases, fetch appointments for the specified clinic
+      if (!clinicId) {
+        return res.status(400).json({ error: 'Clinic ID is required' });
+      }
+
+      const appointments = await appointmentService.getAppointmentsByClinic(clinicId as string);
       res.json(appointments);
     } catch (error) {
+      console.error('Error fetching appointments:', error);
       res.status(500).json({ error: 'Failed to fetch appointments' });
     }
   },

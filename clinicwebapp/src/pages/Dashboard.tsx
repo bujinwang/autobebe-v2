@@ -50,6 +50,7 @@ import {
   type Appointment,
   type Patient 
 } from '../services';
+import { useAuth } from '../contexts/AuthContext';
 
 // Mock data for charts - replace with real API calls
 const mockAppointmentStatusData = [
@@ -88,6 +89,7 @@ const Dashboard: React.FC = () => {
   });
   const [recentAppointments, setRecentAppointments] = useState<Appointment[]>([]);
   const [recentPatients, setRecentPatients] = useState<Patient[]>([]);
+  const { user } = useAuth();
   
   // Colors for charts
   const COLORS = [
@@ -98,69 +100,74 @@ const Dashboard: React.FC = () => {
     theme.palette.warning.main
   ];
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        
-        // Fetch appointments data
-        const appointments = await appointmentService.getAppointments('all');  // 'all' to get appointments from all clinics
-        
-        // Fetch patients data
-        const patients = await patientService.getAllPatients();
-        
-        // Calculate statistics
-        const today = new Date();
-        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        
-        const appointmentsToday = appointments.filter((app: Appointment) => 
-          format(parseISO(app.appointmentDate), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
-        );
-        
-        const completedAppointments = appointments.filter((app: Appointment) => app.status === 'completed');
-        const completionRate = appointments.length > 0 
-          ? Math.round((completedAppointments.length / appointments.length) * 100) 
-          : 0;
-        
-        const newPatientsThisMonth = patients.filter((patient: Patient) => 
-          new Date(patient.createdAt) >= firstDayOfMonth
-        );
-        
-        setStats({
-          totalPatients: patients.length,
-          totalAppointments: appointments.length,
-          totalDoctors: 3, // Mock data - replace with actual doctor count
-          newPatientsThisMonth: newPatientsThisMonth.length,
-          appointmentsToday: appointmentsToday.length,
-          completionRate
-        });
-        
-        // Set recent appointments and patients
-        setRecentAppointments(
-          appointments
-            .sort((a: Appointment, b: Appointment) => 
-              new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
-            )
-            .slice(0, 5)
-        );
-        
-        setRecentPatients(
-          patients
-            .sort((a: Patient, b: Patient) => 
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            )
-            .slice(0, 5)
-        );
-        
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      // For super admins, fetch all appointments. For others, fetch only their clinic's appointments
+      const clinicId = user?.role === 'SUPER_ADMIN' ? 'all' : user?.defaultClinicId;
+      if (!clinicId) {
+        throw new Error('No clinic ID available');
       }
-    };
-    
+      
+      // Fetch appointments data
+      const appointments = await appointmentService.getAppointments(clinicId);
+      
+      // Fetch patients data
+      const patients = await patientService.getAllPatients();
+      
+      // Calculate statistics
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      
+      const appointmentsToday = appointments.filter((app: Appointment) => 
+        format(parseISO(app.appointmentDate), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
+      );
+      
+      const completedAppointments = appointments.filter((app: Appointment) => app.status === 'completed');
+      const completionRate = appointments.length > 0 
+        ? Math.round((completedAppointments.length / appointments.length) * 100) 
+        : 0;
+      
+      const newPatientsThisMonth = patients.filter((patient: Patient) => 
+        new Date(patient.createdAt) >= firstDayOfMonth
+      );
+      
+      setStats({
+        totalPatients: patients.length,
+        totalAppointments: appointments.length,
+        totalDoctors: 3, // Mock data - replace with actual doctor count
+        newPatientsThisMonth: newPatientsThisMonth.length,
+        appointmentsToday: appointmentsToday.length,
+        completionRate
+      });
+      
+      // Set recent appointments and patients
+      setRecentAppointments(
+        appointments
+          .sort((a: Appointment, b: Appointment) => 
+            new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
+          )
+          .slice(0, 5)
+      );
+      
+      setRecentPatients(
+        patients
+          .sort((a: Patient, b: Patient) => 
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, 5)
+      );
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

@@ -6,7 +6,6 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import AppointmentDetail from './pages/AppointmentDetail';
-import DoctorManagement from './pages/DoctorManagement';
 import StaffList from './pages/StaffList';
 import NewStaff from './pages/NewStaff';
 import EditStaff from './pages/EditStaff';
@@ -35,11 +34,6 @@ function App() {
           <Route path="/appointments/:id" element={
             <ProtectedRoute>
               <AppointmentDetail />
-            </ProtectedRoute>
-          } />
-          <Route path="/doctors" element={
-            <ProtectedRoute>
-              <DoctorManagement />
             </ProtectedRoute>
           } />
           

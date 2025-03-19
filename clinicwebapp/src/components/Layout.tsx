@@ -17,7 +17,8 @@ import {
   Menu,
   MenuItem,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Avatar
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import EventIcon from '@mui/icons-material/Event';
@@ -25,6 +26,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Using this as ClinicIcon
+import SettingsIcon from '@mui/icons-material/Settings';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
@@ -43,22 +46,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [clinicMenuAnchor, setClinicMenuAnchor] = useState<null | HTMLElement>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   
   useEffect(() => {
-    if (user && user.clinics) {
-      setClinics(user.clinics);
-    } else {
-      // Fetch clinics if not available in user object
-      const fetchClinics = async () => {
-        try {
+    if (!user) return;
+
+    const fetchClinics = async () => {
+      try {
+        if (user.role === 'SUPER_ADMIN') {
+          // Fetch all clinics for super admin
           const clinicsData = await clinicService.getAllClinics();
           setClinics(clinicsData);
-        } catch (error) {
-          console.error('Failed to fetch clinics:', error);
+        } else if (user.defaultClinicId) {
+          // For other roles, just fetch their assigned clinic
+          const clinic = await clinicService.getClinicById(user.defaultClinicId);
+          setClinics(clinic ? [clinic] : []);
         }
-      };
-      fetchClinics();
-    }
+      } catch (error) {
+        console.error('Failed to fetch clinics:', error);
+      }
+    };
+    
+    fetchClinics();
   }, [user]);
 
   const handleDrawerToggle = () => {
@@ -78,16 +87,58 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setClinicMenuAnchor(null);
   };
 
-  const handleClinicChange = (clinicId: number) => {
+  const handleClinicChange = (clinicId: string) => {
     setCurrentClinic(clinicId);
     handleClinicMenuClose();
   };
 
   const getCurrentClinicName = () => {
-    if (!user || !user.defaultClinicId) return 'Select Clinic';
+    if (!user) return '';
     
+    // For non-super admin users, just display their assigned clinic name
+    if (user.role !== 'SUPER_ADMIN') {
+      const currentClinic = clinics.find(clinic => clinic.id === user.defaultClinicId);
+      return currentClinic ? currentClinic.name : 'Loading...';
+    }
+    
+    // For super admin, show the selected clinic or prompt to select one
+    if (!user.defaultClinicId) return 'Select Clinic';
     const currentClinic = clinics.find(clinic => clinic.id === user.defaultClinicId);
     return currentClinic ? currentClinic.name : 'Select Clinic';
+  };
+
+  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleProfileClick = () => {
+    handleUserMenuClose();
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    handleUserMenuClose();
+    navigate('/settings');
+  };
+
+  const handleLogoutClick = () => {
+    handleUserMenuClose();
+    handleLogout();
+  };
+
+  // Get user's initials for the avatar
+  const getUserInitials = () => {
+    if (!user?.name) return '?';
+    return user.name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const drawerContent = (
@@ -105,14 +156,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <EventIcon />
             </ListItemIcon>
             <ListItemText primary="Appointments" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem onClick={() => navigate('/doctors')}>
-          <ListItemButton>
-            <ListItemIcon>
-              <PersonIcon />
-            </ListItemIcon>
-            <ListItemText primary="Manage Doctors" />
           </ListItemButton>
         </ListItem>
         <ListItem onClick={() => navigate('/staff')}>
@@ -157,34 +200,99 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           
           {user && (
             <>
-              <Button 
-                color="inherit" 
-                onClick={handleClinicMenuOpen}
-                endIcon={<ArrowDropDownIcon />}
-                // Replace ClinicIcon with LocalHospitalIcon in the component
-                startIcon={<LocalHospitalIcon />}
-                sx={{ mr: 2 }}
-              >
-                {getCurrentClinicName()}
-              </Button>
-              <Menu
-                anchorEl={clinicMenuAnchor}
-                open={Boolean(clinicMenuAnchor)}
-                onClose={handleClinicMenuClose}
-              >
-                {clinics.map((clinic) => (
-                  <MenuItem 
-                    key={clinic.id} 
-                    onClick={() => handleClinicChange(clinic.id)}
-                    selected={user.defaultClinicId === clinic.id}
+              {user.role === 'SUPER_ADMIN' ? (
+                // Clinic selector dropdown for super admin
+                <>
+                  <Button 
+                    color="inherit" 
+                    onClick={handleClinicMenuOpen}
+                    endIcon={<ArrowDropDownIcon />}
+                    startIcon={<LocalHospitalIcon />}
+                    sx={{ mr: 2 }}
                   >
-                    {clinic.name}
-                  </MenuItem>
-                ))}
+                    {getCurrentClinicName()}
+                  </Button>
+                  <Menu
+                    anchorEl={clinicMenuAnchor}
+                    open={Boolean(clinicMenuAnchor)}
+                    onClose={handleClinicMenuClose}
+                  >
+                    {clinics.map((clinic) => (
+                      <MenuItem 
+                        key={clinic.id} 
+                        onClick={() => handleClinicChange(clinic.id.toString())}
+                        selected={user.defaultClinicId === clinic.id.toString()}
+                      >
+                        {clinic.name}
+                      </MenuItem>
+                    ))}
+                  </Menu>
+                </>
+              ) : (
+                // Static clinic name display for other roles
+                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+                  <LocalHospitalIcon sx={{ mr: 1 }} />
+                  <Typography variant="body1" component="span">
+                    {getCurrentClinicName()}
+                  </Typography>
+                </Box>
+              )}
+              
+              {/* User Profile Menu */}
+              <IconButton
+                onClick={handleUserMenuOpen}
+                sx={{ 
+                  ml: 2,
+                  bgcolor: 'primary.dark',
+                  '&:hover': { bgcolor: 'primary.main' }
+                }}
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'inherit' }}>
+                  {getUserInitials()}
+                </Avatar>
+              </IconButton>
+              <Menu
+                anchorEl={userMenuAnchor}
+                open={Boolean(userMenuAnchor)}
+                onClose={handleUserMenuClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <Box sx={{ px: 2, py: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                    {user.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.email}
+                  </Typography>
+                </Box>
+                <Divider />
+                <MenuItem onClick={handleProfileClick}>
+                  <ListItemIcon>
+                    <AccountCircleIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Profile</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handleSettingsClick}>
+                  <ListItemIcon>
+                    <SettingsIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Settings</ListItemText>
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={handleLogoutClick}>
+                  <ListItemIcon>
+                    <LogoutIcon fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText>Logout</ListItemText>
+                </MenuItem>
               </Menu>
-              <Button color="inherit" onClick={handleLogout} startIcon={<LogoutIcon />}>
-                {isMobile ? '' : 'Logout'}
-              </Button>
             </>
           )}
         </Toolbar>

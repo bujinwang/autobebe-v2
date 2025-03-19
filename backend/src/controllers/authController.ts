@@ -31,7 +31,8 @@ export const login = async (req: Request, res: Response) => {
       { 
         userId: user.id, 
         email: user.email,
-        role: user.role 
+        role: user.role,
+        ...(user.role !== 'SUPER_ADMIN' && user.clinicId ? { clinicId: user.clinicId } : {})
       }, 
       JWT_SECRET,
       { expiresIn: '8h' }
@@ -45,7 +46,8 @@ export const login = async (req: Request, res: Response) => {
         email: user.email,
         name: user.name,
         role: user.role,
-        clinicId: user.clinicId
+        clinicId: user.clinicId,
+        defaultClinicId: user.role !== 'SUPER_ADMIN' ? user.clinicId : undefined
       }
     });
   } catch (error) {
