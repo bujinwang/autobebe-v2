@@ -4,9 +4,9 @@
   "description": "A modern healthcare application built with Node.js, Express, Prisma ORM, PostgreSQL, React Native, and React.",
   "main": "next.config.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p ${PORT:-8080}",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-8080}",
     "lint": "next lint"
   },
   "keywords": [],
