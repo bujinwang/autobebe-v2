@@ -2,9 +2,12 @@ export interface User {
   id: number;
   username: string;
   name: string;
+  email: string;
   role: string;
   defaultClinicId?: string;
   clinics?: Clinic[];
+  position?: string;
+  specialty?: string;
 }
 
 export interface Clinic {

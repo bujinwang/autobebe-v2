@@ -9,6 +9,8 @@ import AppointmentDetail from './pages/AppointmentDetail';
 import StaffList from './pages/StaffList';
 import NewStaff from './pages/NewStaff';
 import EditStaff from './pages/EditStaff';
+import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -51,6 +53,18 @@ function App() {
           <Route path="/staff/:id" element={
             <ProtectedRoute>
               <EditStaff />
+            </ProtectedRoute>
+          } />
+          
+          {/* User Account Routes */}
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           } />
           

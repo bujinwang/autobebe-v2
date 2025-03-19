@@ -118,6 +118,27 @@ class AuthService {
     }
   }
 
+  async adminChangePassword(userId: number, newPassword: string) {
+    try {
+      const response = await axios.post(
+        `${this.baseUrl}/admin-change-password`,
+        {
+          userId,
+          newPassword,
+        },
+        {
+          headers: { Authorization: `Bearer ${this.getToken()}` },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        throw new Error(error.response.data.message || 'Failed to change user password');
+      }
+      throw error;
+    }
+  }
+
   setCurrentClinic(clinicId: string) {
     const user = this.getCurrentUser();
     if (user) {
