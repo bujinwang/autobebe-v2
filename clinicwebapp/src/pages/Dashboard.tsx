@@ -76,7 +76,7 @@ const mockPatientAgeData = [
   { name: '65+', value: 5 }
 ];
 
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -103,61 +103,55 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // For super admins, fetch all appointments. For others, fetch only their clinic's appointments
-      const clinicId = user?.role === 'SUPER_ADMIN' ? 'all' : user?.defaultClinicId;
-      if (!clinicId) {
-        throw new Error('No clinic ID available');
+      
+      // Only fetch all data if user is an admin
+      if (user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') {
+        const [appointmentsData, patientsData] = await Promise.all([
+          appointmentService.getAppointments(user.defaultClinicId || ''),
+          patientService.getAllPatients()
+        ]);
+        setStats({
+          totalPatients: patientsData.length,
+          totalAppointments: appointmentsData.length,
+          totalDoctors: 3, // Mock data - replace with actual doctor count
+          newPatientsThisMonth: 0,
+          appointmentsToday: 0,
+          completionRate: 0
+        });
+        setRecentAppointments(
+          appointmentsData
+            .sort((a: Appointment, b: Appointment) => 
+              new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
+            )
+            .slice(0, 5)
+        );
+        setRecentPatients(
+          patientsData
+            .sort((a: Patient, b: Patient) => 
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
+            .slice(0, 5)
+        );
+      } else {
+        // For staff members, only fetch appointments
+        const appointmentsData = await appointmentService.getAppointments(user?.defaultClinicId || '');
+        setStats({
+          totalPatients: 0,
+          totalAppointments: appointmentsData.length,
+          totalDoctors: 3, // Mock data - replace with actual doctor count
+          newPatientsThisMonth: 0,
+          appointmentsToday: 0,
+          completionRate: 0
+        });
+        setRecentAppointments(
+          appointmentsData
+            .sort((a: Appointment, b: Appointment) => 
+              new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
+            )
+            .slice(0, 5)
+        );
       }
-      
-      // Fetch appointments data
-      const appointments = await appointmentService.getAppointments(clinicId);
-      
-      // Fetch patients data
-      const patients = await patientService.getAllPatients();
-      
-      // Calculate statistics
-      const today = new Date();
-      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      
-      const appointmentsToday = appointments.filter((app: Appointment) => 
-        format(parseISO(app.appointmentDate), 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')
-      );
-      
-      const completedAppointments = appointments.filter((app: Appointment) => app.status === 'completed');
-      const completionRate = appointments.length > 0 
-        ? Math.round((completedAppointments.length / appointments.length) * 100) 
-        : 0;
-      
-      const newPatientsThisMonth = patients.filter((patient: Patient) => 
-        new Date(patient.createdAt) >= firstDayOfMonth
-      );
-      
-      setStats({
-        totalPatients: patients.length,
-        totalAppointments: appointments.length,
-        totalDoctors: 3, // Mock data - replace with actual doctor count
-        newPatientsThisMonth: newPatientsThisMonth.length,
-        appointmentsToday: appointmentsToday.length,
-        completionRate
-      });
-      
-      // Set recent appointments and patients
-      setRecentAppointments(
-        appointments
-          .sort((a: Appointment, b: Appointment) => 
-            new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
-          )
-          .slice(0, 5)
-      );
-      
-      setRecentPatients(
-        patients
-          .sort((a: Patient, b: Patient) => 
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-          .slice(0, 5)
-      );
-      
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
@@ -192,28 +186,7 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                  <PatientsIcon />
-                </Avatar>
-                <Typography variant="h6">Total Patients</Typography>
-              </Box>
-              <Typography variant="h3" component="div" sx={{ mb: 1 }}>
-                {stats.totalPatients}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <ArrowUpwardIcon color="success" fontSize="small" />
-                <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                  {stats.newPatientsThisMonth} new this month
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
+        {/* Show appointments stats for all users */}
         <Grid item xs={12} sm={6} md={4}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
@@ -236,27 +209,49 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={4}>
-          <Card sx={{ height: '100%' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                  <DoctorsIcon />
-                </Avatar>
-                <Typography variant="h6">Clinic Staff</Typography>
-              </Box>
-              <Typography variant="h3" component="div" sx={{ mb: 1 }}>
-                {stats.totalDoctors}
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendingUpIcon fontSize="small" color="success" />
-                <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                  {stats.completionRate}% completion rate
+        {/* Only show patient stats for admin users */}
+        {(user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                    <PatientsIcon />
+                  </Avatar>
+                  <Typography variant="h6">Total Patients</Typography>
+                </Box>
+                <Typography variant="h3" component="div" sx={{ mb: 1 }}>
+                  {stats.totalPatients}
                 </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+        
+        {/* Show staff stats for admin users */}
+        {(user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') && (
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                    <DoctorsIcon />
+                  </Avatar>
+                  <Typography variant="h6">Clinic Staff</Typography>
+                </Box>
+                <Typography variant="h3" component="div" sx={{ mb: 1 }}>
+                  {stats.totalDoctors}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TrendingUpIcon fontSize="small" color="success" />
+                  <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
+                    {stats.completionRate}% completion rate
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
       </Grid>
 
       {/* Charts */}
@@ -341,6 +336,7 @@ const Dashboard: React.FC = () => {
 
       {/* Recent Activity */}
       <Grid container spacing={3}>
+        {/* Show appointments list for all users */}
         <Grid item xs={12} md={6}>
           <Card>
             <CardHeader title="Recent Appointments" />
@@ -382,52 +378,53 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
         
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardHeader title="New Patients" />
-            <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
-              {recentPatients.length > 0 ? (
-                recentPatients.map((patient, index) => (
-                  <React.Fragment key={patient.id}>
-                    <ListItem alignItems="flex-start">
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: COLORS[index % COLORS.length] }}>
-                          <PersonIcon />
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={patient.name}
-                        secondary={
-                          <>
-                            <Typography
-                              component="span"
-                              variant="body2"
-                              color="text.primary"
-                            >
-                              {patient.email}
-                            </Typography>
-                            {` — ${patient.phone || 'No phone'}`}
-                          </>
-                        }
-                      />
-                    </ListItem>
-                    {index < recentPatients.length - 1 && <Divider variant="inset" component="li" />}
-                  </React.Fragment>
-                ))
-              ) : (
-                <ListItem>
-                  <ListItemText primary="No new patients" />
-                </ListItem>
-              )}
-            </List>
-          </Card>
-        </Grid>
+        {/* Only show new patients list for admin users */}
+        {(user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') && (
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardHeader title="New Patients" />
+              <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                {recentPatients.length > 0 ? (
+                  recentPatients.map((patient, index) => (
+                    <React.Fragment key={patient.id}>
+                      <ListItem alignItems="flex-start">
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: COLORS[index % COLORS.length] }}>
+                            <PersonIcon />
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={patient.name}
+                          secondary={
+                            <>
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                {patient.email}
+                              </Typography>
+                              {` — ${patient.phone || 'No phone'}`}
+                            </>
+                          }
+                        />
+                      </ListItem>
+                      {index < recentPatients.length - 1 && <Divider variant="inset" component="li" />}
+                    </React.Fragment>
+                  ))
+                ) : (
+                  <ListItem>
+                    <ListItemText primary="No new patients" />
+                  </ListItem>
+                )}
+              </List>
+            </Card>
+          </Grid>
+        )}
       </Grid>
     </Layout>
   );
-};
-
-export default Dashboard;
+}
 
 // Remove these unused imports:
 // import Button from '@mui/material/Button';

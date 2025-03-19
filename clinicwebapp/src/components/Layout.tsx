@@ -167,14 +167,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ListItemText primary="Appointments" />
           </ListItemButton>
         </ListItem>
-        <ListItem onClick={() => navigate('/staff')}>
-          <ListItemButton>
-            <ListItemIcon>
-              <PersonIcon />
-            </ListItemIcon>
-            <ListItemText primary="Staff Management" />
-          </ListItemButton>
-        </ListItem>
+        {/* Only show Staff Management for SUPER_ADMIN and CLINIC_ADMIN */}
+        {user?.role !== 'STAFF' && (
+          <ListItem onClick={() => navigate('/staff')}>
+            <ListItemButton>
+              <ListItemIcon>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary="Staff Management" />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
       <Divider />
       <List>
