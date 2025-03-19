@@ -44,9 +44,12 @@ import {
 } from 'recharts';
 import { format, subDays, parseISO } from 'date-fns';
 import Layout from '../components/Layout';
-import { appointmentService } from '../services/api';
-import patientService from '../services/api/patientService';
-import { Appointment, Patient } from '../types';
+import { 
+  appointmentService, 
+  patientService,
+  type Appointment,
+  type Patient 
+} from '../services';
 
 // Mock data for charts - replace with real API calls
 const mockAppointmentStatusData = [
@@ -101,7 +104,7 @@ const Dashboard: React.FC = () => {
         setLoading(true);
         
         // Fetch appointments data
-        const appointments = await appointmentService.getAllAppointments();
+        const appointments = await appointmentService.getAppointments('all');  // 'all' to get appointments from all clinics
         
         // Fetch patients data
         const patients = await patientService.getAllPatients();

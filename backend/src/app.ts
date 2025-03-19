@@ -6,6 +6,7 @@ import clinicRoutes from './routes/clinicRoutes';
 import appointmentRoutes from './routes/appointmentRoutes';
 import medicalAIRoutes from './routes/medicalAIRoutes';
 import authRoutes from './routes/authRoutes';
+import staffRoutes from './routes/staffRoutes';
 
 const app = express();
 
@@ -40,6 +41,9 @@ app.use('/api/appointments', appointmentRoutes);
 
 // Use the medical AI routes
 app.use('/api/medicalai', medicalAIRoutes);
+
+// Use the staff routes
+app.use('/api/staff', staffRoutes);
 
 // Error handling middleware
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {

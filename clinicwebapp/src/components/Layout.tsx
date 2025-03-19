@@ -28,7 +28,7 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Using this
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
-import { clinicService } from '../services/api';
+import { clinicService } from '../services';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -107,14 +107,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <ListItemText primary="Appointments" />
           </ListItemButton>
         </ListItem>
-          <ListItem onClick={() => navigate('/doctors')}>
-            <ListItemButton>
-              <ListItemIcon>
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText primary="Manage Doctors" />
-            </ListItemButton>
-          </ListItem>
+        <ListItem onClick={() => navigate('/doctors')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
+            <ListItemText primary="Manage Doctors" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem onClick={() => navigate('/staff')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <PersonIcon />
+            </ListItemIcon>
+            <ListItemText primary="Staff Management" />
+          </ListItemButton>
+        </ListItem>
       </List>
       <Divider />
       <List>

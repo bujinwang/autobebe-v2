@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -34,10 +35,8 @@ import {
   Person as PersonIcon,
   PlayArrow as PlayArrowIcon
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
 import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
-import { Appointment } from '../types';
-import appointmentService from '../services/api/appointmentService';
+import { appointmentService, type Appointment } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from '../components/Layout';
 
@@ -136,15 +135,14 @@ const Appointments: React.FC = () => {
 
   const fetchAppointments = async () => {
     try {
+      if (!user?.defaultClinicId) {
+        setError('No clinic selected. Please select a clinic first.');
+        return;
+      }
+      
       setLoading(true);
-      const data = await appointmentService.getAllAppointments();
-      
-      // Filter appointments by clinic if user has a default clinic
-      const filteredData = user?.defaultClinicId 
-        ? data.filter(appointment => appointment.clinicId === user.defaultClinicId)
-        : data;
-      
-      setAppointments(filteredData);
+      const data = await appointmentService.getAppointments(user.defaultClinicId.toString());
+      setAppointments(data);
     } catch (err) {
       console.error('Failed to fetch appointments:', err);
       setError('Failed to load appointments. Please try again later.');
@@ -185,7 +183,7 @@ const Appointments: React.FC = () => {
       };
       
       // Update appointment status to in-progress and assign the current user as doctor
-      await appointmentService.updateAppointment(appointment.id, { 
+      await appointmentService.updateAppointment(appointment.id.toString(), { 
         status: 'in-progress',
         doctorId: user.id,
       });

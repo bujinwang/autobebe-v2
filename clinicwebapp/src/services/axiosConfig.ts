@@ -1,11 +1,10 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import authService from './authService';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
-  baseURL: API_URL,
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
@@ -39,4 +38,4 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-export default axiosInstance;
+export default axiosInstance; 

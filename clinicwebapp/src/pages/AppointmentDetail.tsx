@@ -43,9 +43,11 @@ import {
   Refresh as RefreshIcon
 } from '@mui/icons-material';
 import { format, parseISO } from 'date-fns';
-import { Appointment } from '../types';
-import { appointmentService } from '../services/api';
-import { getRecommendations } from '../services/api/medicalAIService';
+import { 
+  appointmentService, 
+  getRecommendations,
+  type Appointment 
+} from '../services';
 import Layout from '../components/Layout';
 
 const AppointmentDetail: React.FC = () => {
@@ -70,7 +72,7 @@ const AppointmentDetail: React.FC = () => {
     
     try {
       setLoading(true);
-      const data = await appointmentService.getAppointmentById(parseInt(id));
+      const data = await appointmentService.getAppointmentById(id);
       setAppointment(data);
 
       let possibleTreatments: string[] = [];
@@ -137,7 +139,7 @@ const AppointmentDetail: React.FC = () => {
 
       if (response.success) {
         console.log('Updating appointment with recommendations');
-        await appointmentService.updateAppointment(appointmentData.id, {
+        await appointmentService.updateAppointment(appointmentData.id.toString(), {
           possibleTreatments: JSON.stringify(response.possibleTreatments),
           suggestedPrescriptions: JSON.stringify(response.suggestedPrescriptions)
         });
@@ -202,7 +204,7 @@ const AppointmentDetail: React.FC = () => {
     if (!appointment) return;
     
     try {
-      await appointmentService.updateAppointment(appointment.id, { status });
+      await appointmentService.updateAppointment(appointment.id.toString(), { status });
       
       setAppointment({
         ...appointment,

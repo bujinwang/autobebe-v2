@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -38,10 +39,15 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Check as CheckIcon,
-  Close as CloseIcon
+  Close as CloseIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
-import { Doctor, Clinic } from '../types';
-import { doctorService, clinicService } from '../services/api';
+import { 
+  doctorService,
+  clinicService,
+  type Doctor,
+  type Clinic 
+} from '../services';
 import Layout from '../components/Layout';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -138,7 +144,7 @@ const DoctorManagement: React.FC = () => {
 
   const handleToggleActive = async (doctor: Doctor) => {
     try {
-      const updatedDoctor = await doctorService.updateDoctor(doctor.id, {
+      const updatedDoctor = await doctorService.updateDoctor(doctor.id.toString(), {
         isActive: !doctor.isActive
       });
       
@@ -167,7 +173,7 @@ const DoctorManagement: React.FC = () => {
       
       if (currentDoctor) {
         // Update existing doctor
-        updatedDoctor = await doctorService.updateDoctor(currentDoctor.id, {
+        updatedDoctor = await doctorService.updateDoctor(currentDoctor.id.toString(), {
           name: formData.name,
           specialization: formData.specialization,
           clinics: formData.clinicIds.map(id => ({ 
@@ -222,7 +228,7 @@ const DoctorManagement: React.FC = () => {
     if (!currentDoctor) return;
     
     try {
-      await doctorService.deleteDoctor(currentDoctor.id);
+      await doctorService.deleteDoctor(currentDoctor.id.toString());
       
       setDoctors(doctors.filter(d => d.id !== currentDoctor.id));
       setSnackbar({
@@ -434,33 +440,32 @@ const DoctorManagement: React.FC = () => {
               value={formData.specialization}
               onChange={handleInputChange}
             />
-            // Fix for the form dialog section
-                        <FormControl fullWidth margin="normal">
-                          <InputLabel id="clinics-label">Assigned Clinics</InputLabel>
-                          <Select
-                            labelId="clinics-label"
-                            id="clinics"
-                            multiple
-                            value={formData.clinicIds}
-                            onChange={handleSelectChange}
-                            renderValue={(selected) => (
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                {(selected as number[]).map((clinicId) => {
-                                  const clinic = clinics.find(c => c.id === clinicId);
-                                  return clinic ? (
-                                    <Chip key={clinic.id} label={clinic.name} size="small" />
-                                  ) : null;
-                                })}
-                              </Box>
-                            )}
-                          >
-                            {clinics.map((clinic) => (
-                              <MenuItem key={clinic.id} value={clinic.id}>
-                                {clinic.name}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel id="clinics-label">Assigned Clinics</InputLabel>
+              <Select
+                labelId="clinics-label"
+                id="clinics"
+                multiple
+                value={formData.clinicIds}
+                onChange={handleSelectChange}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {(selected as number[]).map((clinicId) => {
+                      const clinic = clinics.find(c => c.id === clinicId);
+                      return clinic ? (
+                        <Chip key={clinic.id} label={clinic.name} size="small" />
+                      ) : null;
+                    })}
+                  </Box>
+                )}
+              >
+                {clinics.map((clinic) => (
+                  <MenuItem key={clinic.id} value={clinic.id}>
+                    {clinic.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>

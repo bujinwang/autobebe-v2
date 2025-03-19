@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User } from '../types';
 // Import authService from the centralized services index
-import { authService } from '../services/api';
+import { authService } from '../services';
 
 interface AuthContextType {
   user: User | null;

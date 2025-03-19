@@ -1,12 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
 import AppointmentDetail from './pages/AppointmentDetail';
 import DoctorManagement from './pages/DoctorManagement';
-import ProtectedRoute from './components/ProtectedRoute';
+import StaffList from './pages/StaffList';
+import NewStaff from './pages/NewStaff';
+import EditStaff from './pages/EditStaff';
 import NotFound from './pages/NotFound';
 
 function App() {
@@ -37,6 +40,23 @@ function App() {
           <Route path="/doctors" element={
             <ProtectedRoute>
               <DoctorManagement />
+            </ProtectedRoute>
+          } />
+          
+          {/* Staff Management Routes */}
+          <Route path="/staff" element={
+            <ProtectedRoute>
+              <StaffList />
+            </ProtectedRoute>
+          } />
+          <Route path="/staff/new" element={
+            <ProtectedRoute>
+              <NewStaff />
+            </ProtectedRoute>
+          } />
+          <Route path="/staff/:id" element={
+            <ProtectedRoute>
+              <EditStaff />
             </ProtectedRoute>
           } />
           
