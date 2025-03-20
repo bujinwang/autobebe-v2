@@ -1,14 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import { User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma';
 
 export interface CreateUserInput {
   email: string;
   password: string;
   name: string;
-  role: string;
+  role: UserRole;
   clinicId?: string;
 }
 
@@ -45,16 +44,32 @@ class UserService {
   }
 
   async createUser(input: CreateUserInput): Promise<User> {
+    const { clinicId, ...restInput } = input;
+    
+    if (await this.getUserByEmail(input.email)) {
+      throw new Error('User with this email already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(input.password, 10);
-    return prisma.user.create({
-      data: {
-        ...input,
-        password: hashedPassword
-      },
+    
+    const userData = {
+      ...restInput,
+      password: hashedPassword,
+    };
+    
+    // Add clinicId only if it's defined to satisfy Prisma's typing
+    if (clinicId) {
+      (userData as any).clinicId = clinicId;
+    }
+    
+    const user = await prisma.user.create({
+      data: userData,
       include: {
         clinic: true
       }
     });
+
+    return user;
   }
 
   async updateUser(input: UpdateUserInput): Promise<User> {

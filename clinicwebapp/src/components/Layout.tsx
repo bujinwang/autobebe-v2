@@ -41,13 +41,13 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout, setCurrentClinic } = useAuth();
   const navigate = useNavigate();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [clinicMenuAnchor, setClinicMenuAnchor] = useState<null | HTMLElement>(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     if (!user) return;
@@ -88,9 +88,40 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     setClinicMenuAnchor(null);
   };
 
-  const handleClinicChange = (clinicId: string) => {
-    setCurrentClinic(clinicId);
-    handleClinicMenuClose();
+  const handleClinicChange = async (clinicId: string) => {
+    try {
+      // Close menu first for better UX
+      handleClinicMenuClose();
+      
+      // Show loading state
+      setLoading(true);
+      
+      // Update clinic selection
+      await setCurrentClinic(clinicId);
+      
+      // Fetch updated clinic data after selection
+      if (user?.role === 'SUPER_ADMIN') {
+        const clinicsData = await clinicService.getAllClinics();
+        setClinics(clinicsData);
+      } else if (clinicId) {
+        const clinic = await clinicService.getClinicById(clinicId);
+        setClinics(clinic ? [clinic] : []);
+      }
+
+      // Clear any existing errors
+      setError(null);
+      
+      // Force a re-render of the current route
+      const currentPath = window.location.pathname;
+      navigate('/', { replace: true });
+      navigate(currentPath, { replace: true });
+      
+    } catch (error) {
+      console.error('Failed to change clinic:', error);
+      // You might want to show an error message to the user here
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getCurrentClinicName = () => {
@@ -98,14 +129,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     
     // For non-super admin users, just display their assigned clinic name
     if (user.role !== 'SUPER_ADMIN') {
-      const currentClinic = clinics.find(clinic => clinic.id === user.defaultClinicId);
-      return currentClinic ? currentClinic.name : 'Loading...';
+      const currentClinic = clinics.find(clinic => clinic.id.toString() === user.defaultClinicId?.toString());
+      return currentClinic ? currentClinic.name : user.defaultClinicId ? 'Loading...' : 'No Clinic Assigned';
     }
     
     // For super admin, show the selected clinic or prompt to select one
     if (!user.defaultClinicId) return 'Select Clinic';
-    const currentClinic = clinics.find(clinic => clinic.id === user.defaultClinicId);
-    return currentClinic ? currentClinic.name : 'Select Clinic';
+    const currentClinic = clinics.find(clinic => clinic.id.toString() === user.defaultClinicId?.toString());
+    return currentClinic ? currentClinic.name : 'Loading...';
   };
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -141,6 +172,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       .toUpperCase()
       .slice(0, 2);
   };
+
+  // Update the clinic selector button to show loading state
+  const clinicSelectorButton = (
+    <Button 
+      id="clinic-select-button"
+      aria-controls={Boolean(clinicMenuAnchor) ? 'clinic-select-menu' : undefined}
+      aria-haspopup="true"
+      aria-expanded={Boolean(clinicMenuAnchor)}
+      color="inherit" 
+      onClick={handleClinicMenuOpen}
+      endIcon={<ArrowDropDownIcon />}
+      startIcon={<LocalHospitalIcon />}
+      disabled={loading}
+      sx={{ mr: 2 }}
+    >
+      {loading ? 'Updating...' : getCurrentClinicName()}
+    </Button>
+  );
+
+  // Update the menu items to show selection properly
+  const clinicMenuItems = clinics.map((clinic) => (
+    <MenuItem 
+      key={clinic.id} 
+      onClick={() => handleClinicChange(clinic.id.toString())}
+      selected={user?.defaultClinicId?.toString() === clinic.id.toString()}
+    >
+      {clinic.name}
+    </MenuItem>
+  ));
 
   const drawerContent = (
     <Box sx={{ width: 250 }} role="presentation" onClick={handleDrawerToggle}>
@@ -215,30 +275,24 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {user.role === 'SUPER_ADMIN' ? (
                 // Clinic selector dropdown for super admin
                 <>
-                  <Button 
-                    color="inherit" 
-                    onClick={handleClinicMenuOpen}
-                    endIcon={<ArrowDropDownIcon />}
-                    startIcon={<LocalHospitalIcon />}
-                    sx={{ mr: 2 }}
-                  >
-                    {getCurrentClinicName()}
-                  </Button>
+                  {clinicSelectorButton}
                   <Menu
                     anchorEl={clinicMenuAnchor}
                     open={Boolean(clinicMenuAnchor)}
                     onClose={handleClinicMenuClose}
+                    keepMounted
+                    MenuListProps={{
+                      'aria-labelledby': 'clinic-select-button',
+                      role: 'listbox'
+                    }}
                   >
-                    {clinics.map((clinic) => (
-                      <MenuItem 
-                        key={clinic.id} 
-                        onClick={() => handleClinicChange(clinic.id.toString())}
-                        selected={user.defaultClinicId === clinic.id.toString()}
-                      >
-                        {clinic.name}
-                      </MenuItem>
-                    ))}
+                    {clinicMenuItems}
                   </Menu>
+                  {error && (
+                    <Typography color="error" sx={{ mr: 2 }}>
+                      {error}
+                    </Typography>
+                  )}
                 </>
               ) : (
                 // Static clinic name display for other roles

@@ -1,12 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { prisma } from '../lib/prisma';
 
 interface CreateUserData {
   email: string;
   password: string;
   name: string;
-  role: 'STAFF' | 'PATIENT';
+  role: UserRole;
   clinicId?: string;
 }
 
@@ -19,8 +20,6 @@ interface AuthServiceConfig {
   jwtSecret: string;
 }
 
-const prisma = new PrismaClient();
-
 class AuthService {
   private readonly jwtSecret: string;
 
@@ -29,13 +28,21 @@ class AuthService {
   }
 
   async register(data: CreateUserData) {
+    const { clinicId, ...restData } = data;
     const hashedPassword = await bcrypt.hash(data.password, 10);
     
+    const userData = {
+      ...restData,
+      password: hashedPassword,
+    };
+    
+    // Add clinicId only if it's defined to satisfy Prisma's typing
+    if (clinicId) {
+      (userData as any).clinicId = clinicId;
+    }
+    
     const user = await prisma.user.create({
-      data: {
-        ...data,
-        password: hashedPassword,
-      },
+      data: userData,
     });
 
     const token = jwt.sign(

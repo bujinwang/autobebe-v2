@@ -89,8 +89,14 @@ const Appointments: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
+    // Reset state when clinic changes
+    setAppointments([]);
+    setFilteredAppointments([]);
+    setError(null);
+    setLoading(true);
+    
     fetchAppointments();
-  }, [user?.defaultClinicId]);
+  }, [user?.defaultClinicId]); // Only re-fetch when the clinic ID changes
 
   // Filter appointments based on tab and search term
   useEffect(() => {
@@ -145,15 +151,17 @@ const Appointments: React.FC = () => {
     try {
       if (!user?.defaultClinicId) {
         setError('No clinic selected. Please select a clinic first.');
+        setLoading(false);
         return;
       }
       
-      setLoading(true);
       const data = await appointmentService.getAppointments(user.defaultClinicId.toString());
       setAppointments(data);
+      setError(null);
     } catch (err) {
       console.error('Failed to fetch appointments:', err);
       setError('Failed to load appointments. Please try again later.');
+      setAppointments([]);
     } finally {
       setLoading(false);
     }

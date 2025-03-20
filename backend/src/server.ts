@@ -1,15 +1,21 @@
-
 // Then import other dependencies
 import express from 'express';
 import cors from 'cors';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma';
 
 // Import app after environment variables are loaded and services are initialized
 import app from './app';
-import config from './config';
 
-const prisma = new PrismaClient();
-const port = process.env.PORT || 3000;
+const port = parseInt(process.env.PORT || '8080', 10);
+
+// Log database connection
+prisma.$connect()
+  .then(() => {
+    console.log('Successfully connected to PostgreSQL database');
+  })
+  .catch((err) => {
+    console.error('Failed to connect to database:', err);
+  });
 
 // Middleware
 app.use(cors());
@@ -26,8 +32,10 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-const server = app.listen(config.port, () => {
-  console.log(`Server running in ${config.nodeEnv} mode on port ${config.port}`);
+// Ensure server listens on all interfaces (0.0.0.0) for fly.io
+const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${port}`);
+  console.log(`Server is listening on all interfaces (0.0.0.0:${port})`);
 });
 
 // Handle unhandled promise rejections
@@ -44,6 +52,7 @@ process.on('SIGTERM', () => {
   console.log('👋 SIGTERM RECEIVED. Shutting down gracefully');
   server.close(() => {
     console.log('💥 Process terminated!');
+    prisma.$disconnect();
   });
 });
 

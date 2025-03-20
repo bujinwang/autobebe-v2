@@ -10,7 +10,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
-  setCurrentClinic: (clinicId: string) => void;
+  setCurrentClinic: (clinicId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,16 +70,40 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Add the setCurrentClinic method
-  const setCurrentClinic = (clinicId: string) => {
+  const setCurrentClinic = async (clinicId: string) => {
     if (user) {
-      // Update the user's defaultClinicId in local state
-      setUser({
-        ...user,
-        defaultClinicId: clinicId
-      });
-      
-      // Also update it in the authService/localStorage
-      authService.setCurrentClinic(clinicId);
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Call the service to update the clinic
+        const updatedUser = await authService.setCurrentClinic(clinicId);
+        
+        if (updatedUser) {
+          // Create a new user object with the updated clinic ID
+          const newUser = {
+            ...updatedUser,
+            defaultClinicId: clinicId // Ensure the defaultClinicId is set correctly
+          };
+          
+          // Update context state with the new user data
+          setUser(newUser);
+          
+          // Update localStorage
+          localStorage.setItem('user', JSON.stringify(newUser));
+          
+          // Force a re-render by updating the isAuthenticated state
+          setIsAuthenticated(true);
+        } else {
+          throw new Error('Failed to update clinic: No user data returned');
+        }
+      } catch (error: any) {
+        console.error('Failed to update clinic:', error);
+        setError(error.message || 'Failed to update clinic');
+        throw error;
+      } finally {
+        setLoading(false);
+      }
     }
   };
 

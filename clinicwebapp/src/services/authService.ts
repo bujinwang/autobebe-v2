@@ -144,7 +144,9 @@ class AuthService {
     if (user) {
       const updatedUser = { ...user, defaultClinicId: clinicId };
       localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+      return updatedUser;
     }
+    return null;
   }
 }
 
