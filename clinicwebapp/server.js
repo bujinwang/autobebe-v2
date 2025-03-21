@@ -6,21 +6,20 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Enable compression
-app.use(compression());
+// Middleware
+app.use(compression()); // Compress all responses
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON request body
 
-// Enable CORS
-app.use(cors());
-
-// Serve static files from the React build
+// Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'build')));
 
-// For any request that doesn't match one above, send back the index.html file
+// All remaining requests return the React app, so it can handle routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// Listen on all network interfaces
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on 0.0.0.0:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Visit http://localhost:${PORT} to view the application`);
 }); 

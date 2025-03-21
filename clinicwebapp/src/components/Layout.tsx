@@ -29,10 +29,23 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Using this
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-import { useNavigate } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import ArticleIcon from '@mui/icons-material/Article';
+import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
 import { clinicService } from '../services';
+import { 
+  Home as HomeIconFeather,
+  Calendar as CalendarIconFeather,
+  Users as UsersIconFeather,
+  User as UserIconFeather,
+  Settings as SettingsIconFeather,
+  LogOut as LogOutIconFeather,
+  X as XIconFeather,
+  Menu as MenuIconFeather
+} from 'react-feather';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -41,6 +54,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout, setCurrentClinic } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -207,10 +221,43 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <List>
         <ListItem>
           <Typography variant="h6" sx={{ my: 2 }}>
-            Clinic Staff Portal
+            AutoBebe Portal
           </Typography>
         </ListItem>
         <Divider />
+        {/* Main Autobebesys Section */}
+        <ListItem onClick={() => navigate('/')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem onClick={() => navigate('/blog')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <ArticleIcon />
+            </ListItemIcon>
+            <ListItemText primary="Blog" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem onClick={() => navigate('/joytriage')}>
+          <ListItemButton>
+            <ListItemIcon>
+              <MedicalServicesIcon />
+            </ListItemIcon>
+            <ListItemText primary="JoyTriage" />
+          </ListItemButton>
+        </ListItem>
+        
+        {/* Clinic Staff Portal Section */}
+        <Divider />
+        <ListItem>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ my: 1, px: 2 }}>
+            Clinic Staff Portal
+          </Typography>
+        </ListItem>
         <ListItem onClick={() => navigate('/dashboard')}>
           <ListItemButton>
             <ListItemIcon>
@@ -241,147 +288,197 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </List>
       <Divider />
       <List>
-        <ListItem onClick={handleLogout}>
-          <ListItemButton>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        </ListItem>
+        {user ? (
+          <ListItem onClick={handleLogout}>
+            <ListItemButton>
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+          </ListItem>
+        ) : (
+          <ListItem onClick={() => navigate('/login')}>
+            <ListItemButton>
+              <ListItemIcon>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Login" />
+            </ListItemButton>
+          </ListItem>
+        )}
       </List>
     </Box>
   );
 
+  // Determine if the current path is a public Autobebesys route
+  const isAutobebesysRoute = location.pathname === '/' || 
+                            location.pathname === '/blog' || 
+                            location.pathname === '/joytriage';
+  
+  // If this is an Autobebesys route, render without the clinic portal sidebar
+  if (isAutobebesysRoute) {
+    return <>{children}</>;
+  }
+  
+  // Otherwise, render the clinic portal layout
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Clinic Staff Portal
-          </Typography>
+    <div className="flex h-screen bg-gray-100">
+      {/* Mobile sidebar backdrop */}
+      {drawerOpen && (
+        <div 
+          className="fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity md:hidden"
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        drawerOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+            <Link to="/dashboard" className="text-xl font-semibold text-blue-600">
+              AutoBebe Clinic
+            </Link>
+            <button 
+              className="md:hidden text-gray-600 hover:text-gray-900"
+              onClick={() => setDrawerOpen(false)}
+            >
+              <XIconFeather className="h-6 w-6" />
+            </button>
+          </div>
           
-          {user && (
-            <>
-              {user.role === 'SUPER_ADMIN' ? (
-                // Clinic selector dropdown for super admin
-                <>
-                  {clinicSelectorButton}
-                  <Menu
-                    anchorEl={clinicMenuAnchor}
-                    open={Boolean(clinicMenuAnchor)}
-                    onClose={handleClinicMenuClose}
-                    keepMounted
-                    MenuListProps={{
-                      'aria-labelledby': 'clinic-select-button',
-                      role: 'listbox'
-                    }}
-                  >
-                    {clinicMenuItems}
-                  </Menu>
-                  {error && (
-                    <Typography color="error" sx={{ mr: 2 }}>
-                      {error}
-                    </Typography>
-                  )}
-                </>
-              ) : (
-                // Static clinic name display for other roles
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                  <LocalHospitalIcon sx={{ mr: 1 }} />
-                  <Typography variant="body1" component="span">
-                    {getCurrentClinicName()}
-                  </Typography>
-                </Box>
-              )}
-              
-              {/* User Profile Menu */}
-              <IconButton
-                onClick={handleUserMenuOpen}
-                sx={{ 
-                  ml: 2,
-                  bgcolor: 'primary.dark',
-                  '&:hover': { bgcolor: 'primary.main' }
-                }}
-              >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'inherit' }}>
-                  {getUserInitials()}
-                </Avatar>
-              </IconButton>
-              <Menu
-                anchorEl={userMenuAnchor}
-                open={Boolean(userMenuAnchor)}
-                onClose={handleUserMenuClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <Box sx={{ px: 2, py: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
+          <nav className="flex-1 overflow-y-auto px-2 py-4 space-y-1">
+            <Link 
+              to="/dashboard" 
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                location.pathname === '/dashboard' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <HomeIconFeather className="mr-3 h-5 w-5" />
+              Dashboard
+            </Link>
+            
+            <Link 
+              to="/appointments" 
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                location.pathname.startsWith('/appointments') 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <CalendarIconFeather className="mr-3 h-5 w-5" />
+              Appointments
+            </Link>
+            
+            <Link 
+              to="/staff" 
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                location.pathname.startsWith('/staff') 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <UsersIconFeather className="mr-3 h-5 w-5" />
+              Staff
+            </Link>
+            
+            <Link 
+              to="/profile" 
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                location.pathname === '/profile' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <UserIconFeather className="mr-3 h-5 w-5" />
+              Profile
+            </Link>
+            
+            <Link 
+              to="/settings" 
+              className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
+                location.pathname === '/settings' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <SettingsIconFeather className="mr-3 h-5 w-5" />
+              Settings
+            </Link>
+          </nav>
+          
+          <div className="px-4 py-4 border-t border-gray-200">
+            {user && (
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-600 font-semibold">
+                    {getUserInitials()}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {user.name || 'User'}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
                     {user.email}
-                  </Typography>
-                </Box>
-                <Divider />
-                <MenuItem onClick={handleProfileClick}>
-                  <ListItemIcon>
-                    <AccountCircleIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Profile</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleSettingsClick}>
-                  <ListItemIcon>
-                    <SettingsIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Settings</ListItemText>
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleLogoutClick}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Logout</ListItemText>
-                </MenuItem>
-              </Menu>
-            </>
-          )}
-        </Toolbar>
-      </AppBar>
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <LogOutIconFeather className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={handleDrawerToggle}
+      {/* Main content */}
+      <div className="flex-1 flex flex-col md:ml-64">
+        <header className="bg-white shadow-sm z-10">
+          <div className="h-16 px-4 flex items-center justify-between">
+            <button
+              className="md:hidden text-gray-600 hover:text-gray-900"
+              onClick={() => setDrawerOpen(true)}
+            >
+              <MenuIconFeather className="h-6 w-6" />
+            </button>
+            <div className="flex-1 flex justify-between px-2 lg:ml-6">
+              {/* Add clinic selector button for super admin users */}
+              <div className="flex items-center">
+                {user && user.role === 'SUPER_ADMIN' && clinicSelectorButton}
+              </div>
+              <div className="max-w-lg w-full flex justify-end">
+                {/* User profile/settings can go here */}
+              </div>
+            </div>
+          </div>
+        </header>
+        
+        <main className="flex-1 overflow-y-auto p-4">
+          {children}
+        </main>
+      </div>
+      
+      {/* Clinic Menu */}
+      <Menu
+        id="clinic-select-menu"
+        anchorEl={clinicMenuAnchor}
+        open={Boolean(clinicMenuAnchor)}
+        onClose={handleClinicMenuClose}
+        MenuListProps={{
+          'aria-labelledby': 'clinic-select-button',
+        }}
       >
-        {drawerContent}
-      </Drawer>
-      
-      <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
-        {children}
-      </Container>
-      
-      <Box component="footer" sx={{ py: 2, bgcolor: 'background.paper', textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Clinic Management System
-        </Typography>
-      </Box>
-    </Box>
+        {clinicMenuItems}
+      </Menu>
+    </div>
   );
 };
 

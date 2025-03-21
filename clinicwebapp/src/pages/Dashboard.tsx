@@ -24,8 +24,6 @@ import {
   Event as EventIcon,
   Person as PersonIcon,
   ArrowUpward as ArrowUpwardIcon,
-  // Remove the unused import:
-  // ArrowDownward as ArrowDownwardIcon
 } from '@mui/icons-material';
 import { 
   BarChart, 
@@ -43,7 +41,6 @@ import {
   Line
 } from 'recharts';
 import { format, subDays, parseISO } from 'date-fns';
-import Layout from '../components/Layout';
 import { 
   appointmentService, 
   patientService,
@@ -165,16 +162,14 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-          <CircularProgress />
-        </Box>
-      </Layout>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   return (
-    <Layout>
+    <Box>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Clinic Dashboard
@@ -422,11 +417,6 @@ export default function Dashboard() {
           </Grid>
         )}
       </Grid>
-    </Layout>
+    </Box>
   );
 }
-
-// Remove these unused imports:
-// import Button from '@mui/material/Button';
-// import IconButton from '@mui/material/IconButton';
-// import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';

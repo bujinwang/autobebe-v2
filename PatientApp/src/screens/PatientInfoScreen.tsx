@@ -24,21 +24,49 @@ type PatientInfoScreenProps = {
   route: RouteProp<RootStackParamList, 'PatientInfo'>;
 };
 
+// Add this function after the imports and before the component
+const isValidDate = (dateString: string): boolean => {
+  // Basic validation for MM/DD/YYYY format
+  const regex = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+  if (!regex.test(dateString)) {
+    return false;
+  }
+  
+  // Check if it's a valid date (not just a valid format)
+  const parts = dateString.split('/');
+  const month = parseInt(parts[0], 10);
+  const day = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+  
+  // Create date object and check if the date is valid
+  const date = new Date(year, month - 1, day);
+  return (
+    date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day
+  );
+};
+
 const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   // Log route params when component mounts
   useEffect(() => {
     console.log('PatientInfoScreen - Route params:', route.params);
   }, []);
 
+  // Add dateOfBirth to your state
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    clinicId: route.params?.clinicId || '4F420955' // Ensure we have a default clinic ID
+    email: '',
+    dateOfBirth: '',
+    clinicId: route.params?.clinicId || '4F420955'
   });
 
   const [errors, setErrors] = useState({
     name: '',
-    phone: ''
+    phone: '',
+    email: '',
+    dateOfBirth: ''
   });
 
   const [showScanner, setShowScanner] = useState(false);
@@ -104,7 +132,9 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   const validateForm = () => {
     const newErrors = {
       name: '',
-      phone: ''
+      phone: '',
+      email: '',
+      dateOfBirth: ''
     };
 
     if (!formData.name.trim()) {
@@ -121,6 +151,20 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
       if (digitsOnly.length < 10 || digitsOnly.length > 15) {
         newErrors.phone = 'Phone number must be between 10 and 15 digits';
       }
+    }
+
+    // Email validation
+    const email = formData.email.trim();
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    }
+
+    // Date of Birth validation (optional)
+    if (formData.dateOfBirth && !isValidDate(formData.dateOfBirth)) {
+      newErrors.dateOfBirth = 'Please enter a valid date (MM/DD/YYYY)';
     }
 
     setErrors(newErrors);
@@ -153,29 +197,44 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
+  // Make sure the handleSavePatientData function properly includes dateOfBirth
   const handleSavePatientData = async () => {
     try {
       setRegistering(true);
-
+      console.log('Attempting to save patient data:', formData);
+  
       if (!validateForm()) {
+        console.log('Form validation failed');
         Alert.alert('Validation Error', 'Please correct the errors in the form.');
         return false;
       }
-
+  
       if (!formData.clinicId) {
+        console.log('Missing clinic ID');
         Alert.alert('Error', 'Clinic ID is required');
         return false;
       }
-
+  
       // Attempt to save patient data
+      console.log('Calling savePatientData with:', {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email || '',
+        dateOfBirth: formData.dateOfBirth || '',
+        clinicId: formData.clinicId
+      });
+      
       const savedPatient = await savePatientData({
         name: formData.name,
         phone: formData.phone,
+        email: formData.email || '',
+        dateOfBirth: formData.dateOfBirth || '',
         clinicId: formData.clinicId
       });
       console.log('Patient registered successfully:', savedPatient);
       return true;
     } catch (error) {
+      console.error('Error saving patient data:', error);
       let message = 'Failed to register patient. Please try again.';
       
       if (error instanceof Error) {
@@ -194,7 +253,8 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
       setRegistering(false);
     }
   };
-
+  
+  // Make sure the handleNext function properly passes dateOfBirth
   const handleNext = async () => {
     setLoading(true);
     try {
@@ -205,8 +265,9 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
           patientInfo: {
             name: formData.name,
             phone: formData.phone,
+            email: formData.email || '',
+            dateOfBirth: formData.dateOfBirth || '',
             healthcareNumber: '', // Add empty healthcare number since it's required by the type
-            email: '', // Add empty email since it's required by the type
           },
           clinicId: formData.clinicId
         });
@@ -264,15 +325,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               </View>
             )}
             
-            {/* Main Scan Button */}
-            <TouchableOpacity 
-              style={styles.mainScanButton} 
-              onPress={toggleScanOptions}
-            >
-              <Text style={styles.mainScanButtonText}>📷 Scan Your ID Document</Text>
-            </TouchableOpacity>
-            
-            {/* Scan Options */}
+                 {/* Scan Options */}
             {showScanOptions && (
               <View style={styles.scanOptionsContainer}>
                 <TouchableOpacity 
@@ -315,6 +368,34 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
             </View>
             
+            {/* Email Input Field */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={[styles.input, errors.email ? styles.inputError : null]}
+                value={formData.email}
+                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                placeholder="example@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+            </View>
+            
+            {/* Date of Birth Field */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Date of Birth</Text>
+              <TextInput
+                style={[styles.input, errors.dateOfBirth ? styles.inputError : null]}
+                value={formData.dateOfBirth}
+                onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
+                placeholder="MM/DD/YYYY"
+                keyboardType="numbers-and-punctuation"
+              />
+              {errors.dateOfBirth ? <Text style={styles.errorText}>{errors.dateOfBirth}</Text> : null}
+            </View>
+            
+            {/* Next button */}
             <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
               {loading || registering ? (
                 <ActivityIndicator color="#ffffff" />

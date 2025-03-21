@@ -93,19 +93,8 @@ export const fetchClinicsForSelection = async () => {
     return [];
   } catch (error) {
     console.error('Failed to fetch clinics:', error);
-    // Fallback to mock data if API call fails
-    console.log('Falling back to mock clinic data');
-    return [
-      {
-        id: '4F420955',
-        name: "Naomi's Clinic",
-        company: "Naomi's Healthcare",
-        address: '123 Healthcare St',
-        phone: '555-0123',
-        hours: '9:00 AM - 5:00 PM',
-        welcomeMessage: 'Welcome to our clinic!'
-      }
-    ];
+    // Return empty array instead of mock data
+    return [];
   }
 };
 

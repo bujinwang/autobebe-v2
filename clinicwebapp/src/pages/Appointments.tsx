@@ -46,7 +46,6 @@ import {
 import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
 import { appointmentService, type Appointment } from '../services';
 import { useAuth } from '../contexts/AuthContext';
-import Layout from '../components/Layout';
 
 // Define tab values
 interface TabPanelProps {
@@ -248,44 +247,38 @@ const Appointments: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
-      </Layout>
+      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Layout>
-        <Box sx={{ my: 4 }}>
-          <Typography color="error" align="center">{error}</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button 
-              variant="contained" 
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-            >
-              Try Again
-            </Button>
-          </Box>
+      <Box sx={{ my: 4 }}>
+        <Typography color="error" align="center">{error}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Button 
+            variant="contained" 
+            startIcon={<RefreshIcon />}
+            onClick={handleRefresh}
+          >
+            Try Again
+          </Button>
         </Box>
-      </Layout>
+      </Box>
     );
   }
 
   return (
-    <Layout>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Appointments
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Manage and view patient appointments
-        </Typography>
-      </Box>
-
+    <Box sx={{ mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        Appointments
+      </Typography>
+      <Typography variant="subtitle1" color="text.secondary">
+        Manage and view patient appointments
+      </Typography>
+    
       {/* Search and Filter Bar */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <TextField
@@ -347,7 +340,7 @@ const Appointments: React.FC = () => {
       <TabPanel value={tabValue} index={2}>
         {renderAppointmentList("Past Appointments")}
       </TabPanel>
-    </Layout>
+    </Box>
   );
 
   function renderAppointmentList(title: string) {

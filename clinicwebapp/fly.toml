@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for joytriage on 2025-03-19T22:17:20Z
+# fly.toml app configuration file for AutoBebe Healthcare System Web Application
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'joytriage'
+app = 'autobebe-webapp'
 primary_region = 'yyz'
 
 [build]
