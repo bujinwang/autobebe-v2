@@ -125,6 +125,7 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
   const fetchDynamicQuestions = async () => {
     // Call the MedicalAI service to get top questions
     setIsLoading(true);
+    console.log('Fetching dynamic questions for purpose:', formData.purpose, 'symptoms:', formData.symptoms);
     
     try {
       // Call the MedicalAI topquestions endpoint
@@ -132,6 +133,8 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
         purposeOfVisit: formData.purpose,
         symptoms: formData.symptoms
       });
+      
+      console.log('Response from getTopQuestions:', JSON.stringify(response));
       
       if (response.success && response.topQuestions.length > 0) {
         // Transform the response into the format expected by the UI
@@ -204,14 +207,34 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
   };
 
   const handleSubmit = async () => {
+    // First validate the form
+    if (!validateForm()) {
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      // Validate required fields
-      if (!formData.purpose.trim() || !formData.symptoms.trim()) {
-        Alert.alert('Error', 'Please fill in all required fields');
+      // If no questions have been loaded yet, fetch them first
+      if (dynamicQuestions.length === 0) {
+        await fetchDynamicQuestions();
+        setIsLoading(false);
+        return; // Stop here to let user answer questions
+      }
+
+      // Check if all questions have been answered
+      const unansweredQuestions = dynamicQuestions.filter(q => !q.answer.trim());
+      if (unansweredQuestions.length > 0) {
+        setIsLoading(false);
+        Alert.alert(
+          'Incomplete Answers',
+          'Please answer all follow-up questions before submitting.',
+          [{ text: 'OK' }]
+        );
         return;
       }
 
+      // Continue with submission since we have questions and answers now
+      
       // Ensure we have arrays for questions and answers
       const questions = dynamicQuestions.map(q => q.question || '').filter(q => q.trim() !== '');
       const answers = dynamicQuestions.map(q => q.answer || '').filter(a => a.trim() !== '');
@@ -306,6 +329,13 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
           {errors.symptoms ? <Text style={styles.errorText}>{errors.symptoms}</Text> : null}
         </View>
 
+        {dynamicQuestions.length === 0 && (
+          <View style={styles.stepIndicator}>
+            <Text style={styles.stepText}>Step 1 of 2: Enter your symptoms above</Text>
+            <Text style={styles.stepDescription}>After clicking "Continue", our AI Medical Assistant will analyze your symptoms and ask targeted follow-up questions</Text>
+          </View>
+        )}
+
         {/* Dynamic Questions Section */}
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -314,6 +344,9 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
           </View>
         ) : dynamicQuestions.length > 0 ? (
           <View style={styles.questionsContainer}>
+            <View style={styles.stepIndicator}>
+              <Text style={styles.stepText}>Step 2 of 2: Answer follow-up questions</Text>
+            </View>
             <Text style={styles.sectionTitle}>Follow-up Questions</Text>
             {dynamicQuestions.map((item) => (
               <View key={item.id} style={styles.questionItem}>
@@ -330,12 +363,15 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
         ) : null}
 
         <TouchableOpacity 
-          style={styles.nextButton} 
+          style={[
+            styles.nextButton, 
+            dynamicQuestions.length > 0 ? styles.submitButton : styles.continueButton
+          ]} 
           onPress={handleSubmit}
           disabled={isLoading}
         >
           <Text style={styles.nextButtonText}>
-            {dynamicQuestions.length === 0 ? 'Continue' : (existingAppointmentId ? 'Update' : 'Submit')}
+            {isLoading ? 'Loading...' : (dynamicQuestions.length === 0 ? 'Continue to Questions' : (existingAppointmentId ? 'Update' : 'Submit'))}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -408,7 +444,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   nextButton: {
-    backgroundColor: '#27ae60',
+    backgroundColor: '#4A90E2',
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 8,
@@ -451,6 +487,30 @@ const styles = StyleSheet.create({
     color: '#2c3e50',
     marginBottom: 8,
     fontWeight: '500',
+  },
+  stepIndicator: {
+    backgroundColor: '#f0f7ff',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#cce5ff',
+  },
+  stepText: {
+    color: '#0d47a1',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  stepDescription: {
+    color: '#0d47a1',
+    fontSize: 14,
+  },
+  continueButton: {
+    backgroundColor: '#4A90E2',
+  },
+  submitButton: {
+    backgroundColor: '#27ae60',
   },
 });
 

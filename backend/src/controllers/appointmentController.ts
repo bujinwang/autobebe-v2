@@ -66,6 +66,7 @@ export const appointmentController = {
       const input: CreateAppointmentInput = {
         ...req.body,
         appointmentDate: new Date(req.body.appointmentDate),
+        status: req.body.status || 'Scheduled',
         followUpAnswers: req.body.followUpAnswers || '',
         followUpQuestions: req.body.followUpQuestions || '',
         possibleTreatments: req.body.possibleTreatments || '',
@@ -168,8 +169,8 @@ export const appointmentController = {
       const appointment = await appointmentService.createAppointment({
         patientId: patient.id,
         clinicId: appointmentInfo.clinicId,
-        status: 'Pending',
-        appointmentDate: new Date().toISOString(),
+        status: 'Scheduled',
+        appointmentDate: new Date(),
         purposeOfVisit: appointmentInfo.purposeOfVisit,
         symptoms: appointmentInfo.symptoms,
         followUpQuestions: appointmentInfo.followUpQuestions.join('\n'),

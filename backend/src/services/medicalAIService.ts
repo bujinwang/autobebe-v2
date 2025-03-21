@@ -189,7 +189,7 @@ class MedicalAIService {
     try {
       const systemPrompt = 'You are a medical assistant AI. Generate exactly 3 relevant follow-up questions based on ' +
           'the patient\'s purpose of visit and symptoms. Return ONLY a JSON object with a topQuestions array containing ' +
-          'the 3 questions. Do not include any markdown formatting or additional text.';
+          'the 5 questions. Do not include any markdown formatting or additional text.';
       const prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n\nGenerate 
       5 follow-up questions and return them in this exact format:\n{"topQuestions": ["question1", "question2", 
       "question3", , "question4", , "question5"]}`;

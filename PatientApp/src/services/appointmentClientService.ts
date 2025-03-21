@@ -100,7 +100,7 @@ export const createPatientAppointment = async (request: PatientAppointmentReques
       },
       appointmentInfo: {
         ...request.appointmentInfo,
-        status: 'Pending',
+        status: 'Scheduled',
         appointmentDate: new Date().toISOString(),
         followUpQuestions,
         followUpAnswers,

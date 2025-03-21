@@ -13,9 +13,15 @@ export interface MedicalAIRequest {
   followUpQAPairs: { question: string; answer: string }[];
 }
 
+export interface WaitingInstructionsResponse {
+  success: boolean;
+  errorMessage?: string;
+  instructions: string;
+}
+
 export async function getRecommendations(request: MedicalAIRequest): Promise<AIRecommendation> {
   try {
-    const response = await axiosInstance.post('/ai/recommendations', request);
+    const response = await axiosInstance.post('/medicalai/recommendations', request);
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to get AI recommendations');
@@ -24,7 +30,7 @@ export async function getRecommendations(request: MedicalAIRequest): Promise<AIR
 
 export async function analyzeSymptoms(symptoms: string): Promise<string[]> {
   try {
-    const response = await axiosInstance.post('/ai/analyze-symptoms', { symptoms });
+    const response = await axiosInstance.post('/medicalai/topquestions', { symptoms });
     return response.data.possibleConditions;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to analyze symptoms');
@@ -36,12 +42,21 @@ export async function suggestFollowUpQuestions(
   currentAnswers: Record<string, string>
 ): Promise<string[]> {
   try {
-    const response = await axiosInstance.post('/ai/follow-up-questions', {
+    const response = await axiosInstance.post('/medicalai/topquestions', {
       symptoms,
       currentAnswers,
     });
     return response.data.questions;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || 'Failed to get follow-up questions');
+  }
+}
+
+export async function getWaitingInstructions(request: MedicalAIRequest): Promise<WaitingInstructionsResponse> {
+  try {
+    const response = await axiosInstance.post('/medicalai/waitinginstructions', request);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to get waiting instructions');
   }
 } 

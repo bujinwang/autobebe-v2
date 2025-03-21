@@ -82,8 +82,8 @@ export const validatePatientAppointment = [
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        errors: errors.array().map(err => ({
-          field: err.param,
+        errors: errors.array().map((err: ValidationError) => ({
+          field: err.type === 'field' ? err.path : err.type,
           message: err.msg
         }))
       });

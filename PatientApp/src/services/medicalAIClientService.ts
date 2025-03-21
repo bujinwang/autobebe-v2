@@ -1,67 +1,62 @@
 import apiClient from '../api/client';
-import axios from 'axios';
-import config from '../config/env/config.template';
 
-// Create a specific instance for AI requests with longer timeout
-const aiClient = axios.create({
-  baseURL: config.API.BASE_URL,
-  timeout: 30000, // 30 seconds timeout for AI requests
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  }
-});
-
-// Copy the interceptors from the main apiClient
-aiClient.interceptors.request = apiClient.interceptors.request;
-aiClient.interceptors.response = apiClient.interceptors.response;
-
-// Define the base URL for the API
-
-// Define the TopQuestionsRequest interface
+// Type definitions
 export interface TopQuestionsRequest {
   purposeOfVisit: string;
   symptoms: string;
 }
 
-// Define the TopQuestionsResponse interface
 export interface TopQuestionsResponse {
   success: boolean;
   errorMessage?: string;
   topQuestions: string[];
 }
 
-// Define the FollowUpQA interface
 export interface FollowUpQA {
   question: string;
   answer: string;
 }
 
-// Define the WaitingInstructionsRequest interface
 export interface WaitingInstructionsRequest {
   purposeOfVisit: string;
   symptoms: string;
   followUpQAPairs: FollowUpQA[];
 }
 
-// Define the WaitingInstructionsResponse interface
 export interface WaitingInstructionsResponse {
   success: boolean;
   errorMessage?: string;
   instructions: string;
 }
 
-// Get top 3 follow-up questions based on purpose of visit and symptoms
+// AI operations timeout (longer than standard API calls)
+const AI_REQUEST_TIMEOUT = 30000; // 30 seconds
+
+/**
+ * Get top follow-up questions based on purpose of visit and symptoms
+ */
 export const getTopQuestions = async (request: TopQuestionsRequest): Promise<TopQuestionsResponse> => {
+  console.log('getTopQuestions called with request:', JSON.stringify(request));
   try {
-    const response = await aiClient.post('/MedicalAI/topquestions', {
-      purposeOfVisit: request.purposeOfVisit,
-      symptoms: request.symptoms
-    });
+    console.log('Making API call to /medicalai/topquestions endpoint');
+    const response = await apiClient.post('/medicalai/topquestions', 
+      {
+        purposeOfVisit: request.purposeOfVisit,
+        symptoms: request.symptoms
+      },
+      { timeout: AI_REQUEST_TIMEOUT }
+    );
+    console.log('getTopQuestions API response status:', response.status);
+    console.log('getTopQuestions API response data:', JSON.stringify(response.data));
     return response.data;
   } catch (error) {
     console.error('Error fetching top questions:', error);
-    // Return a default error response
+    // Check if it's an axios error with response data
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as any;
+      console.error('API Error status:', axiosError.response?.status);
+      console.error('API Error data:', JSON.stringify(axiosError.response?.data));
+    }
     return {
       success: false,
       errorMessage: 'Failed to fetch top questions. Please try again.',
@@ -70,13 +65,28 @@ export const getTopQuestions = async (request: TopQuestionsRequest): Promise<Top
   }
 };
 
-// Get waiting instructions based on all collected information
+/**
+ * Get waiting instructions based on all collected information
+ */
 export const getWaitingInstructions = async (request: WaitingInstructionsRequest): Promise<WaitingInstructionsResponse> => {
+  console.log('getWaitingInstructions called with request:', JSON.stringify(request));
   try {
-    const response = await aiClient.post('/MedicalAI/waitinginstructions', request);
+    console.log('Making API call to /medicalai/waitinginstructions endpoint');
+    const response = await apiClient.post('/medicalai/waitinginstructions', 
+      request, 
+      { timeout: AI_REQUEST_TIMEOUT }
+    );
+    console.log('getWaitingInstructions API response status:', response.status);
+    console.log('getWaitingInstructions API response data:', JSON.stringify(response.data));
     return response.data;
   } catch (error) {
     console.error('Error getting waiting instructions:', error);
+    // Check if it's an axios error with response data
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as any;
+      console.error('API Error status:', axiosError.response?.status);
+      console.error('API Error data:', JSON.stringify(axiosError.response?.data));
+    }
     return {
       success: false,
       errorMessage: 'Failed to get waiting instructions. Please try again.',

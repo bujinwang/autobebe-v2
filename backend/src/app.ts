@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger';
 import config from './config';
 import patientRoutes from './routes/patientRoutes';
 import publicPatientRoutes from './routes/publicPatientRoutes';
@@ -9,6 +11,7 @@ import appointmentRoutes from './routes/appointmentRoutes';
 import medicalAIRoutes from './routes/medicalAIRoutes';
 import authRoutes from './routes/authRoutes';
 import staffRoutes from './routes/staffRoutes';
+import userRoutes from './routes/userRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import publicAppointmentRoutes from './routes/publicAppointmentRoutes';
 import { authenticate } from './middleware/auth';
@@ -20,6 +23,9 @@ app.use(cors());
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Log configuration for debugging (remove in production)
 if (config.nodeEnv === 'development') {
@@ -41,6 +47,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/public/patients', publicPatientRoutes);
 app.use('/api/public/appointments', publicAppointmentRoutes);
 app.use('/api/public/clinics', publicClinicRoutes);
+app.use('/api/users', userRoutes);
 
 // Protected routes (require authentication)
 app.use('/api/auth', authRoutes);

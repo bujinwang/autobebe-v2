@@ -36,3 +36,4 @@ coverage/
 # Prisma
 prisma/*.db
 prisma/migrations/
+prisma/seed.ts
