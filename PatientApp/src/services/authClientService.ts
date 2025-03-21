@@ -1,24 +1,34 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import apiClient from '../api/client';
 
-const API_BASE_URL = 'http://localhost:5000/api'; // Updated to use autobebe-v2/backend
 
 interface AuthResponse {
   token: string;
-  expiresAt: number;
+  user: {
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    clinicId?: string;
+  };
 }
 
-export const login = async (username: string, password: string): Promise<boolean> => {
+export const login = async (email: string, password: string): Promise<boolean> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-      username,
+    const response = await apiClient.post<AuthResponse>('/auth/login', {
+      email,
       password
     });
     
-    const authData: AuthResponse = response.data;
+    const authData = response.data;
     
     await AsyncStorage.setItem('authToken', authData.token);
-    await AsyncStorage.setItem('tokenExpiry', authData.expiresAt.toString());
+    await AsyncStorage.setItem('tokenExpiry', (Date.now() + 8 * 60 * 60 * 1000).toString()); // 8 hours from now
+    await AsyncStorage.setItem('userRole', authData.user.role);
+    await AsyncStorage.setItem('clinicId', authData.user.clinicId || '');
+    
+    // Update apiClient authorization header
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${authData.token}`;
     
     return true;
   } catch (error) {

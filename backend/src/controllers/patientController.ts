@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { patientService, CreatePatientInput, UpdatePatientInput } from '../services/patientService';
+import { prisma } from '../db';
+import { logger } from '../utils/logger';
 
 export const patientController = {
   async getAllPatients(req: Request, res: Response) {
@@ -68,6 +70,51 @@ export const patientController = {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete patient' });
+    }
+  },
+
+  // Public registration endpoint
+  async registerPatient(req: Request, res: Response) {
+    try {
+      const { name, phone, clinicId } = req.body;
+
+      if (!clinicId) {
+        return res.status(400).json({
+          success: false,
+          error: 'Clinic ID is required'
+        });
+      }
+
+      // Create new patient with proper clinic relation
+      const patient = await prisma.patient.create({
+        data: {
+          name,
+          phone,
+          clinic: {
+            connect: { id: clinicId }
+          }
+        },
+        include: {
+          clinic: true
+        }
+      });
+
+      // Log the registration
+      logger.info('New patient registered', {
+        patientId: patient.id,
+        clinicId: patient.clinicId
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: patient
+      });
+    } catch (error) {
+      logger.error('Error registering patient', { error });
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to register patient'
+      });
     }
   }
 }; 

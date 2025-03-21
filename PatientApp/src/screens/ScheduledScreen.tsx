@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { getWaitingInstructions, WaitingInstructionsRequest } from '../services/medicalAIService';
+import { getWaitingInstructions, WaitingInstructionsRequest } from '../services/medicalAIClientService';
 
 type ScheduledScreenProps = {
   navigation: any;

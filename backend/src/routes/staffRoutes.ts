@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import staffController from '../controllers/staffController';
-import { authenticate, authorizeClinicAdmin } from '../middlewares/auth';
+import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
 
 const router = Router();
 

@@ -2,11 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import config from './config';
 import patientRoutes from './routes/patientRoutes';
+import publicPatientRoutes from './routes/publicPatientRoutes';
 import clinicRoutes from './routes/clinicRoutes';
+import publicClinicRoutes from './routes/publicClinicRoutes';
 import appointmentRoutes from './routes/appointmentRoutes';
 import medicalAIRoutes from './routes/medicalAIRoutes';
 import authRoutes from './routes/authRoutes';
 import staffRoutes from './routes/staffRoutes';
+import { errorHandler } from './middleware/errorHandler';
+import publicAppointmentRoutes from './routes/publicAppointmentRoutes';
+import { authenticate } from './middleware/auth';
 
 const app = express();
 
@@ -27,28 +32,31 @@ if (config.nodeEnv === 'development') {
   });
 }
 
-// Use the auth routes
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
+// Public routes (no authentication required)
+app.use('/api/public/patients', publicPatientRoutes);
+app.use('/api/public/appointments', publicAppointmentRoutes);
+app.use('/api/public/clinics', publicClinicRoutes);
+
+// Protected routes (require authentication)
 app.use('/api/auth', authRoutes);
-
-// Use the patient routes
-app.use('/api/patients', patientRoutes);
-
-// Use the clinic routes
-app.use('/api/clinics', clinicRoutes);
+app.use('/api/admin/patients', authenticate, patientRoutes); // Admin patient routes
+app.use('/api/clinics', authenticate, clinicRoutes);
 
 // Use the appointment routes
-app.use('/api/appointments', appointmentRoutes);
+app.use('/api/appointments', authenticate, appointmentRoutes);
 
 // Use the medical AI routes
 app.use('/api/medicalai', medicalAIRoutes);
 
 // Use the staff routes
-app.use('/api/staff', staffRoutes);
+app.use('/api/staff', authenticate, staffRoutes);
 
 // Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
+app.use(errorHandler);
 
 export default app;

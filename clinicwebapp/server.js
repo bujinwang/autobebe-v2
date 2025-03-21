@@ -4,7 +4,7 @@ const compression = require('compression');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3001;
 
 // Enable compression
 app.use(compression());

@@ -24,35 +24,46 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
         setIsLoading(true);
         setApiError(null);
         const clinicList = await fetchClinicsForSelection();
-        setClinics(clinicList);
+        console.log('Loaded clinics:', clinicList); // Debug log
         
-        // Set the first clinic as default if available
-        if (clinicList.length > 0) {
+        if (Array.isArray(clinicList) && clinicList.length > 0) {
+          setClinics(clinicList);
           setSelectedClinic(clinicList[0]);
           console.log(`Default clinic set: ${clinicList[0].name} with ID: ${clinicList[0].id}`);
         } else {
+          console.log('No clinics found in the response');
           // Set a fallback default clinic if the list is empty
           const defaultClinic = {
             id: '4F420955',
-            name: "Default Clinic"
+            name: "Naomi's Clinic",
+            company: "Naomi's Healthcare",
+            address: '123 Healthcare St',
+            phone: '555-0123',
+            hours: '9:00 AM - 5:00 PM'
           };
+          setClinics([defaultClinic]);
           setSelectedClinic(defaultClinic);
           console.log(`No clinics found, using default: ${defaultClinic.name} with ID: ${defaultClinic.id}`);
         }
       } catch (error) {
         console.error('Failed to load clinics:', error);
-        setApiError('Unable to load clinics. Using default clinic.');
+        setApiError('Unable to load clinics. Please try again later.');
         // Set a default clinic when API fails
-        const fallbackClinic = {
+        const defaultClinic = {
           id: '4F420955',
-          name: "Naomi's Clinic"
+          name: "Naomi's Clinic",
+          company: "Naomi's Healthcare",
+          address: '123 Healthcare St',
+          phone: '555-0123',
+          hours: '9:00 AM - 5:00 PM'
         };
-        setSelectedClinic(fallbackClinic);
-        console.log(`Error loading clinics, using fallback: ${fallbackClinic.name} with ID: ${fallbackClinic.id}`);
+        setClinics([defaultClinic]);
+        setSelectedClinic(defaultClinic);
       } finally {
         setIsLoading(false);
       }
     };
+
     loadClinics();
   }, []);
 

@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 interface CardScannerProps {
   scanType: 'healthcard' | 'driverlicense';
-  onScanComplete: (data: { name?: string; healthcareNumber?: string }) => void;
+  onScanComplete: (data: { name?: string }) => void;
   onClose: () => void;
 }
 
@@ -27,7 +27,7 @@ const CardScanner = ({ scanType, onScanComplete, onClose }: CardScannerProps) =>
         
         // In a real app, you would send this image to an OCR service
         // For this demo, we'll simulate extracting data
-        simulateDataExtraction(scanType);
+        handleScan();
       } catch (error) {
         console.error('Error taking picture:', error);
         Alert.alert('Error', 'Failed to capture image. Please try again.');
@@ -46,7 +46,7 @@ const CardScanner = ({ scanType, onScanComplete, onClose }: CardScannerProps) =>
       if (!result.canceled) {
         // In a real app, you would send this image to an OCR service
         // For this demo, we'll simulate extracting data
-        simulateDataExtraction(scanType);
+        handleScan();
       }
     } catch (error) {
       console.error('Error picking image:', error);
@@ -54,21 +54,12 @@ const CardScanner = ({ scanType, onScanComplete, onClose }: CardScannerProps) =>
     }
   };
 
-  const simulateDataExtraction = (type: 'healthcard' | 'driverlicense') => {
-    // Simulate processing delay
-    setTimeout(() => {
-      if (type === 'healthcard') {
-        onScanComplete({
-          name: 'John Doe',
-          healthcareNumber: '123456789'
-        });
-      } else {
-        onScanComplete({
-          name: 'Jane Smith',
-          healthcareNumber: ''
-        });
-      }
-    }, 1500);
+  const handleScan = () => {
+    // Mock scan result - remove healthcare number
+    const mockData = {
+      name: 'John Doe',
+    };
+    onScanComplete(mockData);
   };
 
   if (hasPermission === null) {

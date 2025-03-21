@@ -14,11 +14,9 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { savePatientData, getPatientByHealthcareNumber } from '../services/patientService';
-import { getClinicInfoById } from '../services/clinicService';
-import { getAppointmentById } from '../services/appointmentService';
-
-// We'll need to create this component
+import { registerPatient, savePatientData } from '../services/patientClientService';
+import { getClinicInfoById } from '../services/clinicClientService';
+import { getAppointmentById } from '../services/appointmentClientService';
 import CardScanner from '../components/CardScanner';
 
 type PatientInfoScreenProps = {
@@ -27,40 +25,41 @@ type PatientInfoScreenProps = {
 };
 
 const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
+  // Log route params when component mounts
+  useEffect(() => {
+    console.log('PatientInfoScreen - Route params:', route.params);
+  }, []);
+
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    clinicId: route.params?.clinicId || ''
+    clinicId: route.params?.clinicId || '4F420955' // Ensure we have a default clinic ID
   });
 
   const [errors, setErrors] = useState({
-    name: ''
+    name: '',
+    phone: ''
   });
 
   const [showScanner, setShowScanner] = useState(false);
   const [scanType, setScanType] = useState<'healthcard' | 'driverlicense'>('healthcard');
   const [showScanOptions, setShowScanOptions] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [registering, setRegistering] = useState(false);
 
-  const [loading, setLoading] = useState(true);
   const [existingAppointmentId, setExistingAppointmentId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const initializeScreen = async () => {
       try {
         console.log('Initializing PatientInfoScreen...');
-        // Get clinic ID from route params instead of hardcoding
-        const clinicId = route.params?.clinicId;
-        console.log(`Fetching clinic info for ID: ${clinicId}`);
-        
-        if (!clinicId) {
-          throw new Error('No clinic ID provided');
-        }
+        const clinicId = route.params?.clinicId || '4F420955';
+        console.log(`Using clinic ID: ${clinicId}`);
         
         const clinic = await getClinicInfoById(clinicId);
+        console.log('Fetched clinic info:', clinic);
         
-        // Check if we have route params with existing appointment or patient info
         if (route.params) {
-          // If we have an existing appointment ID, fetch that appointment
           if (route.params.existingAppointmentId) {
             const appointmentId = route.params.existingAppointmentId;
             setExistingAppointmentId(appointmentId);
@@ -68,35 +67,26 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
             console.log(`Loading existing appointment: ${appointmentId}`);
             const appointment = await getAppointmentById(appointmentId);
             
-            // Get patient info from the appointment
-            if (appointment && appointment.patientId) {
-              const patient = await getPatientByHealthcareNumber(appointment.patientId.toString());
-              if (patient) {
-                setFormData({
-                  name: patient.name,
-                  healthcareNumber: patient.healthcareNumber,
-                  phone: patient.phone || '',
-                  clinicId: clinic.id
-                });
-              }
+            if (appointment) {
+              setFormData({
+                name: appointment.patientName || '',
+                phone: appointment.patientPhone || '',
+                clinicId: clinicId
+              });
             }
           } 
-          // If we have patient info directly in the route params
           else if (route.params.patientInfo) {
             const { patientInfo } = route.params;
             setFormData({
               name: patientInfo.name,
-              healthcareNumber: patientInfo.healthcareNumber,
               phone: patientInfo.phone || '',
-              clinicId: clinic.id
+              clinicId: clinicId
             });
           } else {
-            // Just set the clinic ID if no patient info
-            setFormData(prev => ({ ...prev, clinicId: clinic.id }));
+            setFormData(prev => ({ ...prev, clinicId: clinicId }));
           }
         } else {
-          // No route params, just set the clinic ID
-          setFormData(prev => ({ ...prev, clinicId: clinic.id }));
+          setFormData(prev => ({ ...prev, clinicId: clinicId }));
         }
       } catch (error) {
         console.error('Error initializing PatientInfoScreen:', error);
@@ -105,8 +95,6 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
           'Failed to initialize screen. Please try again later.',
           [{ text: 'OK' }]
         );
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -114,57 +102,117 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   }, [route.params]);
 
   const validateForm = () => {
-    let isValid = true;
     const newErrors = {
-      name: ''
+      name: '',
+      phone: ''
     };
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
-      isValid = false;
+    }
+
+    // Phone validation
+    const phoneNumber = formData.phone.trim();
+    if (!phoneNumber) {
+      newErrors.phone = 'Phone number is required';
+    } else {
+      // Remove any non-digit characters for validation
+      const digitsOnly = phoneNumber.replace(/\D/g, '');
+      if (digitsOnly.length < 10 || digitsOnly.length > 15) {
+        newErrors.phone = 'Phone number must be between 10 and 15 digits';
+      }
     }
 
     setErrors(newErrors);
-    return isValid;
+    return !Object.values(newErrors).some(error => error !== '');
+  };
+
+  const formatPhoneNumber = (text: string) => {
+    // Remove any non-digit characters
+    const digitsOnly = text.replace(/\D/g, '');
+    // Format the phone number as (XXX) XXX-XXXX
+    let formatted = digitsOnly;
+    if (digitsOnly.length >= 3) {
+      formatted = `(${digitsOnly.slice(0, 3)})`;
+      if (digitsOnly.length >= 6) {
+        formatted += ` ${digitsOnly.slice(3, 6)}`;
+        if (digitsOnly.length >= 10) {
+          formatted += `-${digitsOnly.slice(6, 10)}`;
+        } else {
+          formatted += `-${digitsOnly.slice(6)}`;
+        }
+      } else {
+        formatted += ` ${digitsOnly.slice(3)}`;
+      }
+    }
+    return formatted;
+  };
+
+  const handlePhoneChange = (text: string) => {
+    const formatted = formatPhoneNumber(text);
+    setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
   const handleSavePatientData = async () => {
     try {
-      const patientData = {
+      setRegistering(true);
+
+      if (!validateForm()) {
+        Alert.alert('Validation Error', 'Please correct the errors in the form.');
+        return false;
+      }
+
+      if (!formData.clinicId) {
+        Alert.alert('Error', 'Clinic ID is required');
+        return false;
+      }
+
+      // Attempt to save patient data
+      const savedPatient = await savePatientData({
         name: formData.name,
         phone: formData.phone,
         clinicId: formData.clinicId
-      };
-      
-      return await savePatientData(patientData);
+      });
+      console.log('Patient registered successfully:', savedPatient);
+      return true;
     } catch (error) {
-      console.error('Error in handleSavePatientData:', error);
-      throw error;
+      let message = 'Failed to register patient. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Validation failed:')) {
+          message = error.message;
+        } else if (error.message.includes('Too many registration attempts')) {
+          message = 'Too many registration attempts. Please try again later.';
+        } else if (error.message.includes('Unable to connect')) {
+          message = 'Unable to connect to the server. Please check your internet connection.';
+        }
+      }
+      
+      Alert.alert('Registration Error', message);
+      return false;
+    } finally {
+      setRegistering(false);
     }
   };
 
   const handleNext = async () => {
-    if (validateForm()) {
-      try {
-        await handleSavePatientData();
-        // Navigate to the Symptoms screen with patient information
+    setLoading(true);
+    try {
+      const success = await handleSavePatientData();
+      if (success) {
+        // Navigate to symptoms screen with the form data
         navigation.navigate('Symptoms', {
           patientInfo: {
             name: formData.name,
-            healthcareNumber: formData.healthcareNumber,
             phone: formData.phone,
-            email: '', // Adding empty email since it's required by the type
-            // Pass the existing appointment ID if we have one
-            ...(existingAppointmentId && { existingAppointmentId })
-          }
+            healthcareNumber: '', // Add empty healthcare number since it's required by the type
+            email: '', // Add empty email since it's required by the type
+          },
+          clinicId: formData.clinicId
         });
-      } catch (error: any) {
-        Alert.alert(
-          'Error',
-          error.message || 'Failed to save patient information. Please try again.',
-          [{ text: 'OK' }]
-        );
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -174,7 +222,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     setShowScanOptions(false);
   };
 
-  const handleScanComplete = (data: { name?: string; healthcareNumber?: string }) => {
+  const handleScanComplete = (data: { name?: string }) => {
     setShowScanner(false);
     
     // Update form with scanned data
@@ -182,10 +230,6 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     
     if (data.name) {
       updatedFormData.name = data.name;
-    }
-    
-    if (data.healthcareNumber) {
-      updatedFormData.healthcareNumber = data.healthcareNumber;
     }
     
     setFormData(updatedFormData);
@@ -259,20 +303,24 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
             </View>
 
-            {/* Optional Fields */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone Number</Text>
+              <Text style={styles.label}>Phone Number <Text style={styles.required}>*</Text></Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, errors.phone ? styles.inputError : null]}
                 value={formData.phone}
-                onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                placeholder="Enter your phone number"
+                onChangeText={handlePhoneChange}
+                placeholder="(123) 456-7890"
                 keyboardType="phone-pad"
               />
+              {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
             </View>
             
             <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-              <Text style={styles.nextButtonText}>{existingAppointmentId ? 'Update & Continue' : 'Next'}</Text>
+              {loading || registering ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <Text style={styles.nextButtonText}>{existingAppointmentId ? 'Update & Continue' : 'Next'}</Text>
+              )}
             </TouchableOpacity>
           </>
         )}

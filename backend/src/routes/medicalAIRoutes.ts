@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import MedicalAIController from '../controllers/medicalAIController';
-import { authenticate, authorizeStaff } from '../middlewares/auth';
+import { authenticate, authorizeStaff } from '../middleware/auth';
 
 const medicalAIConfig = {
   aiProvider: process.env.MEDICAL_AI_PROVIDER || 'DeepSeek',

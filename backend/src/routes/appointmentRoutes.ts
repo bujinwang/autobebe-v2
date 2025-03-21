@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { appointmentController } from '../controllers/appointmentController';
-import { authenticate, authorizeStaff } from '../middlewares/auth';
+import { authenticate, authorizeStaff } from '../middleware/auth';
 import { createAppointmentValidation } from '../middleware/appointmentValidation';
 
 const router = Router();

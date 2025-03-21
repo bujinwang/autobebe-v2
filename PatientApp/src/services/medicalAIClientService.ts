@@ -1,7 +1,22 @@
+import apiClient from '../api/client';
 import axios from 'axios';
+import config from '../config/env/config.template';
+
+// Create a specific instance for AI requests with longer timeout
+const aiClient = axios.create({
+  baseURL: config.API.BASE_URL,
+  timeout: 30000, // 30 seconds timeout for AI requests
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  }
+});
+
+// Copy the interceptors from the main apiClient
+aiClient.interceptors.request = apiClient.interceptors.request;
+aiClient.interceptors.response = apiClient.interceptors.response;
 
 // Define the base URL for the API
-const API_URL = 'http://localhost:3000/api';
 
 // Define the TopQuestionsRequest interface
 export interface TopQuestionsRequest {
@@ -39,7 +54,7 @@ export interface WaitingInstructionsResponse {
 // Get top 3 follow-up questions based on purpose of visit and symptoms
 export const getTopQuestions = async (request: TopQuestionsRequest): Promise<TopQuestionsResponse> => {
   try {
-    const response = await axios.post(`${API_URL}/MedicalAI/topquestions`, {
+    const response = await aiClient.post('/MedicalAI/topquestions', {
       purposeOfVisit: request.purposeOfVisit,
       symptoms: request.symptoms
     });
@@ -49,36 +64,23 @@ export const getTopQuestions = async (request: TopQuestionsRequest): Promise<Top
     // Return a default error response
     return {
       success: false,
-      errorMessage: 'Failed to fetch follow-up questions. Please try again.',
+      errorMessage: 'Failed to fetch top questions. Please try again.',
       topQuestions: []
     };
   }
 };
 
-// Get personalized waiting instructions based on patient information
+// Get waiting instructions based on all collected information
 export const getWaitingInstructions = async (request: WaitingInstructionsRequest): Promise<WaitingInstructionsResponse> => {
   try {
-    // Ensure followUpQAPairs is an array before mapping
-    const followUpQAPairs = Array.isArray(request.followUpQAPairs) 
-      ? request.followUpQAPairs.map(qa => ({
-          question: qa.question,
-          answer: qa.answer
-        }))
-      : [];
-      
-    const response = await axios.post(`${API_URL}/MedicalAI/waitinginstructions`, {
-      purposeOfVisit: request.purposeOfVisit,
-      symptoms: request.symptoms,
-      followUpQAPairs: followUpQAPairs
-    });
+    const response = await aiClient.post('/MedicalAI/waitinginstructions', request);
     return response.data;
   } catch (error) {
-    console.error('Error fetching waiting instructions:', error);
-    // Return a default error response
+    console.error('Error getting waiting instructions:', error);
     return {
       success: false,
-      errorMessage: 'Failed to fetch waiting instructions. Please try again.',
-      instructions: 'Please stay in the clinic. A clerk will find you when it\'s your turn. If your symptoms worsen, please alert the clinic staff immediately.'
+      errorMessage: 'Failed to get waiting instructions. Please try again.',
+      instructions: ''
     };
   }
 };

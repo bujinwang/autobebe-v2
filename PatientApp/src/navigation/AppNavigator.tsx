@@ -14,6 +14,7 @@ export type RootStackParamList = {
   Home: undefined;
   PatientInfo: {
     existingAppointmentId?: number;
+    clinicId?: string;
     patientInfo?: {
       name: string;
       healthcareNumber: string;
@@ -26,7 +27,8 @@ export type RootStackParamList = {
       healthcareNumber: string;
       phone: string;
       email: string;
-    }
+    },
+    clinicId: string;
   };
   Scheduled: {
     appointmentData?: {

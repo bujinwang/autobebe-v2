@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 
 export interface CreatePatientInput {
   name: string;
-  healthcareNumber: string;
   phone?: string;
   clinicId: string;
 }

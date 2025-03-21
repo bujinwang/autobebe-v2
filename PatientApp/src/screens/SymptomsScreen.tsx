@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
-import { createAppointment, updateAppointment, getAppointmentById } from '../services/appointmentService';
-import { createPatient, getPatientByHealthcareNumber } from '../services/patientService';
-import { getTopQuestions } from '../services/medicalAIService';
+import { createAppointment, updateAppointment, getAppointmentById, createPatientAppointment, PatientAppointmentRequest } from '../services/appointmentClientService';
+import { registerPatient } from '../services/patientClientService';
+import { getTopQuestions } from '../services/medicalAIClientService';
+import { isAxiosError } from 'axios';
 
 type SymptomsScreenProps = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'Symptoms'>;
@@ -22,12 +23,12 @@ type SymptomsScreenProps = {
     params: {
       patientInfo: {
         name: string;
-        healthcareNumber: string;
+        dateOfBirth?: string;
         phone: string;
         email: string;
-        existingAppointmentId?: number;
       },
-      clinicId: string; // Add clinicId to route params
+      clinicId: string;
+      existingAppointmentId?: number;
     }
   };
 };
@@ -202,92 +203,68 @@ const SymptomsScreen = ({ navigation, route }: SymptomsScreenProps) => {
     );
   };
 
-  const saveAppointment = async () => {
+  const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      // First, check if patient exists or create a new one
-      let patientId: number;
-      const existingPatient = await getPatientByHealthcareNumber(patientInfo.healthcareNumber);
-      
-      if (existingPatient) {
-        patientId = existingPatient.id!;
-        console.log(`Using existing patient with ID: ${patientId}`);
-      } else {
-        // Create new patient
-        console.log('Creating new patient');
-        const newPatient = await createPatient({
+      // Validate required fields
+      if (!formData.purpose.trim() || !formData.symptoms.trim()) {
+        Alert.alert('Error', 'Please fill in all required fields');
+        return;
+      }
+
+      // Ensure we have arrays for questions and answers
+      const questions = dynamicQuestions.map(q => q.question || '').filter(q => q.trim() !== '');
+      const answers = dynamicQuestions.map(q => q.answer || '').filter(a => a.trim() !== '');
+
+      // Prepare the appointment request
+      const appointmentRequest: PatientAppointmentRequest = {
+        patientInfo: {
           name: patientInfo.name,
-          healthcareNumber: patientInfo.healthcareNumber,
-          phone: patientInfo.phone,
-          clinicId: clinicId || '4F420955' // Use dynamic clinicId with fallback
-        });
-        patientId = newPatient.id!;
-        console.log(`Created new patient with ID: ${patientId}`);
-      }
-      
-      // Prepare questions and answers for saving
-      const questions = dynamicQuestions.map(q => q.question);
-      const answers = dynamicQuestions.map(q => q.answer);
-      
-      // Prepare appointment data
-      const appointmentData = {
-        patientId,
-        clinicId: clinicId || '4F420955', // Use dynamic clinicId with fallback
-        appointmentDate: new Date().toISOString(),
-        status: 'Scheduled',
-        purposeOfVisit: formData.purpose,
-        symptoms: formData.symptoms,
-        followUpQuestions: JSON.stringify(questions),
-        followUpAnswers: JSON.stringify(answers),
-        possibleTreatments: JSON.stringify([]),
-        suggestedPrescriptions: JSON.stringify([])
+          phone: patientInfo.phone.replace(/\D/g, ''), // Strip formatting for API request
+          email: patientInfo.email || 'no-email@example.com',
+        },
+        appointmentInfo: {
+          clinicId: clinicId || '4F420955',
+          purposeOfVisit: formData.purpose.trim(),
+          symptoms: formData.symptoms.trim(),
+          followUpQuestions: questions,
+          followUpAnswers: answers,
+        }
       };
-      
-      // Check if we're updating an existing appointment or creating a new one
-      if (existingAppointmentId) {
-        console.log(`Updating existing appointment with ID: ${existingAppointmentId}`);
-        await updateAppointment(existingAppointmentId, appointmentData);
-        console.log('Appointment updated successfully');
-      } else {
-        console.log('Creating new appointment');
-        await createAppointment(appointmentData);
-        console.log('New appointment created successfully');
-      }
-      
-      // Prepare appointment data for the Scheduled screen
-      const scheduledScreenData = {
-        purpose: formData.purpose,
-        symptoms: formData.symptoms,
-        questions: dynamicQuestions.map(q => q.question),
-        answers: dynamicQuestions.map(q => q.answer)
-      };
-      
-      // Navigate to the Scheduled screen with appointment data
-      navigation.navigate('Scheduled', { appointmentData: scheduledScreenData });
+
+      console.log('Sending appointment request:', JSON.stringify(appointmentRequest, null, 2));
+
+      // Create the appointment
+      const appointment = await createPatientAppointment(appointmentRequest);
+      console.log('Appointment created successfully:', appointment);
+
+      // Navigate to the scheduled screen
+      navigation.navigate('Scheduled', {
+        appointmentData: {
+          purpose: formData.purpose,
+          symptoms: formData.symptoms,
+          questions: questions,
+          answers: answers
+        }
+      });
     } catch (error) {
       console.error('Error saving appointment:', error);
-      Alert.alert('Error', 'Failed to save appointment. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (validateForm()) {
-      if (dynamicQuestions.length === 0) {
-        // If no dynamic questions yet, fetch them
-        fetchDynamicQuestions();
-      } else {
-        // Check if all dynamic questions are answered
-        const unansweredQuestions = dynamicQuestions.filter(q => !q.answer.trim());
-        
-        if (unansweredQuestions.length > 0) {
-          Alert.alert('Please Answer', 'Please answer all follow-up questions before submitting.');
-        } else {
-          // Save appointment and navigate to scheduled screen
-          saveAppointment();
+      let errorMessage = 'Failed to save your appointment. Please try again.';
+      
+      if (error instanceof Error && isAxiosError(error) && error.response) {
+        const errors = error.response.data?.errors;
+        if (errors && Array.isArray(errors)) {
+          errorMessage = errors.map(err => err.message).join('\n');
         }
       }
+      
+      Alert.alert(
+        'Error',
+        errorMessage,
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 

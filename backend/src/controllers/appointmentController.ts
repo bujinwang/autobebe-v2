@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { appointmentService, CreateAppointmentInput, UpdateAppointmentInput } from '../services/appointmentService';
-import { AuthRequest } from '../middlewares/auth';
+import { AuthRequest } from '../middleware/auth';
+import { patientService } from '../services/patientService';
 
 export const appointmentController = {
   async getAllAppointments(req: AuthRequest, res: Response) {
@@ -136,6 +137,61 @@ export const appointmentController = {
       console.error('Error taking in appointment:', error);
       const err = error as Error;
       res.status(500).json({ error: 'Failed to take in appointment', details: err.message });
+    }
+  },
+
+  // Create appointment for unauthenticated patients
+  async createPatientAppointment(req: Request, res: Response) {
+    try {
+      const { patientInfo, appointmentInfo } = req.body;
+
+      // Validate that followUpQuestions and followUpAnswers are arrays
+      if (!Array.isArray(appointmentInfo.followUpQuestions) || !Array.isArray(appointmentInfo.followUpAnswers)) {
+        return res.status(400).json({
+          success: false,
+          errors: [
+            { message: "Follow-up questions must be an array" },
+            { message: "Follow-up answers must be an array" }
+          ]
+        });
+      }
+
+      // First, create or find the patient
+      const patient = await patientService.findOrCreatePatient({
+        name: patientInfo.name,
+        phone: patientInfo.phone,
+        email: patientInfo.email,
+        clinicId: appointmentInfo.clinicId
+      });
+
+      // Create the appointment
+      const appointment = await appointmentService.createAppointment({
+        patientId: patient.id,
+        clinicId: appointmentInfo.clinicId,
+        status: 'Pending',
+        appointmentDate: new Date().toISOString(),
+        purposeOfVisit: appointmentInfo.purposeOfVisit,
+        symptoms: appointmentInfo.symptoms,
+        followUpQuestions: appointmentInfo.followUpQuestions.join('\n'),
+        followUpAnswers: appointmentInfo.followUpAnswers.join('\n'),
+        possibleTreatments: '',
+        suggestedPrescriptions: ''
+      });
+
+      res.status(201).json({
+        success: true,
+        data: {
+          ...appointment,
+          patientName: patient.name,
+          patientPhone: patient.phone
+        }
+      });
+    } catch (error) {
+      console.error('Error creating patient appointment:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create appointment'
+      });
     }
   }
 };
