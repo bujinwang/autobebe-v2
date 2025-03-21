@@ -2,7 +2,7 @@ import axiosInstance from './axiosConfig';
 import { Patient } from '../types';
 
 class PatientService {
-  private baseUrl = '/patients';
+  private baseUrl = '/admin/patients';
 
   async getAllPatients(): Promise<Patient[]> {
     try {
