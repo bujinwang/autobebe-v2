@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import PublicLayout from './components/PublicLayout';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import Appointments from './pages/Appointments';
@@ -18,6 +19,10 @@ import NotFound from './pages/NotFound';
 const HomePage = React.lazy(() => import('./pages/autobebesys/Home'));
 const BlogPage = React.lazy(() => import('./pages/autobebesys/Blog'));
 const JoyTriagePage = React.lazy(() => import('./pages/autobebesys/JoyTriage'));
+const AboutPage = React.lazy(() => import('./pages/autobebesys/About'));
+const ContactPage = React.lazy(() => import('./pages/autobebesys/Contact'));
+const DemoPage = React.lazy(() => import('./pages/autobebesys/Demo'));
+const PlatformsPage = React.lazy(() => import('./pages/autobebesys/Platforms'));
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => (
@@ -32,11 +37,11 @@ function App() {
       <Router>
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            {/* Set Autobebesys Home as the default landing page */}
+            {/* Public Routes */}
             <Route path="/" element={
-              <Layout>
+              <PublicLayout>
                 <HomePage />
-              </Layout>
+              </PublicLayout>
             } />
             
             <Route path="/login" element={<LoginPage />} />
@@ -44,16 +49,35 @@ function App() {
             {/* Signup route that redirects to login */}
             <Route path="/joytriage/signup" element={<Navigate to="/login" replace />} />
             
-            {/* Autobebesys Public Routes */}
             <Route path="/blog" element={
-              <Layout>
+              <PublicLayout>
                 <BlogPage />
-              </Layout>
+              </PublicLayout>
             } />
             <Route path="/joytriage" element={
-              <Layout>
+              <PublicLayout>
                 <JoyTriagePage />
-              </Layout>
+              </PublicLayout>
+            } />
+            <Route path="/about" element={
+              <PublicLayout>
+                <AboutPage />
+              </PublicLayout>
+            } />
+            <Route path="/contact" element={
+              <PublicLayout>
+                <ContactPage />
+              </PublicLayout>
+            } />
+            <Route path="/demo" element={
+              <PublicLayout>
+                <DemoPage />
+              </PublicLayout>
+            } />
+            <Route path="/platforms" element={
+              <PublicLayout>
+                <PlatformsPage />
+              </PublicLayout>
             } />
             
             {/* Protected Routes */}
@@ -102,7 +126,7 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* User Account Routes */}
+            {/* User Routes */}
             <Route path="/profile" element={
               <ProtectedRoute>
                 <Layout>

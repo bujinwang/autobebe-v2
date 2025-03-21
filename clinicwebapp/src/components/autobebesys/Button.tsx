@@ -7,7 +7,7 @@ interface ButtonProps {
   href?: string;
   onClick?: () => void;
   className?: string;
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'white';
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
 }
@@ -30,6 +30,7 @@ const Button: React.FC<ButtonProps> = ({
     primary: 'text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-sm hover:shadow-md',
     secondary: 'text-blue-700 bg-blue-50 hover:bg-blue-100',
     outline: 'text-blue-700 border border-blue-600 hover:bg-blue-50',
+    white: 'text-blue-700 bg-white hover:bg-gray-100 shadow-sm hover:shadow-md'
   };
   
   // Size styles
