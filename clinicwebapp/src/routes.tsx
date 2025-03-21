@@ -14,6 +14,7 @@ import EditStaff from './pages/EditStaff';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
+import LandingPage from './pages/LandingPage';
 
 // Create new components for autobebesys pages with Suspense for code splitting
 const HomePage = React.lazy(() => import('./pages/autobebesys/Home'));
@@ -42,11 +43,7 @@ const AppRoutes = () => {
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={
-          <PublicLayout>
-            <HomePage />
-          </PublicLayout>
-        } />
+        <Route path="/" element={<LandingPage />} />
         
         <Route path="/login" element={<LoginPage />} />
         

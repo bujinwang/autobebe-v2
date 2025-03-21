@@ -40,13 +40,14 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   const isCurrentPath = (path: string) => location.pathname === path;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'transparent' }}>
       <AppBar 
         position="fixed" 
         color="default" 
         elevation={1}
         sx={{ 
-          backgroundColor: 'background.paper',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
           borderBottom: 1,
           borderColor: 'divider'
         }}

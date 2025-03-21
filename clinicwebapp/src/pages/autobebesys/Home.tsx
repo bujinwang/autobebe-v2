@@ -59,15 +59,22 @@ export default function Home() {
   const theme = useTheme();
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'transparent' }}>
       {/* Hero Section */}
       <Box
         sx={{
           position: 'relative',
-          bgcolor: 'primary.dark',
+          bgcolor: 'rgba(25, 118, 210, 0.85)',
           color: 'common.white',
           pt: { xs: 8, sm: 12 },
           pb: { xs: 8, sm: 12 },
+          borderRadius: { sm: '0 0 20px 20px' },
+          boxShadow: '0 5px 15px rgba(0, 0, 0, 0.1)',
+          animation: 'fadeIn 1.5s ease-out',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0, transform: 'translateY(20px)' },
+            '100%': { opacity: 1, transform: 'translateY(0)' }
+          }
         }}
       >
         <Container maxWidth="lg">
@@ -80,7 +87,7 @@ export default function Home() {
                 mb: 3
               }}
             >
-              Revolutionizing Healthcare Technology
+              AI-Empowered Healthcare
             </Typography>
             <Typography
               variant="h5"
@@ -91,7 +98,7 @@ export default function Home() {
                 mx: 'auto'
               }}
             >
-              Empowering healthcare providers with innovative solutions for better patient care
+              Transforming patient care through advanced AI solutions and machine learning innovation
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
               <Button

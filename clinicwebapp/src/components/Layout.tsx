@@ -340,14 +340,42 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           },
         }}
       >
-        <Toolbar variant="dense" sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'flex-end',
-          minHeight: 48,
-          px: 0.5
-        }}>
-          <IconButton onClick={handleDrawerToggle} size="small">
+        <Toolbar 
+          variant="dense" 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            minHeight: 48,
+            px: 1.5,
+            bgcolor: theme.palette.primary.main,
+            color: 'white',
+          }}
+        >
+          {drawerOpen ? (
+            <Typography 
+              variant="subtitle2" 
+              noWrap 
+              sx={{ 
+                fontWeight: 'medium',
+                opacity: 0.9,
+              }}
+            >
+              Navigation
+            </Typography>
+          ) : (
+            <Box sx={{ width: 24 }} /> // Spacer when drawer is closed
+          )}
+          <IconButton 
+            onClick={handleDrawerToggle} 
+            size="small"
+            sx={{ 
+              color: 'inherit',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
             {drawerOpen ? <ChevronLeftIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
           </IconButton>
         </Toolbar>

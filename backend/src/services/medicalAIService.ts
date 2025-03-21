@@ -135,7 +135,8 @@ class MedicalAIService {
 
   async getRecommendations(request: MedicalAIRequest): Promise<MedicalAIResponse> {
     try {
-      const systemPrompt = 'You are a medical decision support system. Return ONLY a JSON object with possibleTreatments and suggestedPrescriptions arrays. Do not include any markdown formatting or additional text.';
+      const systemPrompt = 'You are a medical decision support system. Return ONLY a JSON object with possibleTreatments' +
+          ' and suggestedPrescriptions arrays. Do not include any markdown formatting or additional text.';
       
       let prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n`;
       if (request.followUpQAPairs.length > 0) {
@@ -144,7 +145,8 @@ class MedicalAIService {
           prompt += `Q: ${qa.question}\nA: ${qa.answer}\n`;
         });
       }
-      prompt += '\nProvide recommendations in this exact format:\n{"possibleTreatments": ["treatment1", "treatment2"], "suggestedPrescriptions": ["prescription1", "prescription2"]}';
+      prompt += '\nProvide recommendations in this exact format:\n{"possibleTreatments": ["treatment1", "treatment2"], ' +
+          '"suggestedPrescriptions": ["prescription1, dosage", "prescription2, dosage"]}';
 
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
       
