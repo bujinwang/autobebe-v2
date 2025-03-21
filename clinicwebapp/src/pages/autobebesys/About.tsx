@@ -1,203 +1,226 @@
-import React, { useState, useEffect } from 'react';
-import Button from '../../components/autobebesys/Button';
+import React from 'react';
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardContent,
+  CardMedia,
+  useTheme,
+  alpha
+} from '@mui/material';
+
+const teamMembers = [
+  {
+    name: 'Dr. Sarah Chen',
+    role: 'Chief Medical Officer',
+    bio: 'Former pediatrician with 15+ years of clinical experience, leading our medical technology innovations.',
+    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    name: 'Michael Park',
+    role: 'Chief Technology Officer',
+    bio: 'Tech veteran with expertise in healthcare systems and AI, driving our platform development.',
+    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+  },
+  {
+    name: 'Dr. Emily Rodriguez',
+    role: 'Head of Clinical Research',
+    bio: 'Specializes in pediatric care protocols and digital health integration.',
+    image: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
+  }
+];
+
+const values = [
+  {
+    title: 'Patient-Centered Innovation',
+    description: 'Every technological advancement we make is driven by improving patient care and outcomes.'
+  },
+  {
+    title: 'Clinical Excellence',
+    description: 'We maintain the highest standards of medical accuracy and clinical best practices.'
+  },
+  {
+    title: 'Accessibility',
+    description: 'Making quality healthcare technology accessible to healthcare providers of all sizes.'
+  },
+  {
+    title: 'Security & Privacy',
+    description: 'Unwavering commitment to protecting patient data and maintaining HIPAA compliance.'
+  }
+];
 
 export default function About() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // Set mounted to true to enable animations after component is mounted
-    setMounted(true);
-    // Scroll to top when component mounts
-    window.scrollTo(0, 0);
-  }, []);
+  const theme = useTheme();
 
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pt: 8 }}>
       {/* Hero Section */}
-      <div className="relative bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              About AutoBebe
-            </h1>
-            <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-              Transforming healthcare through innovative technology solutions
-            </p>
-          </div>
-        </div>
-      </div>
+      <Box sx={{ bgcolor: 'grey.100', py: { xs: 8, md: 12 } }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="h2" component="h1" gutterBottom>
+              About AutoBebe Healthcare
+            </Typography>
+            <Typography
+              variant="h5"
+              color="text.secondary"
+              sx={{ maxWidth: 'md', mx: 'auto', mb: 4 }}
+            >
+              Transforming pediatric healthcare through innovative technology solutions
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Mission Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-            <div className={`${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Mission</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                At AutoBebe Healthcare, our mission is to revolutionize healthcare delivery by creating intuitive, accessible, and secure technology solutions that empower both healthcare providers and patients.
-              </p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                We believe that modern healthcare should be patient-centered, data-driven, and seamlessly connected. Our platforms bridge the gap between medical professionals and the people they serve, making quality care more accessible to everyone.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                By leveraging cutting-edge technology, we're building a future where healthcare is more efficient, personalized, and effective - improving outcomes and experiences for all.
-              </p>
-            </div>
-            <div className="mt-10 lg:mt-0">
-              <div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden shadow-lg">
-                <img
-                  src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
-                  alt="Healthcare professionals in a meeting"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={8} alignItems="center">
+            <Grid item xs={12} lg={6}>
+              <Typography variant="h3" gutterBottom>
+                Our Mission
+              </Typography>
+              <Typography variant="body1" color="text.secondary" paragraph>
+                At AutoBebe Healthcare, we're dedicated to revolutionizing pediatric healthcare delivery through innovative technology solutions. Our mission is to empower healthcare providers with tools that enhance patient care and streamline clinical operations.
+              </Typography>
+              <Typography variant="body1" color="text.secondary" paragraph>
+                We believe that by combining clinical expertise with cutting-edge technology, we can create more efficient, accessible, and effective healthcare systems that benefit both providers and patients.
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Our team of healthcare professionals and technology experts works tirelessly to develop solutions that address real-world clinical challenges and improve healthcare outcomes.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <Box
+                component="img"
+                src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+                alt="Healthcare professionals using technology"
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: 2,
+                  boxShadow: 3
+                }}
+              />
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
-      {/* Our Story Section */}
-      <div className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-            <div className="order-2 lg:order-1 mt-10 lg:mt-0">
-              <div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden shadow-lg">
-                <img
-                  src="https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80"
-                  alt="Medical technology development"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            <div className={`order-1 lg:order-2 ${mounted ? 'animate-fadeIn' : 'opacity-0'}`} style={{ animationDelay: '150ms' }}>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                AutoBebe Healthcare was founded in 2018 by a team of healthcare professionals, software engineers, and patient advocates who recognized the need for better digital solutions in the medical field.
-              </p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                What began as a simple tool to streamline appointment scheduling has evolved into a comprehensive healthcare ecosystem that serves thousands of medical practices and patients worldwide.
-              </p>
-              <p className="text-gray-600 leading-relaxed">
-                Our growth has been fueled by a dedication to constant innovation, rigorous security standards, and an unwavering focus on improving healthcare outcomes through technology.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Story Section */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'grey.50' }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={8} alignItems="center">
+            <Grid item xs={12} lg={6}>
+              <Box
+                component="img"
+                src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80"
+                alt="Team collaboration"
+                sx={{
+                  width: '100%',
+                  height: 'auto',
+                  borderRadius: 2,
+                  boxShadow: 3
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <Typography variant="h3" gutterBottom>
+                Our Story
+              </Typography>
+              <Typography variant="body1" color="text.secondary" paragraph>
+                Founded by a team of healthcare professionals and technologists, AutoBebe Healthcare emerged from a shared vision to modernize pediatric healthcare delivery through technology.
+              </Typography>
+              <Typography variant="body1" color="text.secondary" paragraph>
+                Our journey began with a simple observation: healthcare providers needed better tools to manage their practices and deliver care efficiently. This insight led to the development of our flagship platform, JoyTriage.
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Today, we continue to innovate and expand our solutions, always keeping our focus on improving healthcare outcomes and provider efficiency.
+              </Typography>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
-      {/* Team Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Our Leadership Team</h2>
-            <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-              Experts from healthcare and technology working together to transform the industry
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                name: "Dr. Sarah Chen",
-                role: "Chief Executive Officer",
-                bio: "Former practicing physician with 15+ years of healthcare experience and a passion for healthcare innovation.",
-                image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-              },
-              {
-                name: "Michael Rodriguez",
-                role: "Chief Technology Officer",
-                bio: "Software architect with a background in healthcare IT and secure systems design.",
-                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-              },
-              {
-                name: "Dr. James Wilson",
-                role: "Chief Medical Officer",
-                bio: "Board-certified internist focused on improving clinical workflows and patient outcomes through technology.",
-                image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-              }
-            ].map((member, index) => (
-              <div 
-                key={index} 
-                className={`bg-white rounded-xl shadow-md overflow-hidden ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}
-                style={{ animationDelay: `${(index + 1) * 150}ms` }}
-              >
-                <div className="h-64 bg-gray-200">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover"
+      {/* Leadership Team Section */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Typography variant="h3" gutterBottom>
+              Our Leadership Team
+            </Typography>
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ maxWidth: 'md', mx: 'auto' }}
+            >
+              Meet the experts leading our mission to transform healthcare technology
+            </Typography>
+          </Box>
+          <Grid container spacing={4}>
+            {teamMembers.map((member, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                  <CardMedia
+                    component="img"
+                    height="300"
+                    image={member.image}
+                    alt={member.name}
+                    sx={{ objectFit: 'cover' }}
                   />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900">{member.name}</h3>
-                  <p className="text-blue-600 mb-4">{member.role}</p>
-                  <p className="text-gray-600">{member.bio}</p>
-                </div>
-              </div>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {member.name}
+                    </Typography>
+                    <Typography variant="subtitle1" color="primary" gutterBottom>
+                      {member.role}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {member.bio}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
-        </div>
-      </div>
+          </Grid>
+        </Container>
+      </Box>
 
-      {/* Values Section */}
-      <div className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Our Core Values</h2>
-            <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-              The principles that guide our work and define our culture
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                title: "Patient-Centered",
-                description: "We design all our solutions with patients' needs and experiences at the forefront."
-              },
-              {
-                title: "Security & Privacy",
-                description: "We maintain the highest standards of data protection and privacy in everything we do."
-              },
-              {
-                title: "Innovation",
-                description: "We continuously push boundaries to develop new solutions to healthcare challenges."
-              },
-              {
-                title: "Accessibility",
-                description: "We're committed to making quality healthcare technology available to everyone."
-              }
-            ].map((value, index) => (
-              <div 
-                key={index} 
-                className={`bg-white p-6 rounded-xl shadow-md ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}
-                style={{ animationDelay: `${(index + 1) * 100}ms` }}
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{value.title}</h3>
-                <p className="text-gray-600">{value.description}</p>
-              </div>
+      {/* Core Values Section */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'grey.50' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Typography variant="h3" gutterBottom>
+              Our Core Values
+            </Typography>
+            <Typography
+              variant="h6"
+              color="text.secondary"
+              sx={{ maxWidth: 'md', mx: 'auto' }}
+            >
+              The principles that guide our innovation and development
+            </Typography>
+          </Box>
+          <Grid container spacing={4}>
+            {values.map((value, index) => (
+              <Grid item xs={12} sm={6} md={3} key={index}>
+                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', p: 3 }}>
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {value.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {value.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="py-16 bg-blue-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-6">Join Our Healthcare Revolution</h2>
-          <p className="text-xl max-w-3xl mx-auto mb-8">
-            Experience how AutoBebe can transform healthcare delivery and management for your practice or personal health needs.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button to="/demo" variant="white" size="lg">
-              Request a Demo
-            </Button>
-            <Button to="/contact" variant="secondary" size="lg">
-              Contact Us
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+          </Grid>
+        </Container>
+      </Box>
+    </Box>
   );
 } 

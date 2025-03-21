@@ -1,187 +1,193 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Button from './autobebesys/Button';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  IconButton,
+  Typography,
+  Button,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Container,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 
 interface PublicLayoutProps {
   children: React.ReactNode;
 }
 
 const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const location = useLocation();
+
+  const navigationLinks = [
+    { text: 'Home', path: '/' },
+    { text: 'Our Platforms', path: '/platforms' },
+    { text: 'JoyTriage', path: '/joytriage' },
+    { text: 'About', path: '/about' },
+    { text: 'Careers', path: '/careers' },
+    { text: 'Contact', path: '/contact' }
+  ];
+
+  const isCurrentPath = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm fixed w-full top-0 z-50 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <div className="flex-shrink-0 flex items-center">
-                <Link to="/" className="text-xl font-bold text-blue-600">AutoBebe</Link>
-              </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link 
-                  to="/" 
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    window.location.pathname === '/' 
-                      ? 'border-blue-500 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Home
-                </Link>
-                <Link 
-                  to="/platforms" 
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    window.location.pathname === '/platforms' 
-                      ? 'border-blue-500 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Our Platforms
-                </Link>
-                <Link 
-                  to="/joytriage" 
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    window.location.pathname === '/joytriage' 
-                      ? 'border-blue-500 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  JoyTriage
-                </Link>
-                <Link 
-                  to="/about" 
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    window.location.pathname === '/about' 
-                      ? 'border-blue-500 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  About
-                </Link>
-                <Link 
-                  to="/contact" 
-                  className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                    window.location.pathname === '/contact' 
-                      ? 'border-blue-500 text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Contact
-                </Link>
-              </div>
-            </div>
-            <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
-              <Button to="/login" variant="outline" size="md">
-                Login
-              </Button>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="flex items-center sm:hidden">
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              >
-                <span className="sr-only">Open main menu</span>
-                {/* Menu icon */}
-                <svg
-                  className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-                {/* Close icon */}
-                <svg
-                  className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div className={`${isMenuOpen ? 'block' : 'hidden'} sm:hidden`}>
-          <div className="pt-2 pb-3 space-y-1">
-            <Link
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <AppBar 
+        position="fixed" 
+        color="default" 
+        elevation={1}
+        sx={{ 
+          backgroundColor: 'background.paper',
+          borderBottom: 1,
+          borderColor: 'divider'
+        }}
+      >
+        <Container maxWidth="lg">
+          <Toolbar disableGutters>
+            <Typography
+              variant="h6"
+              component={Link}
               to="/"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                window.location.pathname === '/'
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
+              sx={{
+                flexGrow: { xs: 1, sm: 0 },
+                mr: { sm: 4 },
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
             >
-              Home
-            </Link>
-            <Link
-              to="/platforms"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                window.location.pathname === '/platforms'
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
+              AutoBebe
+            </Typography>
+
+            {/* Desktop Navigation */}
+            <Box
+              sx={{
+                flexGrow: 1,
+                display: { xs: 'none', sm: 'flex' },
+                gap: 2
+              }}
             >
-              Our Platforms
-            </Link>
-            <Link
-              to="/joytriage"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                window.location.pathname === '/joytriage'
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              JoyTriage
-            </Link>
-            <Link
-              to="/about"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                window.location.pathname === '/about'
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              About
-            </Link>
-            <Link
-              to="/contact"
-              className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                window.location.pathname === '/contact'
-                  ? 'border-blue-500 text-blue-700 bg-blue-50'
-                  : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300'
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact
-            </Link>
-            <div className="pt-4 px-4">
-              <Button to="/login" variant="outline" size="md" fullWidth onClick={() => setIsMenuOpen(false)}>
+              {navigationLinks.map((link) => (
+                <Button
+                  key={link.path}
+                  component={Link}
+                  to={link.path}
+                  sx={{
+                    color: isCurrentPath(link.path) ? 'primary.main' : 'text.primary',
+                    borderBottom: isCurrentPath(link.path) ? 2 : 0,
+                    borderColor: 'primary.main',
+                    borderRadius: 0,
+                    px: 1,
+                    '&:hover': {
+                      backgroundColor: 'transparent',
+                      color: 'primary.main'
+                    }
+                  }}
+                >
+                  {link.text}
+                </Button>
+              ))}
+            </Box>
+
+            {/* Login Button (Desktop) */}
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <Button
+                component={Link}
+                to="/login"
+                variant="outlined"
+                sx={{ ml: 2 }}
+              >
                 Login
               </Button>
-            </div>
-          </div>
-        </div>
-      </nav>
+            </Box>
 
-      {/* Main content */}
-      <main className="pt-16">
+            {/* Mobile Menu Button */}
+            <IconButton
+              edge="end"
+              color="inherit"
+              aria-label="menu"
+              onClick={() => setMobileMenuOpen(true)}
+              sx={{ display: { sm: 'none' } }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Toolbar>
+        </Container>
+      </AppBar>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        sx={{
+          display: { sm: 'none' },
+          '& .MuiDrawer-paper': {
+            width: '100%',
+            maxWidth: 300,
+            boxSizing: 'border-box'
+          }
+        }}
+      >
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <IconButton onClick={() => setMobileMenuOpen(false)}>
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <List>
+          {navigationLinks.map((link) => (
+            <ListItem 
+              key={link.path}
+              onClick={() => setMobileMenuOpen(false)}
+              component={Link}
+              to={link.path}
+              sx={{
+                backgroundColor: isCurrentPath(link.path) ? 'action.selected' : 'transparent'
+              }}
+            >
+              <ListItemText 
+                primary={link.text}
+                primaryTypographyProps={{
+                  color: isCurrentPath(link.path) ? 'primary' : 'inherit'
+                }}
+              />
+            </ListItem>
+          ))}
+          <ListItem sx={{ mt: 2 }}>
+            <Button
+              component={Link}
+              to="/login"
+              variant="outlined"
+              fullWidth
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Login
+            </Button>
+          </ListItem>
+        </List>
+      </Drawer>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          pt: { xs: 7, sm: 8 }, // Adjust for AppBar height
+          minHeight: '100vh'
+        }}
+      >
         {children}
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

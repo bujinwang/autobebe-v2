@@ -271,16 +271,16 @@ const Appointments: React.FC = () => {
   }
 
   return (
-    <Box sx={{ mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Box sx={{ mb: 2 }}>
+      <Typography variant="h5" component="h1" gutterBottom>
         Appointments
       </Typography>
-      <Typography variant="subtitle1" color="text.secondary">
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         Manage and view patient appointments
       </Typography>
     
       {/* Search and Filter Bar */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
         <TextField
           placeholder="Search patients or symptoms"
           variant="outlined"
@@ -291,15 +291,15 @@ const Appointments: React.FC = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon />
+                <SearchIcon fontSize="small" />
               </InputAdornment>
             ),
           }}
         />
         
         <Tooltip title="Refresh appointments">
-          <IconButton onClick={handleRefresh} color="primary">
-            <RefreshIcon />
+          <IconButton onClick={handleRefresh} color="primary" size="small">
+            <RefreshIcon fontSize="small" />
           </IconButton>
         </Tooltip>
       </Box>
@@ -311,21 +311,25 @@ const Appointments: React.FC = () => {
           onChange={handleTabChange}
           aria-label="appointment tabs"
           variant={isMobile ? "fullWidth" : "standard"}
+          sx={{ minHeight: 40 }}
         >
           <Tab 
-            icon={<TodayIcon />}
+            icon={<TodayIcon fontSize="small" />}
             iconPosition="start"
             label={isMobile ? "Today" : "Today's Appointments"} 
+            sx={{ minHeight: 40 }}
           />
           <Tab 
-            icon={<UpcomingIcon />}
+            icon={<UpcomingIcon fontSize="small" />}
             iconPosition="start"
             label={isMobile ? "Upcoming" : "Upcoming Appointments"} 
+            sx={{ minHeight: 40 }}
           />
           <Tab 
-            icon={<PastIcon />}
+            icon={<PastIcon fontSize="small" />}
             iconPosition="start"
             label={isMobile ? "Past" : "Past Appointments"} 
+            sx={{ minHeight: 40 }}
           />
         </Tabs>
       </Box>
@@ -412,43 +416,43 @@ const Appointments: React.FC = () => {
 
   function renderDesktopView() {
     return (
-      <TableContainer component={Paper}>
-        <Table>
+      <TableContainer component={Paper} sx={{ mt: 1 }}>
+        <Table size="small">
           <TableHead>
             <TableRow>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <DateIcon sx={{ mr: 1 }} />
+                  <DateIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Date & Time
                 </Box>
               </TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <PersonIcon sx={{ mr: 1 }} />
+                  <PersonIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Patient
                 </Box>
               </TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <PurposeIcon sx={{ mr: 1 }} />
+                  <PurposeIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Purpose of Visit
                 </Box>
               </TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <DoctorIcon sx={{ mr: 1 }} />
+                  <DoctorIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Doctor
                 </Box>
               </TableCell>
               <TableCell>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <StatusIcon sx={{ mr: 1 }} />
+                  <StatusIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Status
                 </Box>
               </TableCell>
               <TableCell align="right">
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                  <ActionsIcon sx={{ mr: 1 }} />
+                  <ActionsIcon sx={{ mr: 0.5 }} fontSize="small" />
                   Actions
                 </Box>
               </TableCell>
@@ -465,21 +469,19 @@ const Appointments: React.FC = () => {
                 }}
                 onClick={() => handleViewDetails(appointment.id)}
               >
-                <TableCell>
-                  {getFormattedDate(appointment.appointmentDate)}
-                </TableCell>
+                <TableCell>{getFormattedDate(appointment.appointmentDate)}</TableCell>
                 <TableCell>{appointment.patient?.name || 'Unknown Patient'}</TableCell>
                 <TableCell>{appointment.purposeOfVisit || appointment.chiefComplaint}</TableCell>
                 <TableCell>{appointment.doctor?.name || 'Unassigned'}</TableCell>
                 <TableCell>{getStatusChip(appointment.status)}</TableCell>
                 <TableCell align="right">
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
                     {tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' && (
                       <Button 
                         variant="contained" 
                         color="warning"
                         size="small"
-                        startIcon={<PlayArrowIcon />}
+                        startIcon={<PlayArrowIcon fontSize="small" />}
                         onClick={(e) => handleTakeIn(e, appointment)}
                       >
                         Take In
