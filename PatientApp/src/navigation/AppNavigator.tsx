@@ -68,7 +68,7 @@ const AppNavigator = () => {
           },
           headerTitle: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={JoyTriageLogo} style={{ width: 30, height: 30, marginRight: 10 }} />
+              <Image source={JoyTriageLogo} style={{ width: 50, height: 50, marginRight: 10 }} />
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>JoyTriage</Text>
             </View>
           ),

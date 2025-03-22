@@ -7,7 +7,7 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="container flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold text-primary">AutoBebe</Link>
+        <Link to="/" className="text-2xl font-bold text-primary">AutoBebeSys</Link>
         
         {/* Mobile menu button */}
         <button 

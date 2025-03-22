@@ -49,8 +49,8 @@ const contactInfo: ContactInfo[] = [
     icon: EmailIcon,
     title: 'Email Us',
     details: [
-      'contact@autobebe.com',
-      'support@autobebe.com'
+      'contact@autobebesys.com',
+      'support@autobebesys.com'
     ]
   },
   {

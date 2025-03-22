@@ -206,7 +206,7 @@ export default function Home() {
           <Grid container spacing={4}>
             <Grid item xs={12} md={3}>
               <Typography variant="h6" gutterBottom>
-                AutoBebe Healthcare
+                AutoBebeSys Healthcare
               </Typography>
               <Typography variant="body2" color="grey.400">
                 Transforming healthcare through innovative technology solutions.
@@ -270,7 +270,7 @@ export default function Home() {
           </Grid>
           <Divider sx={{ my: 4, borderColor: 'grey.800' }} />
           <Typography variant="body2" color="grey.400" align="center">
-            © {new Date().getFullYear()} AutoBebe Healthcare. All rights reserved.
+            © {new Date().getFullYear()} AutoBebeSys Healthcare. All rights reserved.
           </Typography>
         </Container>
       </Box>

@@ -61,7 +61,7 @@ export default function Platforms() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       {/* Header Section */}
-      <Box sx={{ bgcolor: 'background.paper', py: { xs: 6, md: 8 } }}>
+      <Box sx={{ bgcolor: 'background.paper', py: { xs: 1, md: 2 } }}>
         <Container maxWidth="lg">
           <Typography
             variant="h2"
@@ -89,7 +89,7 @@ export default function Platforms() {
 
       {/* Platforms Cards Section */}
       <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
-        <Grid container spacing={4}>
+        <Grid container spacing={2}>
           {/* JoyTriage Patient Platform Card */}
           <Grid item xs={12}>
             <Card sx={{ 
@@ -159,7 +159,7 @@ export default function Platforms() {
           <Grid item xs={12}>
             <Card sx={{ 
               display: 'flex', 
-              flexDirection: { xs: 'column', md: 'row-reverse' },
+              flexDirection: { xs: 'column', md: 'row' },
               overflow: 'hidden',
               boxShadow: 3,
               '&:hover': {
@@ -223,7 +223,7 @@ export default function Platforms() {
       </Container>
 
       {/* Features Grid Section */}
-      <Box sx={{ bgcolor: 'grey.50', py: { xs: 6, md: 8 } }}>
+      <Box sx={{ bgcolor: 'grey.50', py: { xs: 4, md: 6 } }}>
         <Container maxWidth="lg">
           <Typography
             variant="h3"
@@ -276,7 +276,7 @@ export default function Platforms() {
         sx={{ 
           bgcolor: 'primary.main',
           color: 'common.white',
-          py: { xs: 6, md: 8 }
+          py: { xs: 4, md: 6 }
         }}
       >
         <Container maxWidth="lg">

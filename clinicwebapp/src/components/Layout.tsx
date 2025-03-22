@@ -48,6 +48,7 @@ import {
   X as XIconFeather,
   Menu as MenuIconFeather
 } from 'react-feather';
+import JoyTriageLogo from '../assets/JoyTriage.webp';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -259,6 +260,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           >
             <MenuIcon fontSize="small" />
           </IconButton>
+          <Box component="img" src={JoyTriageLogo} alt="JoyTriage Logo" sx={{ width: 40, height: 40, mr: 1 }} />
           <Typography variant="subtitle1" noWrap component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
             <Button
               component={Link}
@@ -275,7 +277,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 },
               }}
             >
-              AutoBebe
+              AutoBebeSys
             </Button>
             <Box component="span" sx={{ opacity: 0.7 }}>/</Box>
             JoyTriage

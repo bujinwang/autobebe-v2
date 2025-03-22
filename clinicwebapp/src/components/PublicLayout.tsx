@@ -66,7 +66,7 @@ const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
                 fontWeight: 'bold'
               }}
             >
-              AutoBebe
+              AutoBebeSys
             </Typography>
 
             {/* Desktop Navigation */}

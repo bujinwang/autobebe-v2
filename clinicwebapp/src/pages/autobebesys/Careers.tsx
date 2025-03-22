@@ -185,7 +185,7 @@ export default function Careers() {
               Where Innovation Meets Purpose
             </Typography>
             <Typography variant="body1" paragraph>
-              At AutoBebe, we believe in creating an environment where creativity flourishes, innovation is encouraged, and every team member can make a meaningful impact on healthcare delivery.
+              At AutoBebeSys, we believe in creating an environment where creativity flourishes, innovation is encouraged, and every team member can make a meaningful impact on healthcare delivery.
             </Typography>
             <List>
               <ListItem>

@@ -52,7 +52,7 @@ export default function Demo() {
         <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
           <div className="text-center">
             <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
-              Experience AutoBebe in Action
+              Experience AutoBebeSys in Action
             </h1>
             <p className="mt-6 text-xl text-blue-100 max-w-3xl mx-auto">
               See how our healthcare solutions can transform your practice with a personalized demo

@@ -61,7 +61,7 @@ export default function About() {
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h2" component="h1" gutterBottom>
-              About AutoBebe Healthcare
+              About AutoBebeSys Healthcare
             </Typography>
             <Typography
               variant="h5"
@@ -83,7 +83,7 @@ export default function About() {
                 Our Mission
               </Typography>
               <Typography variant="body1" color="text.secondary" paragraph>
-                At AutoBebe Healthcare, we're dedicated to revolutionizing pediatric healthcare delivery through innovative technology solutions. Our mission is to empower healthcare providers with tools that enhance patient care and streamline clinical operations.
+                At AutoBebeSys Healthcare, we're dedicated to revolutionizing pediatric healthcare delivery through innovative technology solutions. Our mission is to empower healthcare providers with tools that enhance patient care and streamline clinical operations.
               </Typography>
               <Typography variant="body1" color="text.secondary" paragraph>
                 We believe that by combining clinical expertise with cutting-edge technology, we can create more efficient, accessible, and effective healthcare systems that benefit both providers and patients.
@@ -131,7 +131,7 @@ export default function About() {
                 Our Story
               </Typography>
               <Typography variant="body1" color="text.secondary" paragraph>
-                Founded by a team of healthcare professionals and technologists, AutoBebe Healthcare emerged from a shared vision to modernize pediatric healthcare delivery through technology.
+                Founded by a team of healthcare professionals and technologists, AutoBebeSys Healthcare emerged from a shared vision to modernize pediatric healthcare delivery through technology.
               </Typography>
               <Typography variant="body1" color="text.secondary" paragraph>
                 Our journey began with a simple observation: healthcare providers needed better tools to manage their practices and deliver care efficiently. This insight led to the development of our flagship platform, JoyTriage.
