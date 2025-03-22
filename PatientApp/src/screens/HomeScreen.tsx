@@ -99,7 +99,7 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Patient Health App</Text>
+        <Text style={styles.headerTitle}>Check-in Made Easy™</Text>
       </View>
 
       {/* Clinic Info Section */}
@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   clinicInfoContainer: {
     padding: 20,

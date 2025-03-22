@@ -3,14 +3,14 @@
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'autobebe-webapp'
+app = 'autobebesys'
 primary_region = 'yyz'
 
 [build]
   dockerfile = "Dockerfile"
 
 [http_service]
-  internal_port = 3001
+  internal_port = 8080
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true

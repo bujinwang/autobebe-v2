@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text } from 'react-native';
+import { View, Text, Image } from 'react-native';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
 import PatientInfoScreen from '../screens/PatientInfoScreen';
 import SymptomsScreen from '../screens/SymptomsScreen';
 import ScheduledScreen from '../screens/ScheduledScreen';
+
+// Import logo
+import JoyTriageLogo from '../../assets/JoyTriage.webp';
 
 // Define the stack navigator parameter list
 export type RootStackParamList = {
@@ -57,17 +60,24 @@ const AppNavigator = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: '#4A90E2',
+            backgroundImage: 'linear-gradient(to right, #4A90E2, #7ED321)',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          headerTitle: () => (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Image source={JoyTriageLogo} style={{ width: 30, height: 30, marginRight: 10 }} />
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>JoyTriage</Text>
+            </View>
+          ),
         }}
       >
         <Stack.Screen 
           name="Home" 
           component={HomeScreen} 
-          options={{ title: 'Patient Health App' }}
+          options={{ title: 'JoyTriage' }}
           listeners={{
             focus: () => console.log('Home screen focused'),
             blur: () => console.log('Home screen blurred'),
