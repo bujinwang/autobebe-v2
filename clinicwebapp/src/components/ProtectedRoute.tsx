@@ -7,8 +7,11 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { isAuthenticated, loading } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const location = useLocation();
 
   // Show loading spinner while checking authentication
