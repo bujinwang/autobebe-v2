@@ -1,16 +1,16 @@
-# fly.toml app configuration file generated for joytriage on 2025-03-19T22:17:20Z
+# fly.toml app configuration file for AutoBebe Healthcare System Web Application
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'joytriage'
+app = 'autobebesys'
 primary_region = 'yyz'
 
 [build]
   dockerfile = "Dockerfile"
 
 [http_service]
-  internal_port = 3001
+  internal_port = 8080
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true

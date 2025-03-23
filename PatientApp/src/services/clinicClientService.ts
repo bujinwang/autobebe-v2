@@ -34,20 +34,7 @@ export const getClinicInfoById = async (clinicId: string): Promise<ClinicInfo> =
     return response.data;
   } catch (error) {
     console.error('Error fetching clinic info:', error);
-    
-    // Return mock data if in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Using mock clinic data');
-      return {
-        id: clinicId || '4F420955',
-        name: "Naomi's Clinic",
-        company: "Naomi's Healthcare",
-        address: '123 Healthcare St',
-        phone: '555-0123',
-        hours: '9:00 AM - 5:00 PM',
-        welcomeMessage: 'Welcome to our clinic!'
-      };
-    }
+    // Remove mock data and just throw the error
     throw error;
   }
 };
@@ -61,31 +48,7 @@ export const getClinicList = async (): Promise<ClinicInfo[]> => {
     return response.data;
   } catch (error) {
     console.error('Error fetching clinic list:', error);
-    
-    // Return mock data if in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Using mock clinic list data');
-      return [
-        {
-          id: '4F420955',
-          name: "Naomi's Clinic",
-          company: "Naomi's Healthcare",
-          address: '123 Healthcare St',
-          phone: '555-0123',
-          hours: '9:00 AM - 5:00 PM',
-          welcomeMessage: 'Welcome to our clinic!'
-        },
-        {
-          id: '4F420956',
-          name: "City Medical Center",
-          company: "City Healthcare",
-          address: '456 Medical Ave',
-          phone: '555-0124',
-          hours: '8:00 AM - 6:00 PM',
-          welcomeMessage: 'Serving our community with care!'
-        }
-      ];
-    }
+    // Remove mock data and just throw the error
     throw error;
   }
 };

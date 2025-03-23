@@ -24,7 +24,6 @@ import {
 import { staffService, type StaffMember } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import Layout from '../components/Layout';
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -91,171 +90,172 @@ export default function StaffList() {
   });
 
   return (
-    <Layout>
-      <Container maxWidth="xl">
-        {/* Header Section */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" component="h1">
-              Staff Management
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/staff/new')}
-            >
-              Add New Staff Member
-            </Button>
-          </Box>
-          
-          {/* Filters Section */}
-          <Card variant="outlined">
-            <CardContent>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} md={4}>
-                  <TextField
-                    fullWidth
-                    placeholder="Search by name or email"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Role</InputLabel>
-                    <Select
-                      value={roleFilter}
-                      label="Role"
-                      onChange={(e) => setRoleFilter(e.target.value)}
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <RoleIcon />
-                        </InputAdornment>
-                      }
-                    >
-                      <MenuItem value="all">All Roles</MenuItem>
-                      <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
-                      <MenuItem value="CLINIC_ADMIN">Clinic Admin</MenuItem>
-                      <MenuItem value="STAFF">Staff</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={statusFilter}
-                      label="Status"
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <FilterListIcon />
-                        </InputAdornment>
-                      }
-                    >
-                      <MenuItem value="all">All Status</MenuItem>
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
+    <Container maxWidth="xl">
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" component="h1">
+            Staff Management
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/staff/new')}
+          >
+            Add Staff Member
+          </Button>
         </Box>
+        <Typography variant="subtitle1" color="text.secondary">
+          Manage your clinic staff, doctors, and other personnel
+        </Typography>
+      </Box>
 
-        {/* Staff List Table */}
-        <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-          <Table>
-            <TableHead>
+      {/* Search and Filter Section */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            placeholder="Search by name or email"
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="role-filter-label">Filter by Role</InputLabel>
+            <Select
+              labelId="role-filter-label"
+              id="role-filter"
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value)}
+              label="Filter by Role"
+            >
+              <MenuItem value="all">All Roles</MenuItem>
+              <MenuItem value="DOCTOR">Doctors</MenuItem>
+              <MenuItem value="NURSE">Nurses</MenuItem>
+              <MenuItem value="RECEPTIONIST">Receptionists</MenuItem>
+              <MenuItem value="CLINIC_ADMIN">Clinic Admins</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="status-filter-label">Filter by Status</InputLabel>
+            <Select
+              labelId="status-filter-label"
+              id="status-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              label="Filter by Status"
+            >
+              <MenuItem value="all">All Status</MenuItem>
+              <MenuItem value="active">Active</MenuItem>
+              <MenuItem value="inactive">Inactive</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+      </Grid>
+
+      {/* Staff Table */}
+      <Paper>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon sx={{ mr: 1 }} />
+                  Staff Member
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <RoleIcon sx={{ mr: 1 }} />
+                  Role
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <EmailIcon sx={{ mr: 1 }} />
+                  Email
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <StatusIcon sx={{ mr: 1 }} />
+                  Status
+                </Box>
+              </TableCell>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  <ActionsIcon sx={{ mr: 1 }} />
+                  Actions
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
               <TableRow>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <PersonIcon sx={{ mr: 1 }} />
-                    Name
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <EmailIcon sx={{ mr: 1 }} />
-                    Email
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <RoleIcon sx={{ mr: 1 }} />
-                    Role
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <PositionIcon sx={{ mr: 1 }} />
-                    Position
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <SpecialtyIcon sx={{ mr: 1 }} />
-                    Specialty
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <StatusIcon sx={{ mr: 1 }} />
-                    Status
-                  </Box>
-                </TableCell>
-                <TableCell align="right">
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <ActionsIcon sx={{ mr: 1 }} />
-                    Actions
-                  </Box>
-                </TableCell>
+                <TableCell colSpan={5} align="center">Loading...</TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredStaff.map((member) => (
-                <TableRow key={member.id} hover>
-                  <TableCell>{member.name}</TableCell>
-                  <TableCell>{member.email}</TableCell>
-                  <TableCell>{member.role}</TableCell>
-                  <TableCell>{member.position || '-'}</TableCell>
-                  <TableCell>{member.specialty || '-'}</TableCell>
+            ) : filteredStaff.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">No staff members found</TableCell>
+              </TableRow>
+            ) : (
+              filteredStaff.map((staff) => (
+                <TableRow key={staff.id} hover>
+                  <TableCell>{staff.name}</TableCell>
+                  <TableCell>{staff.role}</TableCell>
+                  <TableCell>{staff.email}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="outlined"
-                      color={member.isActive ? 'success' : 'error'}
-                      onClick={() => handleToggleStatus(member)}
-                      size="small"
-                      startIcon={member.isActive ? <ActiveIcon /> : <InactiveIcon />}
-                    >
-                      {member.isActive ? 'Active' : 'Inactive'}
-                    </Button>
+                    {staff.isActive ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main' }}>
+                        <ActiveIcon fontSize="small" sx={{ mr: 0.5 }} />
+                        Active
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: 'flex', alignItems: 'center', color: 'error.main' }}>
+                        <InactiveIcon fontSize="small" sx={{ mr: 0.5 }} />
+                        Inactive
+                      </Box>
+                    )}
                   </TableCell>
                   <TableCell align="right">
-                    <Button
-                      variant="contained"
-                      onClick={() => navigate(`/staff/${member.id}`)}
-                      size="small"
-                      startIcon={<EditIcon />}
-                    >
-                      Edit
-                    </Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color={staff.isActive ? "error" : "success"}
+                        onClick={() => handleToggleStatus(staff)}
+                      >
+                        {staff.isActive ? "Deactivate" : "Activate"}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        startIcon={<EditIcon />}
+                        onClick={() => navigate(`/staff/${staff.id}`)}
+                      >
+                        Edit
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Paper>
-      </Container>
-    </Layout>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Paper>
+    </Container>
   );
 } 

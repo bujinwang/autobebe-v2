@@ -18,31 +18,53 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
-  Avatar
+  Avatar,
+  Tooltip
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import EventIcon from '@mui/icons-material/Event';
-import PersonIcon from '@mui/icons-material/Person';
-import LogoutIcon from '@mui/icons-material/Logout';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital'; // Using this as ClinicIcon
-import SettingsIcon from '@mui/icons-material/Settings';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import { useNavigate } from 'react-router-dom';
+import {
+  Menu as MenuIcon,
+  ChevronLeft as ChevronLeftIcon,
+  Dashboard as DashboardIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  Settings as SettingsIcon,
+  Logout as LogoutIcon,
+  AccountCircle as AccountCircleIcon,
+  Group as GroupIcon,
+  ArrowDropDown as ArrowDropDownIcon,
+  LocalHospital as LocalHospitalIcon
+} from '@mui/icons-material';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
 import { clinicService } from '../services';
+import { 
+  Home as HomeIconFeather,
+  Calendar as CalendarIconFeather,
+  Users as UsersIconFeather,
+  User as UserIconFeather,
+  Settings as SettingsIconFeather,
+  LogOut as LogOutIconFeather,
+  X as XIconFeather,
+  Menu as MenuIconFeather
+} from 'react-feather';
+import JoyTriageLogo from '../assets/JoyTriage.webp';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+const DRAWER_WIDTH = 220;
+const CLOSED_DRAWER_WIDTH = 64;
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout, setCurrentClinic } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(!isMobile);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [clinicMenuAnchor, setClinicMenuAnchor] = useState<null | HTMLElement>(null);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
@@ -55,11 +77,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const fetchClinics = async () => {
       try {
         if (user.role === 'SUPER_ADMIN') {
-          // Fetch all clinics for super admin
           const clinicsData = await clinicService.getAllClinics();
           setClinics(clinicsData);
         } else if (user.defaultClinicId) {
-          // For other roles, just fetch their assigned clinic
           const clinic = await clinicService.getClinicById(user.defaultClinicId);
           setClinics(clinic ? [clinic] : []);
         }
@@ -202,185 +222,233 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     </MenuItem>
   ));
 
-  const drawerContent = (
-    <Box sx={{ width: 250 }} role="presentation" onClick={handleDrawerToggle}>
-      <List>
-        <ListItem>
-          <Typography variant="h6" sx={{ my: 2 }}>
-            Clinic Staff Portal
-          </Typography>
-        </ListItem>
-        <Divider />
-        <ListItem onClick={() => navigate('/dashboard')}>
-          <ListItemButton>
-            <ListItemIcon>
-              <DashboardIcon />
-            </ListItemIcon>
-            <ListItemText primary="Dashboard" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem onClick={() => navigate('/appointments')}>
-          <ListItemButton>
-            <ListItemIcon>
-              <EventIcon />
-            </ListItemIcon>
-            <ListItemText primary="Appointments" />
-          </ListItemButton>
-        </ListItem>
-        {/* Only show Staff Management for SUPER_ADMIN and CLINIC_ADMIN */}
-        {user?.role !== 'STAFF' && (
-          <ListItem onClick={() => navigate('/staff')}>
-            <ListItemButton>
-              <ListItemIcon>
-                <PersonIcon />
-              </ListItemIcon>
-              <ListItemText primary="Staff Management" />
-            </ListItemButton>
-          </ListItem>
-        )}
-      </List>
-      <Divider />
-      <List>
-        <ListItem onClick={handleLogout}>
-          <ListItemButton>
-            <ListItemIcon>
-              <LogoutIcon />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </ListItemButton>
-        </ListItem>
-      </List>
-    </Box>
-  );
+  const menuItems = [
+    { text: 'Dashboard', icon: DashboardIcon, path: '/dashboard' },
+    { text: 'Appointments', icon: EventIcon, path: '/appointments' },
+    ...(user?.role !== 'STAFF' ? [{ text: 'Staff Management', icon: GroupIcon, path: '/staff' }] : []),
+    { text: 'Profile', icon: AccountCircleIcon, path: '/profile' },
+    { text: 'Settings', icon: SettingsIcon, path: '/settings' }
+  ];
+
+  const isCurrentPath = (path: string) => location.pathname === path;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static">
-        <Toolbar>
+    <Box sx={{ display: 'flex' }}>
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          zIndex: theme.zIndex.drawer + 1,
+          width: { sm: `calc(100% - ${CLOSED_DRAWER_WIDTH}px)` },
+          ml: { sm: CLOSED_DRAWER_WIDTH },
+          ...(drawerOpen && {
+            width: `calc(100% - ${DRAWER_WIDTH}px)`,
+            ml: DRAWER_WIDTH,
+          }),
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        }}
+      >
+        <Toolbar variant="dense" sx={{ minHeight: 48, px: 1 }}>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2 }}
+            sx={{ mr: 1 }}
+            size="small"
           >
-            <MenuIcon />
+            <MenuIcon fontSize="small" />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Clinic Staff Portal
+          <Box component="img" src={JoyTriageLogo} alt="JoyTriage Logo" sx={{ width: 40, height: 40, mr: 1 }} />
+          <Typography variant="subtitle1" noWrap component="div" sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Button
+              component={Link}
+              to="/"
+              color="inherit"
+              size="small"
+              sx={{
+                textTransform: 'none',
+                fontWeight: 'bold',
+                minWidth: 'auto',
+                p: 0.5,
+                '&:hover': {
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              AutoBebeSys
+            </Button>
+            <Box component="span" sx={{ opacity: 0.7 }}>/</Box>
+            JoyTriage
           </Typography>
-          
-          {user && (
-            <>
-              {user.role === 'SUPER_ADMIN' ? (
-                // Clinic selector dropdown for super admin
-                <>
-                  {clinicSelectorButton}
-                  <Menu
-                    anchorEl={clinicMenuAnchor}
-                    open={Boolean(clinicMenuAnchor)}
-                    onClose={handleClinicMenuClose}
-                    keepMounted
-                    MenuListProps={{
-                      'aria-labelledby': 'clinic-select-button',
-                      role: 'listbox'
-                    }}
-                  >
-                    {clinicMenuItems}
-                  </Menu>
-                  {error && (
-                    <Typography color="error" sx={{ mr: 2 }}>
-                      {error}
-                    </Typography>
-                  )}
-                </>
-              ) : (
-                // Static clinic name display for other roles
-                <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                  <LocalHospitalIcon sx={{ mr: 1 }} />
-                  <Typography variant="body1" component="span">
-                    {getCurrentClinicName()}
-                  </Typography>
-                </Box>
-              )}
-              
-              {/* User Profile Menu */}
-              <IconButton
-                onClick={handleUserMenuOpen}
+          {user?.role === 'SUPER_ADMIN' ? clinicSelectorButton : (
+            user && clinics.length > 0 && (
+              <Box 
                 sx={{ 
-                  ml: 2,
-                  bgcolor: 'primary.dark',
-                  '&:hover': { bgcolor: 'primary.main' }
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  mr: 2,
+                  px: 1,
+                  py: 0.5,
+                  borderRadius: 1,
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'inherit' }}>
-                  {getUserInitials()}
-                </Avatar>
+                <LocalHospitalIcon fontSize="small" sx={{ mr: 1 }} />
+                <Typography variant="body2">
+                  {clinics[0]?.name || 'Loading...'}
+                </Typography>
+              </Box>
+            )
+          )}
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                {user.email}
+              </Typography>
+              <IconButton
+                color="inherit"
+                onClick={handleLogout}
+                size="small"
+              >
+                <Tooltip title="Logout">
+                  <LogoutIcon fontSize="small" />
+                </Tooltip>
               </IconButton>
-              <Menu
-                anchorEl={userMenuAnchor}
-                open={Boolean(userMenuAnchor)}
-                onClose={handleUserMenuClose}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'right',
-                }}
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-              >
-                <Box sx={{ px: 2, py: 1 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
-                </Box>
-                <Divider />
-                <MenuItem onClick={handleProfileClick}>
-                  <ListItemIcon>
-                    <AccountCircleIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Profile</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handleSettingsClick}>
-                  <ListItemIcon>
-                    <SettingsIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Settings</ListItemText>
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleLogoutClick}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText>Logout</ListItemText>
-                </MenuItem>
-              </Menu>
-            </>
+            </Box>
           )}
         </Toolbar>
       </AppBar>
-      
+
       <Drawer
-        anchor="left"
+        variant={isMobile ? 'temporary' : 'permanent'}
         open={drawerOpen}
-        onClose={handleDrawerToggle}
+        onClose={isMobile ? handleDrawerToggle : undefined}
+        sx={{
+          width: drawerOpen ? DRAWER_WIDTH : CLOSED_DRAWER_WIDTH,
+          flexShrink: 0,
+          whiteSpace: 'nowrap',
+          boxSizing: 'border-box',
+          '& .MuiDrawer-paper': {
+            width: drawerOpen ? DRAWER_WIDTH : CLOSED_DRAWER_WIDTH,
+            transition: theme.transitions.create('width', {
+              easing: theme.transitions.easing.sharp,
+              duration: theme.transitions.duration.enteringScreen,
+            }),
+            overflowX: 'hidden',
+            borderRight: `1px solid ${theme.palette.divider}`,
+            boxSizing: 'border-box',
+          },
+        }}
       >
-        {drawerContent}
+        <Toolbar 
+          variant="dense" 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            minHeight: 48,
+            px: 1.5,
+            bgcolor: theme.palette.primary.main,
+            color: 'white',
+          }}
+        >
+          {drawerOpen ? (
+            <Typography 
+              variant="subtitle2" 
+              noWrap 
+              sx={{ 
+                fontWeight: 'medium',
+                opacity: 0.9,
+              }}
+            >
+              Navigation
+            </Typography>
+          ) : (
+            <Box sx={{ width: 24 }} /> // Spacer when drawer is closed
+          )}
+          <IconButton 
+            onClick={handleDrawerToggle} 
+            size="small"
+            sx={{ 
+              color: 'inherit',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.1)',
+              },
+            }}
+          >
+            {drawerOpen ? <ChevronLeftIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
+          </IconButton>
+        </Toolbar>
+        <Divider />
+        <List dense sx={{ pt: 0.5, pb: 0.5 }}>
+          {menuItems.map((item) => (
+            <ListItem key={item.text} disablePadding>
+              <ListItemButton
+                onClick={() => navigate(item.path)}
+                selected={isCurrentPath(item.path)}
+                sx={{
+                  minHeight: 36,
+                  justifyContent: drawerOpen ? 'initial' : 'center',
+                  px: 1.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: drawerOpen ? 1.5 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <item.icon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={item.text}
+                  primaryTypographyProps={{ fontSize: '0.875rem' }}
+                  sx={{ 
+                    opacity: drawerOpen ? 1 : 0,
+                    display: drawerOpen ? 'block' : 'none',
+                    transition: theme.transitions.create(['opacity'], {
+                      easing: theme.transitions.easing.sharp,
+                      duration: theme.transitions.duration.enteringScreen,
+                    }),
+                  }} 
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
       </Drawer>
-      
-      <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 1,
+          width: { sm: `calc(100% - ${CLOSED_DRAWER_WIDTH}px)` },
+          ...(drawerOpen && {
+            width: `calc(100% - ${DRAWER_WIDTH}px)`,
+          }),
+          transition: theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+        }}
+      >
+        <Toolbar variant="dense" sx={{ minHeight: 48 }} />
         {children}
-      </Container>
-      
-      <Box component="footer" sx={{ py: 2, bgcolor: 'background.paper', textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} Clinic Management System
-        </Typography>
       </Box>
+
+      {/* Clinic Selection Menu */}
+      <Menu
+        id="clinic-select-menu"
+        anchorEl={clinicMenuAnchor}
+        open={Boolean(clinicMenuAnchor)}
+        onClose={handleClinicMenuClose}
+      >
+        {clinicMenuItems}
+      </Menu>
     </Box>
   );
 };
