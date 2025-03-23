@@ -6,31 +6,9 @@ import {
   Grid,
   Card,
   CardContent,
-  CardMedia,
   useTheme,
   alpha
 } from '@mui/material';
-
-const teamMembers = [
-  {
-    name: 'Dr. Sarah Chen',
-    role: 'Chief Medical Officer',
-    bio: 'Former pediatrician with 15+ years of clinical experience, leading our medical technology innovations.',
-    image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    name: 'Michael Park',
-    role: 'Chief Technology Officer',
-    bio: 'Tech veteran with expertise in healthcare systems and AI, driving our platform development.',
-    image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  },
-  {
-    name: 'Dr. Emily Rodriguez',
-    role: 'Head of Clinical Research',
-    bio: 'Specializes in pediatric care protocols and digital health integration.',
-    image: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-  }
-];
 
 const values = [
   {
@@ -140,50 +118,6 @@ export default function About() {
                 Today, we continue to innovate and expand our solutions, always keeping our focus on improving healthcare outcomes and provider efficiency.
               </Typography>
             </Grid>
-          </Grid>
-        </Container>
-      </Box>
-
-      {/* Leadership Team Section */}
-      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: 'background.paper' }}>
-        <Container maxWidth="lg">
-          <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Typography variant="h3" gutterBottom>
-              Our Leadership Team
-            </Typography>
-            <Typography
-              variant="h6"
-              color="text.secondary"
-              sx={{ maxWidth: 'md', mx: 'auto' }}
-            >
-              Meet the experts leading our mission to transform healthcare technology
-            </Typography>
-          </Box>
-          <Grid container spacing={4}>
-            {teamMembers.map((member, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                  <CardMedia
-                    component="img"
-                    height="300"
-                    image={member.image}
-                    alt={member.name}
-                    sx={{ objectFit: 'cover' }}
-                  />
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      {member.name}
-                    </Typography>
-                    <Typography variant="subtitle1" color="primary" gutterBottom>
-                      {member.role}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {member.bio}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
           </Grid>
         </Container>
       </Box>
