@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import staffController from '../controllers/staffController';
-import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
+import { authenticate, authorizeClinicAdmin, authorizeStaffSelfUpdate } from '../middleware/auth';
 
 const router = Router();
 
@@ -172,7 +172,7 @@ router.post('/', authorizeClinicAdmin, staffController.createStaffMember);
  *       403:
  *         description: Forbidden - requires clinic admin privileges
  */
-router.patch('/', authorizeClinicAdmin, staffController.updateStaffMember);
+router.patch('/', authorizeStaffSelfUpdate, staffController.updateStaffMember);
 
 /**
  * @swagger
@@ -200,5 +200,34 @@ router.patch('/', authorizeClinicAdmin, staffController.updateStaffMember);
  *         description: Forbidden - requires clinic admin privileges
  */
 router.delete('/:id', authorizeClinicAdmin, staffController.deleteStaffMember);
+
+/**
+ * @swagger
+ * /staff/doctors:
+ *   get:
+ *     summary: Get all doctors for a clinic
+ *     tags: [Staff]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: clinicId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The clinic ID
+ *     responses:
+ *       200:
+ *         description: A list of doctors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Staff'
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/doctors', staffController.getDoctors);
 
 export default router; 

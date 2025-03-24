@@ -10,71 +10,80 @@ import {
   TextField,
   IconButton,
   InputAdornment,
-  Alert
+  Alert,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
-import { StaffForm } from '../components/staff/StaffForm';
-import { staffService, authService } from '../services';
+import { StaffForm } from '../components/StaffForm';
+import staffService, { StaffMember, UpdateStaffData } from '../services/staffService';
+import { authService } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import {
   Key as KeyIcon,
   ArrowBack as BackIcon,
   CheckCircle as ActiveIcon,
-  Cancel as InactiveIcon
+  Cancel as InactiveIcon,
+  Visibility as VisibilityIcon,
+  VisibilityOff as VisibilityOffIcon
 } from '@mui/icons-material';
 
 /* eslint-disable react-hooks/exhaustive-deps */
 
-export default function EditStaff() {
+const EditStaff: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [staffMember, setStaffMember] = useState<any | null>(null);
+  const [staffMember, setStaffMember] = useState<StaffMember | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadStaffMember();
-  }, [id]);
+    const fetchStaffMember = async () => {
+      if (!id || !user?.defaultClinicId) return;
 
-  const loadStaffMember = async () => {
-    if (!id || !user?.defaultClinicId) return;
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const data = await staffService.getStaffMembers(user.defaultClinicId.toString());
-      const member = data.find(m => m.id === parseInt(id));
-      if (member) {
-        setStaffMember(member);
-      } else {
-        toast.error('Staff member not found');
-        navigate('/staff');
+      try {
+        const data = await staffService.getStaffMembers(user.defaultClinicId.toString());
+        const member = data.find((m: StaffMember) => m.id === parseInt(id));
+        if (member) {
+          setStaffMember(member);
+        } else {
+          setError('Staff member not found');
+        }
+      } catch (err) {
+        setError('Failed to fetch staff member');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading staff member:', error);
-      toast.error('Failed to load staff member');
-      navigate('/staff');
-    }
-  };
+    };
 
-  const handleSubmit = async (data: any) => {
+    fetchStaffMember();
+  }, [id, user?.defaultClinicId]);
+
+  const handleSubmit = async (data: UpdateStaffData) => {
     if (!id || !user?.defaultClinicId) return;
 
     setIsLoading(true);
+    setError(null);
+
     try {
       await staffService.updateStaffMember(parseInt(id), {
         ...data,
         clinicId: user.defaultClinicId,
       });
-      toast.success('Staff member updated successfully');
       navigate('/staff');
-    } catch (error) {
-      console.error('Error updating staff member:', error);
-      toast.error('Failed to update staff member');
+    } catch (err) {
+      setError('Failed to update staff member');
     } finally {
       setIsLoading(false);
     }
@@ -102,21 +111,21 @@ export default function EditStaff() {
     }
   };
 
-  const handleToggleStatus = async (member: any) => {
-    if (!id || !user?.defaultClinicId) return;
+  const handleToggleStatus = async () => {
+    if (!id || !user?.defaultClinicId || !staffMember) return;
 
     setIsLoading(true);
+    setError(null);
+
     try {
       await staffService.updateStaffMember(parseInt(id), {
-        ...member,
-        isActive: !member.isActive,
+        ...staffMember,
+        isActive: !staffMember.isActive,
         clinicId: user.defaultClinicId,
       });
-      toast.success('Staff member status updated successfully');
-      loadStaffMember();
-    } catch (error) {
-      console.error('Error updating staff member status:', error);
-      toast.error('Failed to update staff member status');
+      navigate('/staff');
+    } catch (err) {
+      setError('Failed to update staff status');
     } finally {
       setIsLoading(false);
     }
@@ -171,7 +180,7 @@ export default function EditStaff() {
                 <Button
                   variant="outlined"
                   color={staffMember.isActive ? 'success' : 'error'}
-                  onClick={() => handleToggleStatus(staffMember)}
+                  onClick={handleToggleStatus}
                   startIcon={staffMember.isActive ? <ActiveIcon /> : <InactiveIcon />}
                 >
                   {staffMember.isActive ? 'Active' : 'Inactive'}
@@ -217,7 +226,7 @@ export default function EditStaff() {
                       onClick={() => setShowPassword(!showPassword)}
                       edge="end"
                     >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -239,4 +248,6 @@ export default function EditStaff() {
       </Container>
     </Layout>
   );
-} 
+};
+
+export default EditStaff; 

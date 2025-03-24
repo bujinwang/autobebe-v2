@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { clinicController } from "../controllers/clinicController";
+import { authenticate, authorizeClinicAdmin } from "../middleware/auth";
 
 const router = Router();
 
@@ -47,6 +48,9 @@ const router = Router();
  *           description: When the clinic was last updated
  */
 
+// Protect all clinic routes with authentication
+router.use(authenticate);
+
 /**
  * @swagger
  * /clinics:
@@ -67,7 +71,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', clinicController.getAllClinics);
+router.get('/', authorizeClinicAdmin, clinicController.getAllClinics);
 
 /**
  * @swagger

@@ -15,7 +15,8 @@ import {
   Typography,
   FormHelperText,
 } from '@mui/material';
-import { StaffMember } from '../../services/staffService';
+import { StaffMember, CreateStaffData } from '../services/staffService';
+import { useAuth } from '../contexts/AuthContext';
 
 const staffFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,12 +33,13 @@ type StaffFormData = z.infer<typeof staffFormSchema>;
 
 interface StaffFormProps {
   initialData?: Partial<StaffMember>;
-  onSubmit: (data: StaffFormData) => void;
+  onSubmit: (data: CreateStaffData) => void;
   isLoading?: boolean;
   clinicId: string;
 }
 
 export function StaffForm({ initialData, onSubmit, isLoading, clinicId }: StaffFormProps) {
+  const { user } = useAuth();
   const {
     control,
     handleSubmit,
@@ -55,8 +57,33 @@ export function StaffForm({ initialData, onSubmit, isLoading, clinicId }: StaffF
     },
   });
 
+  // Get available roles based on current user's role
+  const getAvailableRoles = () => {
+    if (!user) return [];
+    
+    switch (user.role) {
+      case 'SUPER_ADMIN':
+        return ['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'];
+      case 'CLINIC_ADMIN':
+        return ['STAFF'];
+      default:
+        return [];
+    }
+  };
+
+  const handleFormSubmit = (data: StaffFormData) => {
+    // Convert the form data to CreateStaffData type
+    const createStaffData: CreateStaffData = {
+      ...data,
+      password: data.password || '', // Ensure password is always a string
+      position: data.position || null,
+      specialty: data.specialty || null,
+    };
+    onSubmit(createStaffData);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <Box display="grid" gap={3}>
         <Controller
           name="name"
@@ -111,9 +138,13 @@ export function StaffForm({ initialData, onSubmit, isLoading, clinicId }: StaffF
             <FormControl error={!!errors.role} fullWidth>
               <InputLabel>Role</InputLabel>
               <Select {...field} label="Role">
-                <MenuItem value="STAFF">Staff</MenuItem>
-                <MenuItem value="CLINIC_ADMIN">Clinic Admin</MenuItem>
-                <MenuItem value="SUPER_ADMIN">Super Admin</MenuItem>
+                {getAvailableRoles().map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role === 'SUPER_ADMIN' ? 'Super Admin' :
+                     role === 'CLINIC_ADMIN' ? 'Clinic Admin' :
+                     'Staff Member'}
+                  </MenuItem>
+                ))}
               </Select>
               {errors.role && (
                 <FormHelperText>{errors.role.message}</FormHelperText>

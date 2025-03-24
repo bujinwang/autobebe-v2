@@ -20,22 +20,16 @@ export interface Clinic {
 export interface Doctor {
   id: number;
   name: string;
-  specialization: string;
-  clinics: Clinic[];
+  specialty: string | null;
+  clinicId: string;
   isActive: boolean;
 }
 
-// Add this if it doesn't exist already
 export interface Patient {
   id: number;
   name: string;
-  email: string;
-  phone?: string;
-  dateOfBirth?: string;
-  gender?: string;
-  address?: string;
-  medicalHistory?: string;
-  allergies?: string;
+  phone: string;
+  clinicId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -44,19 +38,15 @@ export interface Appointment {
   id: number;
   patientId: number;
   doctorId: number;
-  clinicId: number;
+  clinicId: string;
   appointmentDate: string;
   status: string;
-  chiefComplaint: string;
   purposeOfVisit?: string;
   symptoms: string;
-  medicalHistory?: string;
-  currentMedications?: string;
-  allergies?: string;
-  possibleTreatments?: string;
-  suggestedPrescriptions?: string;
-  followUpQuestions?: string;
-  followUpAnswers?: string;
+  followUpQuestions: string;
+  followUpAnswers: string;
+  possibleTreatments: string;
+  suggestedPrescriptions: string;
   patient?: Patient;
   doctor?: Doctor;
   clinic?: Clinic;

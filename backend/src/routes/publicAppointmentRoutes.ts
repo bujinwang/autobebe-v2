@@ -10,7 +10,7 @@ const router = Router();
 
 // Create a new appointment for unauthenticated patients
 router.post('/patient',
-  rateLimiter({ windowMs: 1 * 60 * 1000, max: 5 }), // 5 requests per 1 minutes
+  rateLimiter({ windowMs: 1 * 60 * 1000, max: 50 }), // 5 requests per 1 minutes
   validatePatientAppointment,
   appointmentController.createPatientAppointment
 );

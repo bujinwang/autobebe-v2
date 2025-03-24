@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
@@ -29,9 +29,7 @@ import {
 } from '@mui/material';
 import { 
   Search as SearchIcon,
-  CalendarToday as CalendarIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon,
   Person as PersonIcon,
   PlayArrow as PlayArrowIcon,
   Event as DateIcon,
@@ -41,11 +39,48 @@ import {
   Settings as ActionsIcon,
   Today as TodayIcon,
   Upcoming as UpcomingIcon,
-  History as PastIcon
+  History as PastIcon,
+  Add as AddIcon
 } from '@mui/icons-material';
-import { format, parseISO, isToday, isPast, isFuture } from 'date-fns';
 import { appointmentService, type Appointment } from '../services';
 import { useAuth } from '../contexts/AuthContext';
+import NewAppointmentDialog from '../components/NewAppointmentDialog';
+import { getPatientFullName } from '../utils/patientUtils';
+
+// Helper functions to replace date-fns
+const isToday = (date: Date) => {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+};
+
+const isFuture = (date: Date) => {
+  return date > new Date();
+};
+
+const isPast = (date: Date) => {
+  return date < new Date();
+};
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  if (isToday(date)) {
+    return `Today, ${date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+  }
+  return date.toLocaleDateString([], { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
 
 // Define tab values
 interface TabPanelProps {
@@ -81,11 +116,31 @@ const Appointments: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const [newAppointmentDialogOpen, setNewAppointmentDialogOpen] = useState(false);
   
   const { user } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  // Check if user has permission to create appointments
+  const canCreateAppointment = !!user; // Allow any authenticated user
+
+  const fetchAppointments = useCallback(async () => {
+    try {
+      if (!user?.defaultClinicId) {
+        throw new Error('No clinic selected');
+      }
+      const appointmentsData = await appointmentService.getAppointments(user.defaultClinicId);
+      setAppointments(appointmentsData);
+      setFilteredAppointments(appointmentsData);
+      setLoading(false);
+    } catch (err) {
+      console.error('Failed to fetch appointments:', err);
+      setError('Failed to load appointments. Please try again later.');
+      setLoading(false);
+    }
+  }, [user?.defaultClinicId, setAppointments, setFilteredAppointments, setError, setLoading]);
 
   useEffect(() => {
     // Reset state when clinic changes
@@ -95,7 +150,7 @@ const Appointments: React.FC = () => {
     setLoading(true);
     
     fetchAppointments();
-  }, [user?.defaultClinicId]); // Only re-fetch when the clinic ID changes
+  }, [fetchAppointments]);
 
   // Filter appointments based on tab and search term
   useEffect(() => {
@@ -109,17 +164,17 @@ const Appointments: React.FC = () => {
     // Apply tab filter
     if (tabValue === 0) { // Today
       filtered = filtered.filter(appointment => 
-        isToday(parseISO(appointment.appointmentDate))
+        isToday(new Date(appointment.appointmentDate))
       );
     } else if (tabValue === 1) { // Upcoming
       filtered = filtered.filter(appointment => 
-        isFuture(parseISO(appointment.appointmentDate)) && 
-        !isToday(parseISO(appointment.appointmentDate))
+        isFuture(new Date(appointment.appointmentDate)) && 
+        !isToday(new Date(appointment.appointmentDate))
       );
     } else if (tabValue === 2) { // Past
       filtered = filtered.filter(appointment => 
-        isPast(parseISO(appointment.appointmentDate)) && 
-        !isToday(parseISO(appointment.appointmentDate))
+        isPast(new Date(appointment.appointmentDate)) && 
+        !isToday(new Date(appointment.appointmentDate))
       );
     }
     
@@ -127,9 +182,8 @@ const Appointments: React.FC = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(appointment => 
-        (appointment.patient?.name?.toLowerCase()?.includes(term)) ||
+        (appointment.patient && getPatientFullName(appointment.patient).toLowerCase().includes(term)) ||
         (appointment.purposeOfVisit?.toLowerCase()?.includes(term)) ||
-        (appointment.chiefComplaint?.toLowerCase()?.includes(term)) ||
         (appointment.symptoms?.toLowerCase()?.includes(term))
       );
     }
@@ -145,26 +199,6 @@ const Appointments: React.FC = () => {
     
     setFilteredAppointments(filtered);
   }, [appointments, tabValue, searchTerm]);
-
-  const fetchAppointments = async () => {
-    try {
-      if (!user?.defaultClinicId) {
-        setError('No clinic selected. Please select a clinic first.');
-        setLoading(false);
-        return;
-      }
-      
-      const data = await appointmentService.getAppointments(user.defaultClinicId.toString());
-      setAppointments(data);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch appointments:', err);
-      setError('Failed to load appointments. Please try again later.');
-      setAppointments([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -191,16 +225,9 @@ const Appointments: React.FC = () => {
         return;
       }
       
-      // Create a doctor object from the current user
-      const doctor = {
-        id: user.id,
-        name: user.name
-      };
-      
-      // Update appointment status to in-progress and assign the current user as doctor
+      // Update appointment status to in-progress
       await appointmentService.updateAppointment(appointment.id.toString(), { 
         status: 'in-progress',
-        doctorId: user.id,
       });
       
       // Navigate to appointment details with takenIn flag
@@ -238,11 +265,7 @@ const Appointments: React.FC = () => {
   };
 
   const getFormattedDate = (dateString: string) => {
-    const date = parseISO(dateString);
-    if (isToday(date)) {
-      return `Today, ${format(date, 'h:mm a')}`;
-    }
-    return format(date, 'MMM d, yyyy h:mm a');
+    return formatDate(dateString);
   };
 
   if (loading) {
@@ -272,12 +295,26 @@ const Appointments: React.FC = () => {
 
   return (
     <Box sx={{ mb: 2 }}>
-      <Typography variant="h5" component="h1" gutterBottom>
-        Appointments
-      </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Manage and view patient appointments
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box>
+          <Typography variant="h5" component="h1" gutterBottom>
+            Appointments
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Manage and view patient appointments
+          </Typography>
+        </Box>
+        {canCreateAppointment && (
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<AddIcon />}
+            onClick={() => setNewAppointmentDialogOpen(true)}
+          >
+            New Appointment
+          </Button>
+        )}
+      </Box>
     
       {/* Search and Filter Bar */}
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
@@ -344,6 +381,17 @@ const Appointments: React.FC = () => {
       <TabPanel value={tabValue} index={2}>
         {renderAppointmentList("Past Appointments")}
       </TabPanel>
+
+      {/* New Appointment Dialog */}
+      {canCreateAppointment && (
+        <NewAppointmentDialog
+          open={newAppointmentDialogOpen}
+          onClose={() => setNewAppointmentDialogOpen(false)}
+          onAppointmentCreated={() => {
+            fetchAppointments();
+          }}
+        />
+      )}
     </Box>
   );
 
@@ -368,7 +416,7 @@ const Appointments: React.FC = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Typography variant="h6">
-                    {appointment.patient?.name || 'Unknown Patient'}
+                    {getPatientFullName(appointment.patient)}
                   </Typography>
                   {getStatusChip(appointment.status)}
                 </Box>
@@ -377,7 +425,7 @@ const Appointments: React.FC = () => {
                 </Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  <strong>Purpose of Visit:</strong> {appointment.purposeOfVisit || appointment.chiefComplaint}
+                  <strong>Purpose of Visit:</strong> {appointment.purposeOfVisit || 'No purpose specified'}
                 </Typography>
                 {appointment.doctor && (
                   <Typography variant="body2" sx={{ mt: 1 }}>
@@ -385,15 +433,19 @@ const Appointments: React.FC = () => {
                   </Typography>
                 )}
               </CardContent>
-              <CardActions sx={{ display: 'flex', gap: 1 }}>
+              <CardActions sx={{ display: 'flex', flexDirection: 'row', gap: 1, justifyContent: 'space-between' }}>
                 {tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' && (
                   <Button 
                     size="small" 
                     variant="contained"
                     color="warning"
-                    startIcon={<PlayArrowIcon />}
+                    startIcon={<PlayArrowIcon fontSize="small" />}
                     onClick={(e) => handleTakeIn(e, appointment)}
-                    sx={{ flex: 1 }}
+                    sx={{ 
+                      flexBasis: '48%', 
+                      whiteSpace: 'nowrap',
+                      minWidth: 'max-content' 
+                    }}
                   >
                     Take In
                   </Button>
@@ -402,7 +454,11 @@ const Appointments: React.FC = () => {
                   size="small" 
                   variant="contained" 
                   onClick={() => handleViewDetails(appointment.id)}
-                  sx={{ flex: 1 }}
+                  sx={{ 
+                    flexBasis: tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' ? '48%' : '100%',
+                    whiteSpace: 'nowrap',
+                    minWidth: 'max-content'
+                  }}
                 >
                   View Details
                 </Button>
@@ -470,8 +526,8 @@ const Appointments: React.FC = () => {
                 onClick={() => handleViewDetails(appointment.id)}
               >
                 <TableCell>{getFormattedDate(appointment.appointmentDate)}</TableCell>
-                <TableCell>{appointment.patient?.name || 'Unknown Patient'}</TableCell>
-                <TableCell>{appointment.purposeOfVisit || appointment.chiefComplaint}</TableCell>
+                <TableCell>{getPatientFullName(appointment.patient)}</TableCell>
+                <TableCell>{appointment.purposeOfVisit || 'No purpose specified'}</TableCell>
                 <TableCell>{appointment.doctor?.name || 'Unassigned'}</TableCell>
                 <TableCell>{getStatusChip(appointment.status)}</TableCell>
                 <TableCell align="right">

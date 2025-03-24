@@ -1,37 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Paper, Typography, Button, Container } from '@mui/material';
-import { StaffForm } from '../components/staff/StaffForm';
+import { StaffForm } from '../components/StaffForm';
 import { staffService, type CreateStaffData } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
+import { ArrowBack as BackIcon } from '@mui/icons-material';
 
-export default function NewStaff() {
-  const [isLoading, setIsLoading] = useState(false);
+const NewStaff: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (formData: { 
-    name: string;
-    email: string;
-    role: "SUPER_ADMIN" | "CLINIC_ADMIN" | "STAFF";
-    isActive: boolean;
-    clinicId: string;
-    position?: string;
-    specialty?: string;
-    password?: string;
-  }) => {
-    if (!user?.defaultClinicId) return;
+  const handleSubmit = async (data: CreateStaffData) => {
+    if (!user?.defaultClinicId) {
+      toast.error('Please select a clinic first');
+      return;
+    }
 
     setIsLoading(true);
     try {
       await staffService.createStaffMember({
-        ...formData,
-        clinicId: user.defaultClinicId.toString(),
-        password: formData.password || '',
-        position: formData.position || null,
-        specialty: formData.specialty || null,
+        ...data,
+        clinicId: user.defaultClinicId,
       });
       toast.success('Staff member created successfully');
       navigate('/staff');
@@ -46,17 +38,21 @@ export default function NewStaff() {
   return (
     <Layout>
       <Container maxWidth="lg">
-        <Box className="flex justify-between items-center mb-6">
-          <Typography variant="h4">Add New Staff Member</Typography>
+        <Box sx={{ mb: 4 }}>
           <Button
             variant="outlined"
             onClick={() => navigate('/staff')}
+            startIcon={<BackIcon />}
+            sx={{ mb: 2 }}
           >
-            Cancel
+            Back to Staff List
           </Button>
+          <Typography variant="h4" component="h1">
+            Add New Staff Member
+          </Typography>
         </Box>
 
-        <Paper className="p-6">
+        <Paper sx={{ p: 4 }}>
           {user?.defaultClinicId ? (
             <StaffForm
               onSubmit={handleSubmit}
@@ -72,4 +68,6 @@ export default function NewStaff() {
       </Container>
     </Layout>
   );
-} 
+};
+
+export default NewStaff; 

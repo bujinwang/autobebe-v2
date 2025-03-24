@@ -1,15 +1,14 @@
 import { Request, Response } from 'express';
 import { appointmentService, CreateAppointmentInput, UpdateAppointmentInput } from '../services/appointmentService';
-import { AuthRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 
 export const appointmentController = {
-  async getAllAppointments(req: AuthRequest, res: Response) {
+  async getAllAppointments(req: Request, res: Response) {
     try {
       const { clinicId } = req.query;
       
       // For super admins with clinicId=all, fetch all appointments
-      if (req.user?.role === 'SUPER_ADMIN' && (!clinicId || clinicId === 'all')) {
+      if (req.body.user?.role === 'SUPER_ADMIN' && (!clinicId || clinicId === 'all')) {
         const appointments = await appointmentService.getAllAppointments();
         return res.json(appointments);
       }

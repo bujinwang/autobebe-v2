@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -34,29 +34,38 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   MedicalServices as MedicalIcon,
-  CalendarToday as CalendarIcon,
   Person as PersonIcon,
   LocalHospital as HospitalIcon,
   Medication as MedicationIcon,
   Notes as NotesIcon,
   Print as PrintIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Phone as PhoneIcon,
 } from '@mui/icons-material';
-import { format, parseISO } from 'date-fns';
 import { 
   appointmentService, 
   getRecommendations,
   type Appointment 
 } from '../services';
-import Layout from '../components/Layout';
+import { getPatientFullName, getPatientPhone } from '../utils/patientUtils';
+
+// Helper function to replace date-fns format
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString([], { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
 
 const AppointmentDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
   const theme = useTheme();
-  // Check if appointment was taken in
-  const wasTakenIn = location.state && location.state.takenIn === true;
   
   const [appointment, setAppointment] = useState<Appointment | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,7 +137,7 @@ const AppointmentDetail: React.FC = () => {
       }
       
       const request = {
-        purposeOfVisit: appointmentData.purposeOfVisit || appointmentData.chiefComplaint || '',
+        purposeOfVisit: appointmentData.purposeOfVisit || '',
         symptoms: appointmentData.symptoms || '',
         followUpQAPairs
       };
@@ -265,44 +274,40 @@ const AppointmentDetail: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress />
-        </Box>
-      </Layout>
+      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <CircularProgress />
+      </Box>
     );
   }
 
   if (error || !appointment) {
     return (
-      <Layout>
-        <Box sx={{ my: 4 }}>
-          <Typography color="error" align="center">{error || 'Appointment not found'}</Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Button
-              startIcon={<BackIcon />}
-              onClick={() => navigate('/appointments')}
-              sx={{ mr: 2 }}
-            >
-              Back to Appointments
-            </Button>
-            <Button
-              startIcon={<RefreshIcon />}
-              variant="contained"
-              onClick={handleRefresh}
-            >
-              Try Again
-            </Button>
-          </Box>
+      <Box sx={{ my: 4 }}>
+        <Typography color="error" align="center">{error || 'Appointment not found'}</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+          <Button
+            startIcon={<BackIcon />}
+            onClick={() => navigate('/appointments')}
+            sx={{ mr: 2 }}
+          >
+            Back to Appointments
+          </Button>
+          <Button
+            startIcon={<RefreshIcon />}
+            variant="contained"
+            onClick={handleRefresh}
+          >
+            Try Again
+          </Button>
         </Box>
-      </Layout>
+      </Box>
     );
   }
 
   return (
-    <Layout>
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+    <>
+      <Box sx={{ mb: 2, pt: 0, mt: 0 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1, mt: 0 }}>
           <Button
             startIcon={<BackIcon />}
             onClick={() => navigate('/appointments')}
@@ -324,13 +329,13 @@ const AppointmentDetail: React.FC = () => {
           </Box>
         </Box>
         
-        <Grid container spacing={2} alignItems="center">
+        <Grid container spacing={1} alignItems="center" sx={{ mt: 0 }}>
           <Grid item xs>
-            <Typography variant="h4" component="h1">
+            <Typography variant="h4" component="h1" gutterBottom sx={{ mt: 0, mb: 0.5 }}>
               Appointment Details
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              {format(parseISO(appointment.appointmentDate), 'MMMM d, yyyy h:mm a')}
+              {formatDate(appointment.appointmentDate)}
             </Typography>
           </Grid>
           <Grid item>
@@ -343,7 +348,7 @@ const AppointmentDetail: React.FC = () => {
         </Grid>
       </Box>
 
-      <Grid container spacing={3}>
+      <Grid container spacing={2} sx={{ mt: 0 }}>
         <Grid item xs={12} md={4}>
           <Card elevation={3}>
             <CardHeader 
@@ -355,45 +360,30 @@ const AppointmentDetail: React.FC = () => {
               }
             />
             <CardContent>
-              <Typography variant="h6" gutterBottom>{appointment.patient?.name || 'Unknown Patient'}</Typography>
+              <Typography variant="h6" gutterBottom>{getPatientFullName(appointment.patient)}</Typography>
               
               <List dense>
-                {appointment.patient?.dateOfBirth && (
+                {appointment.patient?.phone && (
                   <ListItem>
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      <CalendarIcon fontSize="small" />
+                      <PhoneIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText 
-                      primary="Date of Birth" 
-                      secondary={format(parseISO(appointment.patient.dateOfBirth), 'MMM d, yyyy')} 
+                      primary="Phone" 
+                      secondary={getPatientPhone(appointment.patient)} 
                     />
                   </ListItem>
                 )}
                 
-                {appointment.patient?.gender && (
+                {appointment.purposeOfVisit && (
                   <ListItem>
                     <ListItemIcon sx={{ minWidth: 36 }}>
-                      <PersonIcon fontSize="small" />
+                      <MedicalIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary="Gender" secondary={appointment.patient.gender} />
-                  </ListItem>
-                )}
-                
-                {appointment.patient?.phone && (
-                  <ListItem>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <PersonIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText primary="Phone" secondary={appointment.patient.phone} />
-                  </ListItem>
-                )}
-                
-                {appointment.patient?.email && (
-                  <ListItem>
-                    <ListItemIcon sx={{ minWidth: 36 }}>
-                      <PersonIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText primary="Email" secondary={appointment.patient.email} />
+                    <ListItemText 
+                      primary="Purpose of Visit" 
+                      secondary={appointment.purposeOfVisit} 
+                    />
                   </ListItem>
                 )}
               </List>
@@ -441,7 +431,7 @@ const AppointmentDetail: React.FC = () => {
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle1" gutterBottom>Purpose of Visit</Typography>
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                  <Typography>{appointment.purposeOfVisit || appointment.chiefComplaint}</Typography>
+                  <Typography>{appointment.purposeOfVisit}</Typography>
                 </Paper>
               </Box>
               
@@ -608,38 +598,37 @@ const AppointmentDetail: React.FC = () => {
 
         <Grid item xs={12}>
           <Paper elevation={0} sx={{ p: 3, display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-            {wasTakenIn && appointment.status.toLowerCase() === 'in-progress' ? (
-              <>
-                <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  startIcon={<CheckCircleIcon />}
-                  onClick={() => handleOpenConfirmDialog('complete')}
-                >
-                  Finish Appointment
-                </Button>
-                <Button
-                  variant="contained"
-                  color="error"
-                  size="large"
-                  startIcon={<CancelIcon />}
-                  onClick={() => handleOpenConfirmDialog('cancel')}
-                >
-                  Cancel Appointment
-                </Button>
-              </>
-            ) : (
+            {appointment.status.toLowerCase() !== 'completed' && appointment.status.toLowerCase() !== 'cancelled' && (
               <Button
                 variant="contained"
-                color="primary"
+                color="success"
                 size="large"
-                startIcon={<BackIcon />}
-                onClick={() => navigate('/appointments')}
+                startIcon={<CheckCircleIcon />}
+                onClick={() => handleOpenConfirmDialog('complete')}
               >
-                Back to Appointments
+                Finish Appointment
               </Button>
             )}
+            {appointment.status.toLowerCase() !== 'cancelled' && appointment.status.toLowerCase() !== 'completed' && (
+              <Button
+                variant="contained"
+                color="error"
+                size="large"
+                startIcon={<CancelIcon />}
+                onClick={() => handleOpenConfirmDialog('cancel')}
+              >
+                Cancel Appointment
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              startIcon={<BackIcon />}
+              onClick={() => navigate('/appointments')}
+            >
+              Back to Appointments
+            </Button>
           </Paper>
         </Grid>
       </Grid>
@@ -697,7 +686,7 @@ const AppointmentDetail: React.FC = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-    </Layout>
+    </>
   );
 };
 

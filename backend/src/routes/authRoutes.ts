@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { login, changePassword, adminChangePassword } from '../controllers/authController';
 import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
+import { rateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -93,8 +94,16 @@ const router = Router();
  *         description: Invalid credentials
  *       400:
  *         description: Missing required fields
+ *       429:
+ *         description: Too many login attempts - please try again later
  */
-router.post('/login', login);
+router.post('/login', 
+  rateLimiter({ 
+    windowMs: 1 * 60 * 1000, // 15 minutes
+    max: 50 // 50 attempts per IP address per window
+  }), 
+  login
+);
 
 /**
  * @swagger

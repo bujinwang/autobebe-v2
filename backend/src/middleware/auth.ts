@@ -101,4 +101,31 @@ export const authorizeClinicAdmin = (req: AuthRequest, res: Response, next: Next
   }
 
   next();
+};
+
+export const authorizeStaffSelfUpdate = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ message: 'Authentication required.' });
+  }
+
+  // Allow SUPER_ADMINs to access everything
+  if (req.user.role === 'SUPER_ADMIN') {
+    return next();
+  }
+
+  // Allow CLINIC_ADMINs to update any staff in their clinic
+  if (req.user.role === 'CLINIC_ADMIN') {
+    if (!req.user.clinicId) {
+      return res.status(403).json({ message: 'Clinic administrator is not associated with any clinic.' });
+    }
+    return next();
+  }
+
+  // For staff members, ensure they can only update their own profile
+  const staffId = parseInt(req.query.id as string) || req.body.id;
+  if (!staffId || staffId !== req.user.userId) {
+    return res.status(403).json({ message: 'Access denied. You can only update your own profile.' });
+  }
+
+  next();
 }; 

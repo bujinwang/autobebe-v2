@@ -44,6 +44,32 @@ const staffController = {
   createStaffMember: async (req: Request, res: Response) => {
     try {
       const { name, email, password, role, position, specialty, isActive, clinicId } = req.body;
+      const creator = req.user; // Get the creator's role from the authenticated user
+
+      // Validate role creation permissions
+      if (role === 'SUPER_ADMIN') {
+        if (!creator || creator.role !== 'SUPER_ADMIN') {
+          return res.status(403).json({ message: 'Only super admins can create other super admins.' });
+        }
+      } else if (role === 'CLINIC_ADMIN') {
+        if (!creator || (creator.role !== 'SUPER_ADMIN' && creator.role !== 'CLINIC_ADMIN')) {
+          return res.status(403).json({ message: 'Only super admins and clinic admins can create clinic admins.' });
+        }
+      } else if (role === 'STAFF') {
+        if (!creator || (creator.role !== 'SUPER_ADMIN' && creator.role !== 'CLINIC_ADMIN')) {
+          return res.status(403).json({ message: 'Only super admins and clinic admins can create staff members.' });
+        }
+      }
+
+      // Validate clinic-specific restrictions
+      if (creator && creator.role !== 'SUPER_ADMIN') {
+        if (!creator.clinicId) {
+          return res.status(403).json({ message: 'Creator must be associated with a clinic.' });
+        }
+        if (clinicId !== creator.clinicId) {
+          return res.status(403).json({ message: 'You can only create staff members for your own clinic.' });
+        }
+      }
 
       // Hash password
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -81,7 +107,7 @@ const staffController = {
   // Update a staff member
   updateStaffMember: async (req: Request, res: Response) => {
     try {
-      const { id } = req.query;
+      const id = req.query.id || req.body.id;
       const { name, email, password, role, position, specialty, isActive, clinicId } = req.body;
 
       if (!id) {
@@ -138,6 +164,44 @@ const staffController = {
     } catch (error) {
       console.error('Error deleting staff member:', error);
       res.status(500).json({ message: 'Failed to delete staff member' });
+    }
+  },
+
+  // Get all doctors for a clinic
+  getDoctors: async (req: Request, res: Response) => {
+    try {
+      const { clinicId } = req.query;
+      
+      if (!clinicId) {
+        return res.status(400).json({ message: 'Clinic ID is required' });
+      }
+
+      const doctors = await prisma.user.findMany({
+        where: {
+          clinicId: clinicId as string,
+          isActive: true,
+          OR: [
+            {
+              role: UserRole.STAFF,
+              specialty: {
+                not: null
+              }
+            }
+          ]
+        },
+        select: {
+          id: true,
+          name: true,
+          specialty: true,
+          isActive: true,
+          clinicId: true
+        }
+      });
+
+      res.json(doctors);
+    } catch (error) {
+      console.error('Error getting doctors:', error);
+      res.status(500).json({ message: 'Failed to get doctors' });
     }
   }
 };
