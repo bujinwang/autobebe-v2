@@ -73,66 +73,6 @@ class MedicalAIService {
       throw error;
     }
   }
-
-  private buildMCPPrompt(request: MedicalAIRequest): string {
-    const { purposeOfVisit, symptoms, followUpQAPairs } = request;
-    let prompt = `Purpose of Visit: ${purposeOfVisit}\nSymptoms: ${symptoms}\n`;
-    
-    if (followUpQAPairs.length > 0) {
-      prompt += '\nFollow-up Questions and Answers:\n';
-      followUpQAPairs.forEach(qa => {
-        prompt += `Q: ${qa.question}\nA: ${qa.answer}\n`;
-      });
-    }
-
-    prompt += '\nPlease provide treatment recommendations and prescription suggestions in the following MCP format:\n';
-    prompt += '<mcp:output>\n{\n  "possibleTreatments": ["treatment1", "treatment2", ...],\n  "suggestedPrescriptions": ["prescription1", "prescription2", ...]\n}\n</mcp:output>';
-
-    return prompt;
-  }
-
-  private parseMCPResponse(aiResponse: string): MedicalAIResponse {
-    try {
-      // Extract content between MCP tags
-      const startTag = '<mcp:output>';
-      const endTag = '</mcp:output>';
-      const startIndex = aiResponse.indexOf(startTag);
-      const endIndex = aiResponse.indexOf(endTag);
-
-      if (startIndex === -1 || endIndex === -1) {
-        throw new Error('Invalid MCP format in response');
-      }
-
-      const jsonContent = aiResponse.substring(
-        startIndex + startTag.length,
-        endIndex
-      ).trim();
-
-      const parsedContent = JSON.parse(jsonContent);
-
-      return {
-        success: true,
-        possibleTreatments: parsedContent.possibleTreatments || [],
-        suggestedPrescriptions: parsedContent.suggestedPrescriptions || []
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        return {
-          success: false,
-          errorMessage: `Failed to parse AI response: ${error.message}`,
-          possibleTreatments: [],
-          suggestedPrescriptions: []
-        };
-      }
-      return {
-        success: false,
-        errorMessage: 'Failed to parse AI response',
-        possibleTreatments: [],
-        suggestedPrescriptions: []
-      };
-    }
-  }
-
   async getRecommendations(request: MedicalAIRequest): Promise<MedicalAIResponse> {
     try {
       const systemPrompt = 'You are a medical decision support system. Return ONLY a JSON object with possibleTreatments' +
@@ -150,14 +90,10 @@ class MedicalAIService {
 
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
       
-      // Try to find JSON content in the response
       const matches = aiResponse.match(/\{[\s\S]*\}/);
-      if (!matches) {
-        throw new Error('No JSON content found in AI response');
-      }
+      if (!matches) throw new Error('No JSON content found in AI response');
 
-      const jsonStr = matches[0];
-      const parsedResponse = JSON.parse(jsonStr);
+      const parsedResponse = JSON.parse(matches[0]);
 
       if (!Array.isArray(parsedResponse.possibleTreatments) || !Array.isArray(parsedResponse.suggestedPrescriptions)) {
         throw new Error('Invalid response format: treatments or prescriptions is not an array');
@@ -170,17 +106,9 @@ class MedicalAIService {
       };
     } catch (error) {
       console.error('Error in getTreatmentRecommendations:', error);
-      if (error instanceof Error) {
-        return {
-          success: false,
-          errorMessage: error.message,
-          possibleTreatments: [],
-          suggestedPrescriptions: []
-        };
-      }
       return {
         success: false,
-        errorMessage: 'An unexpected error occurred',
+        errorMessage: error instanceof Error ? error.message : 'An unexpected error occurred',
         possibleTreatments: [],
         suggestedPrescriptions: []
       };
@@ -189,23 +117,21 @@ class MedicalAIService {
 
   async getTopQuestions(request: TopQuestionsRequest): Promise<TopQuestionsResponse> {
     try {
-      const systemPrompt = 'You are a medical assistant AI. Generate exactly 3 relevant follow-up questions based on ' +
+      const systemPrompt = 'You are a medical assistant AI. Generate exactly 5 relevant follow-up questions based on ' +
           'the patient\'s purpose of visit and symptoms. Return ONLY a JSON object with a topQuestions array containing ' +
           'the 5 questions. Do not include any markdown formatting or additional text.';
       const prompt = `Based on:\nPurpose of Visit: ${request.purposeOfVisit}\nSymptoms: ${request.symptoms}\n\nGenerate 
       5 follow-up questions and return them in this exact format:\n{"topQuestions": ["question1", "question2", 
-      "question3", , "question4", , "question5"]}`;
+      "question3", "question4", "question5"]}`;
       
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
       
-      // Try to find JSON content in the response
       const matches = aiResponse.match(/\{[\s\S]*\}/);
       if (!matches) {
         throw new Error('No JSON content found in AI response');
       }
 
-      const jsonStr = matches[0];
-      const parsedResponse = JSON.parse(jsonStr);
+      const parsedResponse = JSON.parse(matches[0]);
 
       if (!Array.isArray(parsedResponse.topQuestions)) {
         throw new Error('Invalid response format: topQuestions is not an array');
@@ -217,16 +143,9 @@ class MedicalAIService {
       };
     } catch (error) {
       console.error('Error in getTopQuestions:', error);
-      if (error instanceof Error) {
-        return {
-          success: false,
-          errorMessage: error.message,
-          topQuestions: []
-        };
-      }
       return {
         success: false,
-        errorMessage: 'An unexpected error occurred',
+        errorMessage: error instanceof Error ? error.message : 'An unexpected error occurred',
         topQuestions: []
       };
     }
@@ -247,14 +166,12 @@ class MedicalAIService {
 
       const aiResponse = await this.callAIApi(prompt, systemPrompt);
       
-      // Try to find JSON content in the response
       const matches = aiResponse.match(/\{[\s\S]*\}/);
       if (!matches) {
         throw new Error('No JSON content found in AI response');
       }
 
-      const jsonStr = matches[0];
-      const parsedResponse = JSON.parse(jsonStr);
+      const parsedResponse = JSON.parse(matches[0]);
 
       if (typeof parsedResponse.instructions !== 'string') {
         throw new Error('Invalid response format: instructions is not a string');
@@ -266,16 +183,9 @@ class MedicalAIService {
       };
     } catch (error) {
       console.error('Error in getWaitingInstructions:', error);
-      if (error instanceof Error) {
-        return {
-          success: false,
-          errorMessage: error.message,
-          instructions: 'Please wait in the designated area. A staff member will assist you shortly.'
-        };
-      }
       return {
         success: false,
-        errorMessage: 'An unexpected error occurred',
+        errorMessage: error instanceof Error ? error.message : 'An unexpected error occurred',
         instructions: 'Please wait in the designated area. A staff member will assist you shortly.'
       };
     }

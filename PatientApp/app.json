@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "patientapp",
+    "name": "JoyTriage",
     "slug": "patientapp",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,7 +20,8 @@
       "buildNumber": "1",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan documents and take photos.",
-        "NSPhotoLibraryUsageDescription": "This app accesses your photos to let you share them with your healthcare provider."
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to let you share them with your healthcare provider.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "appStoreUrl": "https://apps.apple.com/app/autobebesys-joytriage/id1234567890"
     },

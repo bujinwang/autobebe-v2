@@ -3,7 +3,6 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text } from 'react-native';
 import AppNavigator from './navigation/AppNavigator';
-import LogViewer from './components/LogViewer';
 
 export default function App() {
   useEffect(() => {
@@ -16,7 +15,6 @@ export default function App() {
         <View style={{ flex: 1 }}>
           <AppNavigator />
           <StatusBar style="auto" />
-          <LogViewer />
         </View>
       </SafeAreaProvider>
     );
@@ -26,7 +24,6 @@ export default function App() {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Something went wrong!</Text>
         <Text>{error.message}</Text>
-        <LogViewer />
       </View>
     );
   }
