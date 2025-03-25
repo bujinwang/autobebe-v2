@@ -1,8 +1,5 @@
 import { Request, Response } from 'express';
 import { userService, CreateUserInput, UpdateUserInput } from '../services/userService';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export const userController = {
   async getAllUsers(req: Request, res: Response) {
@@ -61,37 +58,6 @@ export const userController = {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete user' });
-    }
-  },
-
-  async login(req: Request, res: Response) {
-    try {
-      const { email, password } = req.body;
-      const user = await userService.getUserByEmail(email);
-      
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      const isValidPassword = await userService.verifyPassword(user, password);
-      if (!isValidPassword) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-      }
-
-      const token = jwt.sign(
-        { 
-          id: user.id, 
-          email: user.email, 
-          role: user.role,
-          clinicId: user.clinicId 
-        },
-        JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-
-      res.json({ token, user: { ...user, password: undefined } });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to login' });
     }
   }
 }; 

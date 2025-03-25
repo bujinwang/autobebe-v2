@@ -90,4 +90,5 @@ class StaffService {
   }
 }
 
-export default new StaffService(); 
+const staffServiceInstance = new StaffService();
+export default staffServiceInstance; 

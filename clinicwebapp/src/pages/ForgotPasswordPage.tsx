@@ -1,35 +1,54 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Paper, Container, Alert, CircularProgress } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import {
+  Box,
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Alert,
+  Snackbar,
+  CircularProgress
+} from '@mui/material';
+import { Link } from 'react-router-dom';
+import authService from '../services/authService';
+import JoyTriageLogo from '../assets/JoyTriage.webp';
 
-const ForgotPasswordPage: React.FC = () => {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const theme = useTheme();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-
-    if (!email) {
-      setError('Email is required');
-      return;
-    }
+    setLoading(true);
 
     try {
-      setLoading(true);
-      // Call the backend API to send a password reset email
-      // await sendPasswordResetEmail(email);
-      setSuccess('Password reset email sent successfully');
-    } catch (err: any) {
-      console.error('Password reset error:', err);
-      setError(err.message || 'Failed to send password reset email');
+      await authService.forgotPassword(email);
+      setSnackbar({
+        open: true,
+        message: 'Password reset instructions have been sent to your email.',
+        severity: 'success'
+      });
+      setEmail('');
+    } catch (error) {
+      console.error('Error sending reset email:', error);
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : 'Failed to send reset email. Please try again.',
+        severity: 'error'
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -43,69 +62,92 @@ const ForgotPasswordPage: React.FC = () => {
       }}
     >
       <Container maxWidth="xs">
+        {/* Back to Login Link */}
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            component={Link}
+            to="/login"
+            color="primary"
+            sx={{
+              textDecoration: 'none',
+              '&:hover': {
+                backgroundColor: 'transparent',
+                textDecoration: 'underline'
+              }
+            }}
+          >
+            Back to Login
+          </Button>
+        </Box>
+
         <Paper
           elevation={10}
           sx={{
             p: 4,
+            width: '100%',
             borderRadius: 3,
             backdropFilter: 'blur(10px)',
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
           }}
         >
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              mb: 3
+            }}
+          >
+            <Box
+              component="img"
+              src={JoyTriageLogo}
+              alt="JoyTriage Logo"
+              sx={{ width: 100, height: 100, mb: 2, borderRadius: '50%' }}
+            />
+          </Box>
+
           <Typography
             component="h1"
-            variant="h4"
+            variant="h3"
+            align="center"
             gutterBottom
-            sx={{
-              fontWeight: 'bold',
-              color: 'primary.main',
-              mb: 3,
-            }}
+            sx={{ fontWeight: 'bold', color: 'primary.main' }}
           >
             Forgot Password
           </Typography>
-          {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ width: '100%', mb: 2 }}>{success}</Alert>}
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+
+          <Typography
+            variant="body1"
+            align="center"
+            color="text.secondary"
+            sx={{ mb: 4 }}
+          >
+            Enter your email address and we'll send you instructions to reset your password.
+          </Typography>
+
+          <form onSubmit={handleSubmit}>
             <TextField
-              margin="normal"
               required
               fullWidth
-              id="email"
               label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              variant="outlined"
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  '&.Mui-focused fieldset': {
-                    borderColor: theme.palette.primary.main,
-                    boxShadow: '0 0 5px rgba(33, 150, 243, 0.3)',
-                  },
-                },
-              }}
+              disabled={loading}
+              sx={{ mb: 3 }}
             />
+
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{
-                mt: 3,
-                mb: 2,
-                py: 1.5,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                boxShadow: '0 4px 10px rgba(33, 150, 243, 0.3)',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  boxShadow: '0 6px 15px rgba(33, 150, 243, 0.4)',
-                  transform: 'translateY(-2px)',
-                }
-              }}
               disabled={loading}
+              sx={{
+                py: 1.5,
+                position: 'relative',
+                fontSize: '1.1rem'
+              }}
             >
               {loading ? (
                 <CircularProgress size={24} color="inherit" />
@@ -115,9 +157,22 @@ const ForgotPasswordPage: React.FC = () => {
             </Button>
           </form>
         </Paper>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Container>
     </Box>
   );
-};
-
-export default ForgotPasswordPage; 
+} 

@@ -13,8 +13,8 @@ import {
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
 import LoginAnimation from '../components/LoginAnimation';
-import MedicalIcon from '@mui/icons-material/LocalHospital';
 import JoyTriageLogo from '../assets/JoyTriage.webp';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -60,6 +60,22 @@ const LoginPage: React.FC = () => {
     >
       <LoginAnimation />
       <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            component={Link}
+            to="/"
+            startIcon={<ArrowBackIcon />}
+            sx={{
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'primary.main',
+                backgroundColor: 'transparent',
+              }
+            }}
+          >
+            Back to Home
+          </Button>
+        </Box>
         <Paper
           elevation={10}
           sx={{

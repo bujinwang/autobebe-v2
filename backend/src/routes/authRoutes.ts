@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, changePassword, adminChangePassword } from '../controllers/authController';
+import { login, changePassword, adminChangePassword, forgotPassword, resetPassword } from '../controllers/authController';
 import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
 import { rateLimiter } from '../middleware/rateLimiter';
 
@@ -69,6 +69,26 @@ const router = Router();
  *         newPassword:
  *           type: string
  *           description: New password
+ *     ForgotPasswordRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *       properties:
+ *         email:
+ *           type: string
+ *           description: User's email address
+ *     ResetPasswordRequest:
+ *       type: object
+ *       required:
+ *         - token
+ *         - newPassword
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: Reset password token received via email
+ *         newPassword:
+ *           type: string
+ *           description: New password to set
  */
 
 /**
@@ -99,10 +119,68 @@ const router = Router();
  */
 router.post('/login', 
   rateLimiter({ 
-    windowMs: 1 * 60 * 1000, // 15 minutes
+    windowMs: 1 * 60 * 1000, // 1 minute
     max: 50 // 50 attempts per IP address per window
   }), 
   login
+);
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request password reset
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ForgotPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully
+ *       400:
+ *         description: Invalid email
+ *       404:
+ *         description: User not found
+ *       429:
+ *         description: Too many requests - please try again later
+ */
+router.post('/forgot-password',
+  rateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 50 // 50 attempts per IP address per window
+  }),
+  forgotPassword
+);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset password using token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResetPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *       400:
+ *         description: Invalid or expired token
+ *       429:
+ *         description: Too many attempts - please try again later
+ */
+router.post('/reset-password',
+  rateLimiter({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5 // 5 attempts per IP address per window
+  }),
+  resetPassword
 );
 
 /**

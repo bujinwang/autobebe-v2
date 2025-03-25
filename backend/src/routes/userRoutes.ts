@@ -90,48 +90,6 @@ router.post('/register', authenticate, authorizeClinicAdmin, authorizeStaff, use
 
 /**
  * @swagger
- * /users/login:
- *   post:
- *     summary: User login
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *                 token:
- *                   type: string
- *                   description: JWT authentication token
- *       401:
- *         description: Invalid credentials
- *       400:
- *         description: Missing required fields
- *       500:
- *         description: Server error
- */
-router.post('/login', userController.login);
-
-/**
- * @swagger
  * /users:
  *   get:
  *     summary: Get all users

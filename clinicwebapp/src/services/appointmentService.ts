@@ -85,4 +85,5 @@ class AppointmentService {
   }
 }
 
-export default new AppointmentService(); 
+const appointmentServiceInstance = new AppointmentService();
+export default appointmentServiceInstance; 

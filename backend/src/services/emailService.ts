@@ -1,80 +1,71 @@
 import Mailjet from 'node-mailjet';
 
 interface EmailOptions {
-  to: {
-    email: string;
-    name?: string;
-  }[];
+  to: string;
   subject: string;
-  textPart: string;
-  htmlPart: string;
+  html: string;
 }
 
-class EmailService {
-  private mailjet: any;
+const mailjet = Mailjet.apiConnect(
+  process.env.MJ_APIKEY_PUBLIC || '',
+  process.env.MJ_APIKEY_PRIVATE || ''
+);
 
-  constructor() {
-    this.mailjet = Mailjet.apiConnect(
-      process.env.MJ_APIKEY_PUBLIC || '',
-      process.env.MJ_APIKEY_PRIVATE || ''
-    );
-  }
-
-  async sendEmail(options: EmailOptions): Promise<boolean> {
-    try {
-      const request = this.mailjet
-        .post('send', { version: 'v3.1' })
-        .request({
-          Messages: [
+export const sendEmail = async (options: EmailOptions): Promise<boolean> => {
+  try {
+    await mailjet.post('send', { version: 'v3.1' }).request({
+      Messages: [
+        {
+          From: {
+            Email: 'noreply@autobebesys.com',
+            Name: 'AutoBebe System'
+          },
+          To: [
             {
-              From: {
-                Email: 'noreply@autobebesys.com',
-                Name: 'AutoBebe System'
-              },
-              To: options.to,
-              Subject: options.subject,
-              TextPart: options.textPart,
-              HTMLPart: options.htmlPart
+              Email: options.to,
+              Name: options.to.split('@')[0]
             }
-          ]
-        });
-
-      const result = await request;
-      console.log('Email sent successfully:', result.body);
-      return true;
-    } catch (error) {
-      console.error('Failed to send email:', error);
-      return false;
-    }
+          ],
+          Subject: options.subject,
+          HTMLPart: options.html
+        }
+      ]
+    });
+    return true;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    throw new Error('Failed to send email');
   }
+};
 
-  // Helper methods for specific email types
-  async sendRegistrationEmail(to: string, name: string, verificationToken: string): Promise<boolean> {
-    const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    
-    return this.sendEmail({
-      to: [{ email: to, name }],
+// Helper methods for specific email types
+async function sendRegistrationEmail(to: string, name: string, verificationToken: string): Promise<boolean> {
+  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+
+  try {
+    return await sendEmail({
+      to,
       subject: 'Welcome to AutoBebe - Verify Your Email',
-      textPart: `Dear ${name},\n\nWelcome to AutoBebe! Please verify your email by clicking the following link: ${verificationUrl}`,
-      htmlPart: `
+      html: `
         <h2>Welcome to AutoBebe!</h2>
         <p>Dear ${name},</p>
-        <p>Thank you for registering with AutoBebe. Please verify your email by clicking the button below:</p>
-        <a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 14px 20px; text-decoration: none; border-radius: 4px;">
-          Verify Email
-        </a>
+        <p>Thank you for registering with AutoBebe. Please verify your email by clicking the following link: ${verificationUrl}</p>
       `
     });
+  } catch (error) {
+    console.error('Failed to send registration email:', error);
+    return false;
   }
+}
 
-  async sendPasswordResetEmail(to: string, name: string, resetToken: string): Promise<boolean> {
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    
-    return this.sendEmail({
-      to: [{ email: to, name }],
-      subject: 'AutoBebe - Password Reset Request',
-      textPart: `Dear ${name},\n\nYou have requested to reset your password. Click the following link to reset it: ${resetUrl}`,
-      htmlPart: `
+async function sendPasswordResetEmail(to: string, name: string, resetToken: string): Promise<boolean> {
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+  try {
+    return await sendEmail({
+      to,
+      subject: 'AutoBebe System Support - Password Reset Request',
+      html: `
         <h2>Password Reset Request</h2>
         <p>Dear ${name},</p>
         <p>You have requested to reset your password. Click the button below to reset it:</p>
@@ -83,14 +74,18 @@ class EmailService {
         </a>
       `
     });
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+    return false;
   }
+}
 
-  async send2FACode(to: string, name: string, code: string): Promise<boolean> {
-    return this.sendEmail({
-      to: [{ email: to, name }],
+async function send2FACode(to: string, name: string, code: string): Promise<boolean> {
+  try {
+    return await sendEmail({
+      to,
       subject: 'AutoBebe - Your 2FA Code',
-      textPart: `Dear ${name},\n\nYour 2FA code is: ${code}\n\nThis code will expire in 5 minutes.`,
-      htmlPart: `
+      html: `
         <h2>Your 2FA Code</h2>
         <p>Dear ${name},</p>
         <p>Your 2FA code is:</p>
@@ -99,7 +94,40 @@ class EmailService {
         <p>If you didn't request this code, please ignore this email.</p>
       `
     });
+  } catch (error) {
+    console.error('Failed to send 2FA code:', error);
+    return false;
   }
 }
 
-export const emailService = new EmailService(); 
+async function sendSupportMessage(from: { name: string; email: string }, subject: string, message: string): Promise<boolean> {
+  try {
+    return await sendEmail({
+      to: 'support@autobebesys.com',
+      subject: `Support Request: ${subject}`,
+      html: `
+        <h2>New Support Message</h2>
+        <div style="margin-bottom: 20px;">
+          <strong>From:</strong> ${from.name} (${from.email})
+        </div>
+        <div style="margin-bottom: 20px;">
+          <strong>Subject:</strong> ${subject}
+        </div>
+        <div style="margin-bottom: 20px;">
+          <strong>Message:</strong><br>
+          <p style="white-space: pre-wrap;">${message}</p>
+        </div>
+      `
+    });
+  } catch (error) {
+    console.error('Failed to send support message:', error);
+    return false;
+  }
+}
+
+export const emailService = {
+  sendRegistrationEmail,
+  sendPasswordResetEmail,
+  send2FACode,
+  sendSupportMessage,
+}; 

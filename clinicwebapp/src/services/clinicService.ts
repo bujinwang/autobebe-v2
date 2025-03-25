@@ -60,4 +60,5 @@ class ClinicService {
   }
 }
 
-export default new ClinicService(); 
+const clinicServiceInstance = new ClinicService();
+export default clinicServiceInstance; 

@@ -1,15 +1,14 @@
-import axios from 'axios';
-import { API_BASE_URL } from '../config';
 import { User } from '../types';
+import axiosInstance from './axiosConfig';
 
 class AuthService {
-  private baseUrl = `${API_BASE_URL}/auth`;
   private tokenKey = 'token';
   private userKey = 'user';
+  private baseUrl = '/auth';
 
   async login(email: string, password: string) {
     try {
-      const response = await axios.post(`${this.baseUrl}/login`, {
+      const response = await axiosInstance.post(`${this.baseUrl}/login`, {
         email,
         password,
       });
@@ -60,7 +59,7 @@ class AuthService {
     clinicId: string;
   }) {
     try {
-      const response = await axios.post(`${this.baseUrl}/register`, userData);
+      const response = await axiosInstance.post(`${this.baseUrl}/register`, userData);
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -72,7 +71,7 @@ class AuthService {
 
   async forgotPassword(email: string) {
     try {
-      const response = await axios.post(`${this.baseUrl}/forgot-password`, { email });
+      const response = await axiosInstance.post(`${this.baseUrl}/forgot-password`, { email });
       return response.data;
     } catch (error: any) {
       if (error.response) {
@@ -84,7 +83,7 @@ class AuthService {
 
   async resetPassword(token: string, newPassword: string) {
     try {
-      const response = await axios.post(`${this.baseUrl}/reset-password`, {
+      const response = await axiosInstance.post(`${this.baseUrl}/reset-password`, {
         token,
         newPassword,
       });
@@ -99,14 +98,11 @@ class AuthService {
 
   async changePassword(currentPassword: string, newPassword: string) {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${this.baseUrl}/change-password`,
         {
           currentPassword,
           newPassword,
-        },
-        {
-          headers: { Authorization: `Bearer ${this.getToken()}` },
         }
       );
       return response.data;
@@ -120,14 +116,11 @@ class AuthService {
 
   async adminChangePassword(userId: number, newPassword: string) {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         `${this.baseUrl}/admin-change-password`,
         {
           userId,
           newPassword,
-        },
-        {
-          headers: { Authorization: `Bearer ${this.getToken()}` },
         }
       );
       return response.data;
@@ -151,5 +144,4 @@ class AuthService {
 }
 
 const authServiceInstance = new AuthService();
-
 export default authServiceInstance; 

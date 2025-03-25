@@ -91,4 +91,5 @@ class PatientService {
   }
 }
 
-export default new PatientService(); 
+const patientServiceInstance = new PatientService();
+export default patientServiceInstance; 

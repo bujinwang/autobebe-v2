@@ -12,6 +12,7 @@ import medicalAIRoutes from './routes/medicalAIRoutes';
 import authRoutes from './routes/authRoutes';
 import staffRoutes from './routes/staffRoutes';
 import userRoutes from './routes/userRoutes';
+import supportRoutes from './routes/supportRoutes';
 import { errorHandler } from './middleware/errorHandler';
 import publicAppointmentRoutes from './routes/publicAppointmentRoutes';
 import { authenticate } from './middleware/auth';
@@ -45,14 +46,13 @@ app.get('/api/health', (req, res) => {
 
 // Public routes (no authentication required)
 app.use('/api/public/patients', publicPatientRoutes);
-app.use('/api/public/appointments', publicAppointmentRoutes);
 app.use('/api/public/clinics', publicClinicRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/public/appointments', publicAppointmentRoutes);
+app.use('/api/support', supportRoutes);
 
 // Protected routes (require authentication)
 app.use('/api/auth', authRoutes);
-app.use('/api/admin/patients', authenticate, patientRoutes); // Admin patient routes
-app.use('/api/clinics', authenticate, clinicRoutes);
+app.use('/api/clinics', clinicRoutes);
 
 // Use the appointment routes
 app.use('/api/appointments', authenticate, appointmentRoutes);

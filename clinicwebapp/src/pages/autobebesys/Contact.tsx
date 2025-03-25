@@ -11,8 +11,7 @@ import {
   Snackbar,
   Card,
   CardContent,
-  useTheme,
-  alpha
+  CircularProgress
 } from '@mui/material';
 import {
   Email as EmailIcon,
@@ -20,6 +19,7 @@ import {
   LocationOn as LocationIcon,
   AccessTime as ClockIcon
 } from '@mui/icons-material';
+import contactService from '../../services/contactService';
 
 interface ContactInfo {
   icon: React.ElementType;
@@ -65,7 +65,6 @@ const contactInfo: ContactInfo[] = [
 ];
 
 export default function Contact() {
-  const theme = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -77,6 +76,7 @@ export default function Contact() {
     message: '',
     severity: 'success' as 'success' | 'error'
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -86,25 +86,36 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData);
+    setLoading(true);
     
-    // Show success message
-    setSnackbar({
-      open: true,
-      message: 'Thank you for your message. We will get back to you soon!',
-      severity: 'success'
-    });
+    try {
+      await contactService.sendSupportMessage(formData);
+      
+      setSnackbar({
+        open: true,
+        message: 'Thank you for your message. We will get back to you soon!',
+        severity: 'success'
+      });
 
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    });
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setSnackbar({
+        open: true,
+        message: error instanceof Error ? error.message : 'Sorry, we couldn\'t send your message. Please try again later.',
+        severity: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCloseSnackbar = () => {
@@ -200,6 +211,7 @@ export default function Contact() {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -211,6 +223,7 @@ export default function Contact() {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -221,6 +234,7 @@ export default function Contact() {
                 name="subject"
                 value={formData.subject}
                 onChange={handleChange}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -233,6 +247,7 @@ export default function Contact() {
                 name="message"
                 value={formData.message}
                 onChange={handleChange}
+                disabled={loading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -241,9 +256,18 @@ export default function Contact() {
                 variant="contained"
                 size="large"
                 fullWidth
-                sx={{ mt: 2 }}
+                disabled={loading}
+                sx={{
+                  mt: 2,
+                  py: 1.5,
+                  position: 'relative'
+                }}
               >
-                Send Message
+                {loading ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  'Send Message'
+                )}
               </Button>
             </Grid>
           </Grid>

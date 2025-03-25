@@ -16,6 +16,7 @@ import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import LandingPage from './pages/LandingPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 // Create new components for autobebesys pages with Suspense for code splitting
 const HomePage = React.lazy(() => import('./pages/autobebesys/Home'));
@@ -49,6 +50,7 @@ const AppRoutes = () => {
         
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         
         {/* Signup route that redirects to login */}
         <Route path="/joytriage/signup" element={<Navigate to="/login" replace />} />

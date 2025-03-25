@@ -5,6 +5,7 @@ export { default as appointmentService } from './appointmentService';
 export { default as clinicService } from './clinicService';
 export { default as patientService } from './patientService';
 export { default as staffService } from './staffService';
+export { default as contactService } from './contactService';
 
 // Medical AI service functions
 export { 
