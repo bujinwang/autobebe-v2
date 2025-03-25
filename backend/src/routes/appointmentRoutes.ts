@@ -230,10 +230,67 @@ router.delete('/:id', authenticate, appointmentController.deleteAppointment);
  */
 router.put('/:id/take', authenticate, appointmentController.takeInAppointment);
 
-// Get appointments by date
-router.get('/date/:date', authorizeStaff, appointmentController.getAppointmentsByDate);
+/**
+ * @swagger
+ * /appointments/date/{date}:
+ *   get:
+ *     summary: Get appointments by date
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: date
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: true
+ *         description: The date to filter appointments (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: A list of appointments for the specified date
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Appointment'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - requires staff privileges
+ */
+router.get('/date/:date', authenticate, appointmentController.getAppointmentsByDate);
 
-// Add the missing route for getting appointments by patient ID
-router.get('/patient/:patientId', authorizeStaff, appointmentController.getAppointmentsByPatientId);
+/**
+ * @swagger
+ * /appointments/patient/{patientId}:
+ *   get:
+ *     summary: Get appointments by patient ID
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: patientId
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The patient ID
+ *     responses:
+ *       200:
+ *         description: A list of appointments for the specified patient
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Appointment'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - requires staff privileges
+ */
+router.get('/patient/:patientId', authenticate, appointmentController.getAppointmentsByPatientId);
 
 export default router;

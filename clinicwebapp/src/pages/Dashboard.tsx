@@ -40,15 +40,50 @@ import {
   LineChart,
   Line
 } from 'recharts';
-import { format, subDays, parseISO } from 'date-fns';
 import { 
   appointmentService, 
   patientService,
   type Appointment,
-  type Patient 
+  type Patient,
+  staffService
 } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import MedicalScene from '../components/MedicalScene';
+import { getPatientFullName, getPatientPhone } from '../utils/patientUtils';
+
+// Helper function to format date for display
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString([], { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric'
+  });
+};
+
+// Helper function to subtract days from a date
+const subDays = (date: Date, days: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() - days);
+  return result;
+};
+
+// Helper function to check if a date is today
+const isToday = (date: Date) => {
+  const today = new Date();
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+};
+
+// Helper function to check if a date is in the future
+const isFuture = (date: Date) => {
+  return date.getTime() > new Date().getTime();
+};
+
+// Helper function to check if a date is in the past
+const isPast = (date: Date) => {
+  return date.getTime() < new Date().getTime();
+};
 
 // Mock data for charts - replace with real API calls
 const mockAppointmentStatusData = [
@@ -61,7 +96,7 @@ const mockAppointmentStatusData = [
 const mockAppointmentTrendData = Array.from({ length: 7 }, (_, i) => {
   const date = subDays(new Date(), 6 - i);
   return {
-    date: format(date, 'MMM dd'),
+    date: formatDate(date),
     appointments: Math.floor(Math.random() * 10) + 5
   };
 });
@@ -74,13 +109,323 @@ const mockPatientAgeData = [
   { name: '65+', value: 5 }
 ];
 
+// Helper function to replace date-fns startOfMonth
+const startOfMonth = (date: Date) => {
+  const result = new Date(date);
+  result.setDate(1);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+// Helper function to replace date-fns startOfWeek
+const startOfWeek = (date: Date) => {
+  const result = new Date(date);
+  const day = result.getDay();
+  result.setDate(result.getDate() - day);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+// Helper function to replace date-fns startOfYear
+const startOfYear = (date: Date) => {
+  const result = new Date(date);
+  result.setMonth(0);
+  result.setDate(1);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
+// Helper function to replace date-fns subHours
+const subHours = (date: Date, hours: number) => {
+  const result = new Date(date);
+  result.setHours(result.getHours() - hours);
+  return result;
+};
+
+// Helper function to replace date-fns subMinutes
+const subMinutes = (date: Date, minutes: number) => {
+  const result = new Date(date);
+  result.setMinutes(result.getMinutes() - minutes);
+  return result;
+};
+
+// Helper function to replace date-fns subMonths
+const subMonths = (date: Date, months: number) => {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() - months);
+  return result;
+};
+
+// Helper function to replace date-fns subSeconds
+const subSeconds = (date: Date, seconds: number) => {
+  const result = new Date(date);
+  result.setSeconds(result.getSeconds() - seconds);
+  return result;
+};
+
+// Helper function to replace date-fns subWeeks
+const subWeeks = (date: Date, weeks: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() - (weeks * 7));
+  return result;
+};
+
+// Helper function to replace date-fns subYears
+const subYears = (date: Date, years: number) => {
+  const result = new Date(date);
+  result.setFullYear(result.getFullYear() - years);
+  return result;
+};
+
+// Helper function to replace date-fns addDays
+const addDays = (date: Date, days: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+// Helper function to replace date-fns addHours
+const addHours = (date: Date, hours: number) => {
+  const result = new Date(date);
+  result.setHours(result.getHours() + hours);
+  return result;
+};
+
+// Helper function to replace date-fns addMinutes
+const addMinutes = (date: Date, minutes: number) => {
+  const result = new Date(date);
+  result.setMinutes(result.getMinutes() + minutes);
+  return result;
+};
+
+// Helper function to replace date-fns addMonths
+const addMonths = (date: Date, months: number) => {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+};
+
+// Helper function to replace date-fns addSeconds
+const addSeconds = (date: Date, seconds: number) => {
+  const result = new Date(date);
+  result.setSeconds(result.getSeconds() + seconds);
+  return result;
+};
+
+// Helper function to replace date-fns addWeeks
+const addWeeks = (date: Date, weeks: number) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + (weeks * 7));
+  return result;
+};
+
+// Helper function to replace date-fns addYears
+const addYears = (date: Date, years: number) => {
+  const result = new Date(date);
+  result.setFullYear(result.getFullYear() + years);
+  return result;
+};
+
+// Helper function to replace date-fns endOfDay
+const endOfDay = (date: Date) => {
+  const result = new Date(date);
+  result.setHours(23, 59, 59, 999);
+  return result;
+};
+
+// Helper function to replace date-fns endOfMonth
+const endOfMonth = (date: Date) => {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + 1);
+  result.setDate(0);
+  result.setHours(23, 59, 59, 999);
+  return result;
+};
+
+// Helper function to replace date-fns endOfWeek
+const endOfWeek = (date: Date) => {
+  const result = new Date(date);
+  const day = result.getDay();
+  result.setDate(result.getDate() + (6 - day));
+  result.setHours(23, 59, 59, 999);
+  return result;
+};
+
+// Helper function to replace date-fns endOfYear
+const endOfYear = (date: Date) => {
+  const result = new Date(date);
+  result.setMonth(11);
+  result.setDate(31);
+  result.setHours(23, 59, 59, 999);
+  return result;
+};
+
+// Helper function to replace date-fns getDate
+const getDate = (date: Date) => {
+  return date.getDate();
+};
+
+// Helper function to replace date-fns getDaysInMonth
+const getDaysInMonth = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+};
+
+// Helper function to replace date-fns getHours
+const getHours = (date: Date) => {
+  return date.getHours();
+};
+
+// Helper function to replace date-fns getMilliseconds
+const getMilliseconds = (date: Date) => {
+  return date.getMilliseconds();
+};
+
+// Helper function to replace date-fns getMinutes
+const getMinutes = (date: Date) => {
+  return date.getMinutes();
+};
+
+// Helper function to replace date-fns getMonth
+const getMonth = (date: Date) => {
+  return date.getMonth();
+};
+
+// Helper function to replace date-fns getSeconds
+const getSeconds = (date: Date) => {
+  return date.getSeconds();
+};
+
+// Helper function to replace date-fns getWeek
+const getWeek = (date: Date) => {
+  const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+  const pastDaysOfYear = (date.getTime() - firstDayOfYear.getTime()) / 86400000;
+  return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+};
+
+// Helper function to replace date-fns getYear
+const getYear = (date: Date) => {
+  return date.getFullYear();
+};
+
+// Helper function to replace date-fns isAfter
+const isAfter = (date1: Date, date2: Date) => {
+  return date1.getTime() > date2.getTime();
+};
+
+// Helper function to replace date-fns isBefore
+const isBefore = (date1: Date, date2: Date) => {
+  return date1.getTime() < date2.getTime();
+};
+
+// Helper function to replace date-fns isEqual
+const isEqual = (date1: Date, date2: Date) => {
+  return date1.getTime() === date2.getTime();
+};
+
+// Helper function to replace date-fns isSameDay
+const isSameDay = (date1: Date, date2: Date) => {
+  return date1.getDate() === date2.getDate() &&
+         date1.getMonth() === date2.getMonth() &&
+         date1.getFullYear() === date2.getFullYear();
+};
+
+// Helper function to replace date-fns isSameHour
+const isSameHour = (date1: Date, date2: Date) => {
+  return date1.getHours() === date2.getHours() &&
+         isSameDay(date1, date2);
+};
+
+// Helper function to replace date-fns isSameMonth
+const isSameMonth = (date1: Date, date2: Date) => {
+  return date1.getMonth() === date2.getMonth() &&
+         date1.getFullYear() === date2.getFullYear();
+};
+
+// Helper function to replace date-fns isSameYear
+const isSameYear = (date1: Date, date2: Date) => {
+  return date1.getFullYear() === date2.getFullYear();
+};
+
+// Helper function to replace date-fns isValid
+const isValid = (date: Date) => {
+  return date instanceof Date && !isNaN(date.getTime());
+};
+
+// Helper function to replace date-fns isWithinInterval
+const isWithinInterval = (date: Date, interval: { start: Date; end: Date }) => {
+  return date.getTime() >= interval.start.getTime() && 
+         date.getTime() <= interval.end.getTime();
+};
+
+// Helper function to replace date-fns parse
+const parse = (dateString: string, format: string, referenceDate: Date = new Date()) => {
+  // This is a simplified version - you might want to implement more complex parsing logic
+  return new Date(dateString);
+};
+
+// Helper function to replace date-fns setDate
+const setDate = (date: Date, day: number) => {
+  const result = new Date(date);
+  result.setDate(day);
+  return result;
+};
+
+// Helper function to replace date-fns setHours
+const setHours = (date: Date, hours: number) => {
+  const result = new Date(date);
+  result.setHours(hours);
+  return result;
+};
+
+// Helper function to replace date-fns setMilliseconds
+const setMilliseconds = (date: Date, milliseconds: number) => {
+  const result = new Date(date);
+  result.setMilliseconds(milliseconds);
+  return result;
+};
+
+// Helper function to replace date-fns setMinutes
+const setMinutes = (date: Date, minutes: number) => {
+  const result = new Date(date);
+  result.setMinutes(minutes);
+  return result;
+};
+
+// Helper function to replace date-fns setMonth
+const setMonth = (date: Date, month: number) => {
+  const result = new Date(date);
+  result.setMonth(month);
+  return result;
+};
+
+// Helper function to replace date-fns setSeconds
+const setSeconds = (date: Date, seconds: number) => {
+  const result = new Date(date);
+  result.setSeconds(seconds);
+  return result;
+};
+
+// Helper function to replace date-fns setYear
+const setYear = (date: Date, year: number) => {
+  const result = new Date(date);
+  result.setFullYear(year);
+  return result;
+};
+
+// Helper function to replace date-fns startOfDay
+const startOfDay = (date: Date) => {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  return result;
+};
+
 export default function Dashboard() {
   const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalPatients: 0,
     totalAppointments: 0,
-    totalDoctors: 3,
+    totalDoctors: 0,
     newPatientsThisMonth: 0,
     appointmentsToday: 0,
     completionRate: 0
@@ -102,27 +447,64 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      // Only fetch all data if user is an admin
-      if (user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') {
-        const [appointmentsData, patientsData] = await Promise.all([
-          appointmentService.getAppointments(user.defaultClinicId || ''),
-          patientService.getAllPatients()
-        ]);
-        setStats({
-          totalPatients: patientsData.length,
-          totalAppointments: appointmentsData.length,
-          totalDoctors: 3, // Mock data - replace with actual doctor count
-          newPatientsThisMonth: 0,
-          appointmentsToday: 0,
-          completionRate: 0
-        });
-        setRecentAppointments(
-          appointmentsData
-            .sort((a: Appointment, b: Appointment) => 
-              new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
-            )
-            .slice(0, 5)
-        );
+      if (!user?.defaultClinicId) return;
+
+      // Check if user has admin permissions
+      const isAdmin = user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN';
+      
+      // Fetch appointments and staff data which should work for all users
+      const [appointmentsData, doctorsData] = await Promise.all([
+        appointmentService.getAppointments(user.defaultClinicId),
+        staffService.getDoctors(user.defaultClinicId)
+      ]);
+      
+      // Try to fetch patient data only if user is admin
+      let patientsData: Patient[] = [];
+      if (isAdmin) {
+        try {
+          patientsData = await patientService.getPatientsByClinic(user.defaultClinicId);
+        } catch (error) {
+          console.error('Error fetching patient data:', error);
+          // Continue with empty patients array for admins with errors
+        }
+      }
+
+      // Calculate completion rate based on completed appointments
+      const completedAppointments = appointmentsData.filter(
+        (appointment) => appointment.status === 'completed'
+      ).length;
+      const completionRate = appointmentsData.length > 0
+        ? Math.round((completedAppointments / appointmentsData.length) * 100)
+        : 0;
+
+      // Calculate today's appointments
+      const today = new Date();
+      const appointmentsToday = appointmentsData.filter(appointment => {
+        const appointmentDate = new Date(appointment.appointmentDate);
+        return appointmentDate.getDate() === today.getDate() &&
+          appointmentDate.getMonth() === today.getMonth() &&
+          appointmentDate.getFullYear() === today.getFullYear() &&
+          appointment.status.toLowerCase() === 'scheduled';
+      }).length;
+
+      setStats({
+        totalPatients: patientsData.length,
+        totalAppointments: appointmentsData.length,
+        totalDoctors: doctorsData.length,
+        newPatientsThisMonth: 0,
+        appointmentsToday,
+        completionRate
+      });
+
+      setRecentAppointments(
+        appointmentsData
+          .sort((a: Appointment, b: Appointment) => 
+            new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
+          )
+          .slice(0, 5)
+      );
+
+      if (patientsData.length > 0) {
         setRecentPatients(
           patientsData
             .sort((a: Patient, b: Patient) => 
@@ -130,28 +512,19 @@ export default function Dashboard() {
             )
             .slice(0, 5)
         );
-      } else {
-        // For staff members, only fetch appointments
-        const appointmentsData = await appointmentService.getAppointments(user?.defaultClinicId || '');
-        setStats({
-          totalPatients: 0,
-          totalAppointments: appointmentsData.length,
-          totalDoctors: 3, // Mock data - replace with actual doctor count
-          newPatientsThisMonth: 0,
-          appointmentsToday: 0,
-          completionRate: 0
-        });
-        setRecentAppointments(
-          appointmentsData
-            .sort((a: Appointment, b: Appointment) => 
-              new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
-            )
-            .slice(0, 5)
-        );
       }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      // Set default values even when there's an error
+      setStats({
+        totalPatients: 0,
+        totalAppointments: 0,
+        totalDoctors: 0,
+        newPatientsThisMonth: 0,
+        appointmentsToday: 0,
+        completionRate: 0
+      });
     } finally {
       setLoading(false);
     }
@@ -198,7 +571,47 @@ export default function Dashboard() {
 
         {/* Stats Cards */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
-          {/* Show appointments stats for all users */}
+          {/* Total Patients Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
+                    <PatientsIcon />
+                  </Avatar>
+                  <Typography variant="h6">Total Patients</Typography>
+                </Box>
+                <Typography variant="h3" component="div" sx={{ mb: 1 }}>
+                  {stats.totalPatients}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Clinic Staff Card */}
+          <Grid item xs={12} sm={6} md={4}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
+                    <DoctorsIcon />
+                  </Avatar>
+                  <Typography variant="h6">Clinic Staff</Typography>
+                </Box>
+                <Typography variant="h3" component="div" sx={{ mb: 1 }}>
+                  {stats.totalDoctors}
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TrendingUpIcon fontSize="small" color="success" />
+                  <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
+                    {stats.completionRate}% completion rate
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Total Appointments Card */}
           <Grid item xs={12} sm={6} md={4}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
@@ -220,50 +633,6 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </Grid>
-          
-          {/* Only show patient stats for admin users */}
-          {(user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                      <PatientsIcon />
-                    </Avatar>
-                    <Typography variant="h6">Total Patients</Typography>
-                  </Box>
-                  <Typography variant="h3" component="div" sx={{ mb: 1 }}>
-                    {stats.totalPatients}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
-          
-          {/* Show staff stats for admin users */}
-          {(user?.role === 'CLINIC_ADMIN' || user?.role === 'SUPER_ADMIN') && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                      <DoctorsIcon />
-                    </Avatar>
-                    <Typography variant="h6">Clinic Staff</Typography>
-                  </Box>
-                  <Typography variant="h3" component="div" sx={{ mb: 1 }}>
-                    {stats.totalDoctors}
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <TrendingUpIcon fontSize="small" color="success" />
-                    <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                      {stats.completionRate}% completion rate
-                    </Typography>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
         </Grid>
 
         {/* Charts */}
@@ -467,7 +836,7 @@ export default function Dashboard() {
                           </Avatar>
                         </ListItemAvatar>
                         <ListItemText
-                          primary={appointment.patient?.name || 'Unknown Patient'}
+                          primary={getPatientFullName(appointment.patient)}
                           secondary={
                             <>
                               <Typography
@@ -475,9 +844,9 @@ export default function Dashboard() {
                                 variant="body2"
                                 color="text.primary"
                               >
-                                {format(new Date(appointment.appointmentDate), 'MMM d, yyyy h:mm a')}
+                                {formatDate(new Date(appointment.appointmentDate))}
                               </Typography>
-                              {` — ${appointment.purposeOfVisit || appointment.chiefComplaint || 'No purpose specified'}`}
+                              {` — ${appointment.purposeOfVisit || 'No purpose specified'}`}
                             </>
                           }
                         />
@@ -510,17 +879,19 @@ export default function Dashboard() {
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
-                            primary={patient.name}
+                            primary={
+                              <Typography
+                                sx={{ display: 'inline' }}
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                              >
+                                {getPatientFullName(patient)}
+                              </Typography>
+                            }
                             secondary={
                               <>
-                                <Typography
-                                  component="span"
-                                  variant="body2"
-                                  color="text.primary"
-                                >
-                                  {patient.email}
-                                </Typography>
-                                {` — ${patient.phone || 'No phone'}`}
+                                {` — ${getPatientPhone(patient) || 'No phone'}`}
                               </>
                             }
                           />

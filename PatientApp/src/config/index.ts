@@ -1,19 +1,38 @@
 import developmentConfig from './env/development';
 import productionConfig from './env/production';
 
-// Type for our config
-export type Config = typeof developmentConfig;
-
 /**
  * Environment types supported by the app
  */
 export type Environment = 'development' | 'production';
 
+// Define a more flexible Config type that works for both environments
+export type Config = {
+  readonly API: {
+    readonly BASE_URL: string;
+    readonly TIMEOUT: number;
+    readonly RETRY_COUNT: number;
+  };
+  readonly AUTH: {
+    readonly TOKEN_EXPIRY_HOURS: number;
+    readonly STORAGE_KEYS: {
+      readonly TOKEN: string;
+      readonly TOKEN_EXPIRY: string;
+      readonly USER_ROLE: string;
+      readonly CLINIC_ID: string;
+    };
+  };
+  readonly CACHE: {
+    readonly CLINIC_INFO_TTL: number;
+    readonly STORAGE_KEYS: {
+      readonly CLINIC_INFO: string;
+      readonly CLINIC_INFO_TIMESTAMP: string;
+    };
+  };
+};
+
 /**
  * Get the current environment based on React Native's __DEV__ flag
- * __DEV__ is automatically set by React Native:
- * - true when running in development (npm start, react-native run-ios/android)
- * - false when running a production build
  */
 const getEnvironment = (): Environment => {
   return __DEV__ ? 'development' : 'production';
@@ -31,10 +50,10 @@ const getConfig = (): Config => {
     case 'production':
       return productionConfig;
     default:
-      return developmentConfig;
+      return productionConfig;
   }
 };
 
 // Export the config
 const config = getConfig();
-export default config; 
+export default config;

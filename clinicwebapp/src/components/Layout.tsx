@@ -13,12 +13,10 @@ import {
   ListItemText,
   ListItemButton,
   Divider,
-  Container,
   Menu,
   MenuItem,
   useTheme,
   useMediaQuery,
-  Avatar,
   Tooltip
 } from '@mui/material';
 import {
@@ -26,7 +24,6 @@ import {
   ChevronLeft as ChevronLeftIcon,
   Dashboard as DashboardIcon,
   Event as EventIcon,
-  Person as PersonIcon,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   AccountCircle as AccountCircleIcon,
@@ -38,16 +35,6 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Clinic } from '../types';
 import { clinicService } from '../services';
-import { 
-  Home as HomeIconFeather,
-  Calendar as CalendarIconFeather,
-  Users as UsersIconFeather,
-  User as UserIconFeather,
-  Settings as SettingsIconFeather,
-  LogOut as LogOutIconFeather,
-  X as XIconFeather,
-  Menu as MenuIconFeather
-} from 'react-feather';
 import JoyTriageLogo from '../assets/JoyTriage.webp';
 
 interface LayoutProps {
@@ -67,9 +54,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [drawerOpen, setDrawerOpen] = useState(!isMobile);
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [clinicMenuAnchor, setClinicMenuAnchor] = useState<null | HTMLElement>(null);
-  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     if (!user) return;
@@ -127,9 +112,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         const clinic = await clinicService.getClinicById(clinicId);
         setClinics(clinic ? [clinic] : []);
       }
-
-      // Clear any existing errors
-      setError(null);
       
       // Force a re-render of the current route
       const currentPath = window.location.pathname;
@@ -157,40 +139,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     if (!user.defaultClinicId) return 'Select Clinic';
     const currentClinic = clinics.find(clinic => clinic.id.toString() === user.defaultClinicId?.toString());
     return currentClinic ? currentClinic.name : 'Loading...';
-  };
-
-  const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setUserMenuAnchor(event.currentTarget);
-  };
-
-  const handleUserMenuClose = () => {
-    setUserMenuAnchor(null);
-  };
-
-  const handleProfileClick = () => {
-    handleUserMenuClose();
-    navigate('/profile');
-  };
-
-  const handleSettingsClick = () => {
-    handleUserMenuClose();
-    navigate('/settings');
-  };
-
-  const handleLogoutClick = () => {
-    handleUserMenuClose();
-    handleLogout();
-  };
-
-  // Get user's initials for the avatar
-  const getUserInitials = () => {
-    if (!user?.name) return '?';
-    return user.name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
   };
 
   // Update the clinic selector button to show loading state
@@ -325,6 +273,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         variant={isMobile ? 'temporary' : 'permanent'}
         open={drawerOpen}
         onClose={isMobile ? handleDrawerToggle : undefined}
+        container={document.body}
+        ModalProps={{
+          keepMounted: false,
+        }}
         sx={{
           width: drawerOpen ? DRAWER_WIDTH : CLOSED_DRAWER_WIDTH,
           flexShrink: 0,
@@ -418,6 +370,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </ListItemButton>
             </ListItem>
           ))}
+          <Divider sx={{ my: 1 }} />
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                minHeight: 36,
+                justifyContent: drawerOpen ? 'initial' : 'center',
+                px: 1.5,
+              }}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: drawerOpen ? 1.5 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Logout"
+                primaryTypographyProps={{ fontSize: '0.875rem' }}
+                sx={{ 
+                  opacity: drawerOpen ? 1 : 0,
+                  display: drawerOpen ? 'block' : 'none',
+                  transition: theme.transitions.create(['opacity'], {
+                    easing: theme.transitions.easing.sharp,
+                    duration: theme.transitions.duration.enteringScreen,
+                  }),
+                }} 
+              />
+            </ListItemButton>
+          </ListItem>
         </List>
       </Drawer>
 
@@ -425,7 +410,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         component="main"
         sx={{
           flexGrow: 1,
-          p: 1,
+          p: 0,
           width: { sm: `calc(100% - ${CLOSED_DRAWER_WIDTH}px)` },
           ...(drawerOpen && {
             width: `calc(100% - ${DRAWER_WIDTH}px)`,
@@ -436,8 +421,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           }),
         }}
       >
-        <Toolbar variant="dense" sx={{ minHeight: 48 }} />
-        {children}
+        <Toolbar variant="dense" sx={{ minHeight: 48, p: 0, m: 0 }} />
+        <Box sx={{ p: 2, pt: 0, mt: 0 }}>{children}</Box>
       </Box>
 
       {/* Clinic Selection Menu */}
@@ -446,6 +431,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         anchorEl={clinicMenuAnchor}
         open={Boolean(clinicMenuAnchor)}
         onClose={handleClinicMenuClose}
+        container={document.body}
+        disablePortal={false}
       >
         {clinicMenuItems}
       </Menu>

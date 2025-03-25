@@ -26,6 +26,7 @@ const ContactPage = React.lazy(() => import('./pages/autobebesys/Contact'));
 const DemoPage = React.lazy(() => import('./pages/autobebesys/Demo'));
 const PlatformsPage = React.lazy(() => import('./pages/autobebesys/Platforms'));
 const CareersPage = React.lazy(() => import('./pages/autobebesys/Careers'));
+const PrivacyPage = React.lazy(() => import('./pages/autobebesys/Privacy'));
 
 // Loading component for Suspense fallback
 const LoadingFallback = () => (
@@ -85,6 +86,11 @@ const AppRoutes = () => {
         <Route path="/careers" element={
           <PublicLayout>
             <CareersPage />
+          </PublicLayout>
+        } />
+        <Route path="/privacy" element={
+          <PublicLayout>
+            <PrivacyPage />
           </PublicLayout>
         } />
         

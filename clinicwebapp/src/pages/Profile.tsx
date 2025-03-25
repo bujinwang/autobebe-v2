@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -13,7 +13,7 @@ import {
   Chip
 } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
-import { staffService } from '../services';
+import staffService, { StaffMember, UpdateStaffData } from '../services/staffService';
 import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import WorkIcon from '@mui/icons-material/Work';
@@ -24,10 +24,10 @@ import BusinessIcon from '@mui/icons-material/Business';
 // Define valid role types
 type StaffRole = 'SUPER_ADMIN' | 'CLINIC_ADMIN' | 'STAFF';
 
-export default function Profile() {
+const Profile: React.FC = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
@@ -35,8 +35,9 @@ export default function Profile() {
     name: user?.name || '',
     email: user?.email || '',
     position: user?.position || '',
-    specialty: user?.specialty || ''
+    specialty: user?.specialty || '',
   });
+  const role = user?.role || '';
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -48,32 +49,24 @@ export default function Profile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user?.id) return;
 
-    // Validate that the role is one of the allowed values
-    const role = user.role as StaffRole;
-    if (!['SUPER_ADMIN', 'CLINIC_ADMIN', 'STAFF'].includes(role)) {
-      setError('Invalid user role');
-      return;
-    }
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
 
     try {
-      setLoading(true);
-      setError(null);
-      
       await staffService.updateStaffMember(user.id, {
         ...formData,
-        role,
+        role: user.role as 'SUPER_ADMIN' | 'CLINIC_ADMIN' | 'STAFF',
         clinicId: user.defaultClinicId || '',
-        isActive: true
       });
-
       setSuccess('Profile updated successfully');
-      setIsEditing(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      console.error('Failed to update profile:', err);
+      setError('Failed to update profile. Please try again.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -226,9 +219,9 @@ export default function Profile() {
                     <Button
                       variant="contained"
                       type="submit"
-                      disabled={loading}
+                      disabled={isLoading}
                     >
-                      {loading ? (
+                      {isLoading ? (
                         <CircularProgress size={24} color="inherit" />
                       ) : (
                         'Save Changes'
@@ -254,7 +247,7 @@ export default function Profile() {
                 Role:
               </Typography>
               <Chip 
-                label={getRoleDisplay(user?.role || '')}
+                label={getRoleDisplay(role)}
                 color="primary"
                 size="small"
               />
@@ -275,4 +268,6 @@ export default function Profile() {
       </Paper>
     </Box>
   );
-} 
+};
+
+export default Profile; 

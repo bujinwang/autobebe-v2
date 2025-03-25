@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { patientController } from '../controllers/patientController';
-import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
+import { authenticate, authorizeClinicAdmin, authorizeStaff } from '../middleware/auth';
 
 const router = Router();
 
@@ -125,7 +125,7 @@ router.get('/:id', authorizeClinicAdmin, patientController.getPatientById);
  *       403:
  *         description: Forbidden
  */
-router.post('/', authorizeClinicAdmin, patientController.createPatient);
+router.post('/', authorizeStaff, patientController.createPatient);
 
 /**
  * @swagger

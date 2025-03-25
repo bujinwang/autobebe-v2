@@ -13,7 +13,7 @@ const router = Router();
  * /public/patients/register:
  *   post:
  *     summary: Register a new patient (public access)
- *     tags: [Public]
+ *     tags: [Public Patients]
  *     description: Creates a new patient account without requiring authentication
  *     requestBody:
  *       required: true
@@ -22,32 +22,53 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
- *               - firstName
- *               - lastName
- *               - dateOfBirth
- *               - email
+ *               - name
+ *               - phone
+ *               - clinicId
  *             properties:
- *               firstName:
+ *               name:
  *                 type: string
- *               lastName:
+ *                 description: Patient's full name
+ *               phone:
  *                 type: string
- *               dateOfBirth:
- *                 type: string
- *                 format: date
+ *                 description: Patient's phone number
+ *                 pattern: ^\+?[\d\s-()]+$
  *               email:
  *                 type: string
- *               phoneNumber:
+ *                 description: Patient's email address
+ *               clinicId:
  *                 type: string
+ *                 description: ID of the clinic
  *     responses:
  *       201:
  *         description: Patient registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     clinicId:
+ *                       type: string
  *       400:
  *         description: Invalid input data
  *       429:
  *         description: Too many requests - rate limit exceeded
  */
 router.post('/register',
-  rateLimiter({ windowMs: 1 * 60 * 1000, max: 5 }), // 5 requests per 1 minutes
+  rateLimiter({ windowMs: 1 * 60 * 1000, max: 50 }), // 5 requests per 1 minutes
   validatePatientRegistration,
   patientController.registerPatient
 );

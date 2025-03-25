@@ -35,9 +35,6 @@ yarn-error.*
 *.tsbuildinfo
 
 # Environment configuration files
-src/config/env/development.ts
-src/config/env/production.ts
-src/config/env/staging.ts
 .env
 .env.*
 !.env.example
