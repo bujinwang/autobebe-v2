@@ -7,6 +7,7 @@ export interface Patient {
   name: string;
   dateOfBirth?: string;
   phone: string;
+  email?: string;
   clinicId?: string;
 }
 
@@ -25,8 +26,8 @@ export interface ApiError {
 // Register a new patient
 export const registerPatient = async (patientData: Patient): Promise<Patient> => {
   try {
-     // Send the registration request
-    const response = await apiClient.post('/patients/register', patientData);
+    // Send the registration request
+    const response = await apiClient.post('/public/patients/register', patientData);
     return response.data.data;
   } catch (error) {
     if (isAxiosError(error)) {

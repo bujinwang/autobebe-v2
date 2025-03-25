@@ -11,10 +11,10 @@ interface EmailOptions {
 }
 
 class EmailService {
-  private mailjet: Mailjet;
+  private mailjet: any;
 
   constructor() {
-    this.mailjet = Mailjet.connect(
+    this.mailjet = Mailjet.apiConnect(
       process.env.MJ_APIKEY_PUBLIC || '',
       process.env.MJ_APIKEY_PRIVATE || ''
     );

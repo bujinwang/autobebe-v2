@@ -8,7 +8,6 @@ import {
   ScrollView,
   SafeAreaView,
   Alert,
-  Modal,
   ActivityIndicator
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,12 +16,6 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { registerPatient, savePatientData } from '../services/patientClientService';
 import { getClinicInfoById } from '../services/clinicClientService';
 import { getAppointmentById } from '../services/appointmentClientService';
-import CardScanner from '../components/CardScanner';
-
-type PatientInfoScreenProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList, 'PatientInfo'>;
-  route: RouteProp<RootStackParamList, 'PatientInfo'>;
-};
 
 // Add this function after the imports and before the component
 const isValidDate = (dateString: string): boolean => {
@@ -47,18 +40,28 @@ const isValidDate = (dateString: string): boolean => {
   );
 };
 
+type PatientInfoScreenProps = {
+  navigation: NativeStackNavigationProp<RootStackParamList, 'PatientInfo'>;
+  route: RouteProp<RootStackParamList, 'PatientInfo'>;
+};
+
 const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   // Log route params when component mounts
   useEffect(() => {
     console.log('PatientInfoScreen - Route params:', route.params);
   }, []);
 
-  // Add dateOfBirth to your state
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    dateOfBirth: '',
+  const [formData, setFormData] = useState<{
+    name: string;
+    phone: string;
+    email: string;
+    dateOfBirth: string;
+    clinicId: string;
+  }>({
+    name: route.params?.patientInfo?.name || '',
+    phone: route.params?.patientInfo?.phone || '',
+    email: route.params?.patientInfo?.email || '',
+    dateOfBirth: route.params?.patientInfo?.dateOfBirth || '',
     clinicId: route.params?.clinicId || '4F420955'
   });
 
@@ -69,13 +72,26 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     dateOfBirth: ''
   });
 
-  const [showScanner, setShowScanner] = useState(false);
-  const [scanType, setScanType] = useState<'healthcard' | 'driverlicense'>('healthcard');
-  const [showScanOptions, setShowScanOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [registering, setRegistering] = useState(false);
-
   const [existingAppointmentId, setExistingAppointmentId] = useState<number | undefined>(undefined);
+
+  // Initialize form data from route params if available
+  useEffect(() => {
+    const patientInfo = route.params?.patientInfo;
+    const clinicId = route.params?.clinicId;
+
+    if (patientInfo) {
+      setFormData(prev => ({
+        ...prev,
+        name: patientInfo.name || '',
+        phone: patientInfo.phone || '',
+        email: patientInfo.email || '',
+        dateOfBirth: patientInfo.dateOfBirth || '',
+        clinicId: clinicId || '4F420955'
+      }));
+    }
+  }, [route.params]);
 
   useEffect(() => {
     const initializeScreen = async () => {
@@ -193,119 +209,111 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
   };
 
   const handlePhoneChange = (text: string) => {
-    const formatted = formatPhoneNumber(text);
+    // Remove any non-digit characters
+    const cleaned = text.replace(/\D/g, '');
+    
+    // Format the phone number
+    let formatted = cleaned;
+    if (cleaned.length >= 3) {
+      formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    }
+    if (cleaned.length >= 6) {
+      formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+    
     setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
-  // Make sure the handleSavePatientData function properly includes dateOfBirth
-  const handleSavePatientData = async () => {
+  const handleNext = async () => {
+    // Validate form
+    const newErrors = {
+      name: '',
+      phone: '',
+      email: '',
+      dateOfBirth: ''
+    };
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (formData.phone.replace(/\D/g, '').length !== 10) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
+    }
+
+    if (formData.email && !formData.email.includes('@')) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (formData.dateOfBirth && !isValidDate(formData.dateOfBirth)) {
+      newErrors.dateOfBirth = 'Please enter a valid date in MM/DD/YYYY format';
+    }
+
+    setErrors(newErrors);
+
+    // If there are errors, don't proceed
+    if (Object.values(newErrors).some(error => error !== '')) {
+      return;
+    }
+
+    setRegistering(true);
+
     try {
-      setRegistering(true);
-      console.log('Attempting to save patient data:', formData);
-  
-      if (!validateForm()) {
-        console.log('Form validation failed');
-        Alert.alert('Validation Error', 'Please correct the errors in the form.');
-        return false;
-      }
-  
-      if (!formData.clinicId) {
-        console.log('Missing clinic ID');
-        Alert.alert('Error', 'Clinic ID is required');
-        return false;
-      }
-  
-      // Attempt to save patient data
-      console.log('Calling savePatientData with:', {
+      // Register patient
+      const patientData = {
         name: formData.name,
         phone: formData.phone,
-        email: formData.email || '',
-        dateOfBirth: formData.dateOfBirth || '',
+        email: formData.email,
+        dateOfBirth: formData.dateOfBirth,
         clinicId: formData.clinicId
+      };
+
+      const patient = await registerPatient(patientData);
+
+      // Navigate to symptoms screen
+      navigation.navigate('Symptoms', {
+        patientInfo: {
+          name: patient.name,
+          phone: patient.phone,
+          email: formData.email,
+          dateOfBirth: formData.dateOfBirth
+        },
+        clinicId: patient.clinicId || '4F420955'
       });
-      
-      const savedPatient = await savePatientData({
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email || '',
-        dateOfBirth: formData.dateOfBirth || '',
-        clinicId: formData.clinicId
-      });
-      console.log('Patient registered successfully:', savedPatient);
-      return true;
     } catch (error) {
-      console.error('Error saving patient data:', error);
-      let message = 'Failed to register patient. Please try again.';
-      
-      if (error instanceof Error) {
-        if (error.message.includes('Validation failed:')) {
-          message = error.message;
-        } else if (error.message.includes('Too many registration attempts')) {
-          message = 'Too many registration attempts. Please try again later.';
-        } else if (error.message.includes('Unable to connect')) {
-          message = 'Unable to connect to the server. Please check your internet connection.';
-        }
-      }
-      
-      Alert.alert('Registration Error', message);
-      return false;
+      console.error('Error registering patient:', error);
+      Alert.alert('Error', 'Failed to register patient. Please try again.');
     } finally {
       setRegistering(false);
     }
   };
-  
-  // Make sure the handleNext function properly passes dateOfBirth
-  const handleNext = async () => {
-    setLoading(true);
-    try {
-      const success = await handleSavePatientData();
-      if (success) {
-        // Navigate to symptoms screen with the form data
-        navigation.navigate('Symptoms', {
-          patientInfo: {
-            name: formData.name,
-            phone: formData.phone,
-            email: formData.email || '',
-            dateOfBirth: formData.dateOfBirth || '',
-            healthcareNumber: '', // Add empty healthcare number since it's required by the type
-          },
-          clinicId: formData.clinicId
-        });
-      }
-    } finally {
-      setLoading(false);
+
+  // Update form data when clinic is selected
+  const handleClinicSelect = (clinicId: string) => {
+    setFormData(prev => ({
+      name: prev.name,
+      phone: prev.phone,
+      email: prev.email,
+      dateOfBirth: prev.dateOfBirth,
+      clinicId: clinicId || '4F420955'
+    }));
+  };
+
+  // Update form data when clinic is selected from route params
+  useEffect(() => {
+    const clinicId = route.params?.clinicId;
+    if (clinicId) {
+      setFormData(prev => ({
+        name: prev.name,
+        phone: prev.phone,
+        email: prev.email,
+        dateOfBirth: prev.dateOfBirth,
+        clinicId: clinicId || '4F420955'
+      }));
     }
-  };
-
-  const handleScanCard = (type: 'healthcard' | 'driverlicense') => {
-    setScanType(type);
-    setShowScanner(true);
-    setShowScanOptions(false);
-  };
-
-  const handleScanComplete = (data: { name?: string }) => {
-    setShowScanner(false);
-    
-    // Update form with scanned data
-    const updatedFormData = { ...formData };
-    
-    if (data.name) {
-      updatedFormData.name = data.name;
-    }
-    
-    setFormData(updatedFormData);
-    
-    // Show success message
-    Alert.alert(
-      'Scan Complete',
-      'Your information has been extracted from the card.',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const toggleScanOptions = () => {
-    setShowScanOptions(!showScanOptions);
-  };
+  }, [route.params?.clinicId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -325,32 +333,13 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               </View>
             )}
             
-                 {/* Scan Options */}
-            {showScanOptions && (
-              <View style={styles.scanOptionsContainer}>
-                <TouchableOpacity 
-                  style={styles.scanOptionButton} 
-                  onPress={() => handleScanCard('healthcard')}
-                >
-                  <Text style={styles.scanOptionText}>Health Card</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  style={styles.scanOptionButton} 
-                  onPress={() => handleScanCard('driverlicense')}
-                >
-                  <Text style={styles.scanOptionText}>Driver's License</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            
             {/* Required Fields */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Patient Name <Text style={styles.required}>*</Text></Text>
               <TextInput
                 style={[styles.input, errors.name ? styles.inputError : null]}
                 value={formData.name}
-                onChangeText={(text) => setFormData({ ...formData, name: text })}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, name: text }))}
                 placeholder="Enter your full name"
               />
               {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
@@ -374,7 +363,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               <TextInput
                 style={[styles.input, errors.email ? styles.inputError : null]}
                 value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, email: text }))}
                 placeholder="example@email.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -388,7 +377,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               <TextInput
                 style={[styles.input, errors.dateOfBirth ? styles.inputError : null]}
                 value={formData.dateOfBirth}
-                onChangeText={(text) => setFormData({ ...formData, dateOfBirth: text })}
+                onChangeText={(text) => setFormData(prev => ({ ...prev, dateOfBirth: text }))}
                 placeholder="MM/DD/YYYY"
                 keyboardType="numbers-and-punctuation"
               />
@@ -406,19 +395,6 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
           </>
         )}
       </ScrollView>
-
-      {/* Camera Scanner Modal */}
-      <Modal
-        visible={showScanner}
-        animationType="slide"
-        onRequestClose={() => setShowScanner(false)}
-      >
-        <CardScanner
-          scanType={scanType}
-          onScanComplete={handleScanComplete}
-          onClose={() => setShowScanner(false)}
-        />
-      </Modal>
     </SafeAreaView>
   );
 };
@@ -451,47 +427,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  mainScanButton: {
-    backgroundColor: '#27ae60',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-    marginBottom: 15,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  mainScanButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  scanOptionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    backgroundColor: '#f1f8e9',
-    padding: 15,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#c8e6c9',
-  },
-  scanOptionButton: {
-    backgroundColor: '#4caf50',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 6,
-    flex: 0.48,
-    alignItems: 'center',
-  },
-  scanOptionText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   inputGroup: {
     marginBottom: 20,
   },
@@ -521,16 +456,15 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     backgroundColor: '#27ae60',
-    paddingVertical: 15,
-    paddingHorizontal: 30,
+    padding: 15,
     borderRadius: 8,
+    alignItems: 'center',
     marginTop: 20,
   },
   nextButtonText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -541,7 +475,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#34495e',
+    color: '#2c3e50',
   },
 });
 

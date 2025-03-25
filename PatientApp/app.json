@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "PatientApp",
-    "slug": "PatientApp",
+    "name": "patientapp",
+    "slug": "patientapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,13 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.PatientApp"
+      "bundleIdentifier": "com.autobebesys.joytriage",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan documents and take photos.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photos to let you share them with your healthcare provider."
+      },
+      "appStoreUrl": "https://apps.apple.com/app/autobebesys-joytriage/id1234567890"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,6 +32,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "9e0768b9-0b30-42f9-955e-e56416ef7da1"
+      }
+    },
+    "owner": "bujinwang"
   }
 }

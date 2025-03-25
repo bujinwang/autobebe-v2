@@ -1,16 +1,13 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text, Image } from 'react-native';
+import { View, Text } from 'react-native';
 
 // Import screens
 import HomeScreen from '../screens/HomeScreen';
 import PatientInfoScreen from '../screens/PatientInfoScreen';
 import SymptomsScreen from '../screens/SymptomsScreen';
 import ScheduledScreen from '../screens/ScheduledScreen';
-
-// Import logo
-import JoyTriageLogo from '../../assets/JoyTriage.webp';
 
 // Define the stack navigator parameter list
 export type RootStackParamList = {
@@ -20,16 +17,17 @@ export type RootStackParamList = {
     clinicId?: string;
     patientInfo?: {
       name: string;
-      healthcareNumber: string;
       phone: string;
+      email?: string;
+      dateOfBirth?: string;
     }
   } | undefined;
   Symptoms: {
     patientInfo: {
       name: string;
-      healthcareNumber: string;
       phone: string;
       email: string;
+      dateOfBirth?: string;
     },
     clinicId: string;
   };
@@ -60,7 +58,6 @@ const AppNavigator = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: '#4A90E2',
-            backgroundImage: 'linear-gradient(to right, #4A90E2, #7ED321)',
           },
           headerTintColor: '#fff',
           headerTitleStyle: {
@@ -68,7 +65,6 @@ const AppNavigator = () => {
           },
           headerTitle: () => (
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Image source={JoyTriageLogo} style={{ width: 50, height: 50, marginRight: 10 }} />
               <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>JoyTriage</Text>
             </View>
           ),

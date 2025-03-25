@@ -253,7 +253,7 @@ export default function Home() {
               <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none' }}>
                 {[
                   { text: 'Help Center', link: '#help' },
-                  { text: 'Privacy Policy', link: '#privacy' },
+                  { text: 'Privacy Policy', link: '/privacy' },
                   { text: 'Terms of Service', link: '#terms' }
                 ].map((item) => (
                   <Box component="li" key={item.text} sx={{ mb: 1 }}>

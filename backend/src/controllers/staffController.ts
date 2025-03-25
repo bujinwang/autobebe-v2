@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient, UserRole } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { AuthRequest } from '../middleware/auth';
 
 const prisma = new PrismaClient();
 
@@ -41,7 +42,7 @@ const staffController = {
   },
 
   // Create a new staff member
-  createStaffMember: async (req: Request, res: Response) => {
+  createStaffMember: async (req: AuthRequest, res: Response) => {
     try {
       const { name, email, password, role, position, specialty, isActive, clinicId } = req.body;
       const creator = req.user; // Get the creator's role from the authenticated user

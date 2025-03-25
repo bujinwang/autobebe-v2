@@ -242,7 +242,7 @@ export default function Blog() {
               </Paper>
               <Typography variant="caption" sx={{ color: alpha('#fff', 0.7), mt: 1, display: 'block' }}>
                 By subscribing, you agree to our{' '}
-                <Link to="/privacy-policy" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                <Link to="/privacy" style={{ color: 'inherit', textDecoration: 'underline' }}>
                   Privacy Policy
                 </Link>
               </Typography>

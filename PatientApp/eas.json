@@ -1,0 +1,38 @@
+{
+  "cli": {
+    "version": ">= 3.13.3",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "autoIncrement": true
+    },
+    "submit": {
+      "autoIncrement": true,
+      "distribution": "store"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "bujinwang@hotmail.com",
+        "ascAppId": "6743717260",
+        "appleTeamId": "RE223EHR45"
+      }
+    },
+    "submit": {
+      "ios": {
+        "appleId": "bujinwang@hotmail.com",
+        "ascAppId": "6743717260",
+        "appleTeamId": "RE223EHR45"
+      }
+    }
+  }
+}

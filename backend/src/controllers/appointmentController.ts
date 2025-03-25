@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { appointmentService, CreateAppointmentInput, UpdateAppointmentInput } from '../services/appointmentService';
 import { patientService } from '../services/patientService';
+import { AuthRequest } from '../middleware/auth';
 
 export const appointmentController = {
   async getAllAppointments(req: Request, res: Response) {
