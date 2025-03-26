@@ -63,6 +63,9 @@ app.use('/api/medicalai', medicalAIRoutes);
 // Use the staff routes
 app.use('/api/staff', authenticate, staffRoutes);
 
+// Use the patient routes
+app.use('/api/admin/patients', authenticate, patientRoutes);
+
 // Error handling middleware
 app.use(errorHandler);
 

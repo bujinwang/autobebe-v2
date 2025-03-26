@@ -11,7 +11,8 @@ export { default as contactService } from './contactService';
 export { 
   getRecommendations,
   analyzeSymptoms,
-  suggestFollowUpQuestions
+  suggestFollowUpQuestions,
+  getTopQuestions
 } from './medicalAIService';
 
 // Domain Types

@@ -13,10 +13,30 @@ export interface MedicalAIRequest {
   followUpQAPairs: { question: string; answer: string }[];
 }
 
+export interface TopQuestionsRequest {
+  purposeOfVisit: string;
+  symptoms: string;
+}
+
+export interface TopQuestionsResponse {
+  success: boolean;
+  errorMessage?: string;
+  topQuestions: string[];
+}
+
 export interface WaitingInstructionsResponse {
   success: boolean;
   errorMessage?: string;
   instructions: string;
+}
+
+export async function getTopQuestions(request: TopQuestionsRequest): Promise<TopQuestionsResponse> {
+  try {
+    const response = await axiosInstance.post('/medicalai/topquestions', request);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Failed to get follow-up questions');
+  }
 }
 
 export async function getRecommendations(request: MedicalAIRequest): Promise<AIRecommendation> {

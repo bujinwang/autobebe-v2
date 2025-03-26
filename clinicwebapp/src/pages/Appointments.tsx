@@ -25,7 +25,9 @@ import {
   InputAdornment,
   IconButton,
   Tooltip,
-  Divider
+  Divider,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import { 
   Search as SearchIcon,
@@ -40,7 +42,8 @@ import {
   Today as TodayIcon,
   Upcoming as UpcomingIcon,
   History as PastIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 import { appointmentService, type Appointment } from '../services';
 import { useAuth } from '../contexts/AuthContext';
@@ -444,7 +447,8 @@ const Appointments: React.FC = () => {
                     sx={{ 
                       flexBasis: '48%', 
                       whiteSpace: 'nowrap',
-                      minWidth: 'max-content' 
+                      minWidth: 'max-content',
+                      px: 1
                     }}
                   >
                     Take In
@@ -454,13 +458,15 @@ const Appointments: React.FC = () => {
                   size="small" 
                   variant="contained" 
                   onClick={() => handleViewDetails(appointment.id)}
+                  startIcon={<VisibilityIcon fontSize="small" />}
                   sx={{ 
                     flexBasis: tabValue === 0 && appointment.status.toLowerCase() === 'scheduled' ? '48%' : '100%',
                     whiteSpace: 'nowrap',
-                    minWidth: 'max-content'
+                    minWidth: 'max-content',
+                    px: 1
                   }}
                 >
-                  View Details
+                  Details
                 </Button>
               </CardActions>
             </Card>
@@ -539,6 +545,7 @@ const Appointments: React.FC = () => {
                         size="small"
                         startIcon={<PlayArrowIcon fontSize="small" />}
                         onClick={(e) => handleTakeIn(e, appointment)}
+                        sx={{ px: 1 }}
                       >
                         Take In
                       </Button>
@@ -546,12 +553,14 @@ const Appointments: React.FC = () => {
                     <Button 
                       variant="contained" 
                       size="small"
+                      startIcon={<VisibilityIcon fontSize="small" />}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleViewDetails(appointment.id);
                       }}
+                      sx={{ px: 1 }}
                     >
-                      View Details
+                      Details
                     </Button>
                   </Box>
                 </TableCell>
