@@ -1,14 +1,19 @@
 {
   "name": "patientapp",
   "version": "1.0.0",
+  "homepage": "https://bujinwang.github.io/autobebe-v2",
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "predeploy": "PUBLIC_URL=/autobebe-v2 GENERATE_SOURCEMAP=false npx expo export --platform web",
+    "deploy": "gh-pages -d dist",
+    "postdeploy": "rm -rf dist"
   },
   "dependencies": {
+    "@expo/webpack-config": "^19.0.1",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-ml-kit/text-recognition": "^1.5.2",
     "@react-native-picker/picker": "2.6.1",
@@ -21,6 +26,7 @@
     "expo-media-library": "~15.9.2",
     "expo-router": "~3.4.6",
     "expo-status-bar": "~1.11.1",
+    "expo-updates": "~0.24.13",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hook-form": "7.50.1",
@@ -32,6 +38,7 @@
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@types/react": "~18.2.48",
+    "gh-pages": "^6.3.0",
     "metro": "^0.80.0",
     "metro-react-native-babel-transformer": "^0.77.0",
     "metro-resolver": "^0.80.0",

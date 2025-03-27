@@ -29,16 +29,25 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.autobebesys.joytriage"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
+    "platforms": ["ios", "android", "web"],
     "extra": {
       "eas": {
         "projectId": "9e0768b9-0b30-42f9-955e-e56416ef7da1"
       }
     },
-    "owner": "bujinwang"
+    "owner": "bujinwang",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9e0768b9-0b30-42f9-955e-e56416ef7da1"
+    }
   }
 }
