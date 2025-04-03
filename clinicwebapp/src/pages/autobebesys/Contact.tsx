@@ -36,7 +36,7 @@ const contactInfo: ContactInfo[] = [
   {
     icon: PhoneIcon,
     title: "Call Us",
-    details: ["+1 (206) 589-4906", "+1 (206) 589-4906"],
+    details: ["+1 (509) 486-8791", "+1 (509) 486-8791"],
   },
   {
     icon: EmailIcon,
