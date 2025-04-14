@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, FlatList, SafeAreaView, ScrollView } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { fetchClinicsForSelection } from '../api/client';
 
@@ -96,58 +96,62 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Check-in Made Easy™</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Check-in Made Easy™</Text>
+        </View>
 
-      {/* Clinic Info Section */}
-      <View style={styles.clinicInfoContainer}>
-        <Text style={styles.clinicName}>{selectedClinic?.name || "Select a clinic"}</Text>
-        <Text style={styles.clinicAddress}>{selectedClinic?.address || "Address information will appear here"}</Text>
-        <Text style={styles.clinicPhone}>{selectedClinic?.phone || "Phone information will appear here"}</Text>
-        <Text style={styles.clinicHours}>{selectedClinic?.hours || "Hours information will appear here"}</Text>
-      </View>
+        {/* Clinic Info Section */}
+        <View style={styles.clinicInfoContainer}>
+          <Text style={styles.clinicName}>{selectedClinic?.name || "Select a clinic"}</Text>
+          <Text style={styles.clinicAddress}>{selectedClinic?.address || "Address information will appear here"}</Text>
+          <Text style={styles.clinicPhone}>{selectedClinic?.phone || "Phone information will appear here"}</Text>
+          <Text style={styles.clinicHours}>{selectedClinic?.hours || "Hours information will appear here"}</Text>
+        </View>
 
-      {/* Welcome Message */}
-      <View style={styles.welcomeContainer}>
-        <Text style={styles.welcomeText}>
-          Welcome to {selectedClinic?.name || "our clinic"}. We are committed to providing exceptional healthcare services to our community.
-        </Text>
-        <Text style={styles.tagline}>Your trusted healthcare partner</Text>
-      </View>
+        {/* Welcome Message */}
+        <View style={styles.welcomeContainer}>
+          <Text style={styles.welcomeText}>
+            Welcome to {selectedClinic?.name || "our clinic"}. We are committed to providing exceptional healthcare services to our community.
+          </Text>
+          <Text style={styles.tagline}>Your trusted healthcare partner</Text>
+        </View>
 
-      {/* Clinic Selection */}
-      <View style={styles.clinicSelectionContainer}>
-        <Text style={styles.selectionTitle}>Choose a clinic location:</Text>
-        
-        {apiError && (
-          <Text style={styles.errorText}>{apiError}</Text>
-        )}
-        
-        {isLoading ? (
-          <Text style={styles.loadingText}>Loading available clinics...</Text>
-        ) : (
-          <TouchableOpacity
-            style={styles.selectorButton}
-            onPress={() => setModalVisible(true)}
+        {/* Clinic Selection */}
+        <View style={styles.clinicSelectionContainer}>
+          <Text style={styles.selectionTitle}>Choose a clinic location:</Text>
+          
+          {apiError && (
+            <Text style={styles.errorText}>{apiError}</Text>
+          )}
+          
+          {isLoading ? (
+            <Text style={styles.loadingText}>Loading available clinics...</Text>
+          ) : (
+            <TouchableOpacity
+              style={styles.selectorButton}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text style={styles.selectedClinicName}>
+                {selectedClinic?.name || 'Select a clinic'}
+              </Text>
+              <Text style={styles.dropdownArrow}>▼</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Start Check-in Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.checkInButton}
+            onPress={handleStartCheckin}
           >
-            <Text style={styles.selectedClinicName}>
-              {selectedClinic?.name || 'Select a clinic'}
-            </Text>
-            <Text style={styles.dropdownArrow}>▼</Text>
+            <Text style={styles.checkInButtonText}>Start Check-in</Text>
           </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Start Check-in Button */}
-      <TouchableOpacity 
-        style={styles.checkInButton}
-        onPress={handleStartCheckin}
-      >
-        <Text style={styles.checkInButtonText}>Start Check-in</Text>
-      </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Clinic Selection Modal */}
       <Modal
@@ -176,11 +180,22 @@ const HomeScreen = ({ navigation }: { navigation: any }) => {
           </View>
         </SafeAreaView>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -285,6 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+    marginBottom: 20,
   },
   checkInButtonText: {
     color: '#fff',
@@ -348,22 +364,12 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     fontSize: 14,
   },
+  buttonContainer: {
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 'auto',
+    paddingBottom: 15,
+  },
 });
 
 export default HomeScreen;
-
-
-// When navigating to the SymptomsScreen
-const handleContinue = () => {
-  if (validateForm()) {
-    navigation.navigate('Symptoms', {
-      patientInfo: {
-        name: patientName,
-        healthcareNumber: healthcareNumber,
-        phone: phoneNumber,
-        email: email
-      },
-      clinicId: selectedClinicId // Always pass the selected clinic ID
-    });
-  }
-};
