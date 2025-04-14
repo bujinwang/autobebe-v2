@@ -76,7 +76,7 @@ export const patientController = {
   // Public registration endpoint
   async registerPatient(req: Request, res: Response) {
     try {
-      const { name, phone, clinicId } = req.body;
+      const { name, phone, email, clinicId } = req.body;
 
       if (!clinicId) {
         return res.status(400).json({
@@ -85,11 +85,40 @@ export const patientController = {
         });
       }
 
-      // Create new patient with proper clinic relation
+      // Clean the phone number to keep only digits
+      const cleanedPhone = phone ? phone.replace(/\D/g, '') : '';
+
+      // First check if a patient with exactly the same name AND phone number already exists
+      const exactMatch = await prisma.patient.findFirst({
+        where: {
+          AND: [
+            { name: { equals: name, mode: 'insensitive' } },
+            { phone: { contains: cleanedPhone } },
+            { clinicId: clinicId }
+          ]
+        }
+      });
+
+      // If exact match found (same name AND phone), return that patient
+      if (exactMatch) {
+        logger.info('Exact match patient found during registration', {
+          patientId: exactMatch.id,
+          clinicId: exactMatch.clinicId
+        });
+
+        return res.status(200).json({
+          success: true,
+          data: exactMatch,
+          message: 'Found existing patient with same name and phone number'
+        });
+      }
+
+      // Create new patient with proper clinic relation and cleaned phone number
       const patient = await prisma.patient.create({
         data: {
           name,
-          phone,
+          phone: cleanedPhone, // Always use digits-only format in the database
+          email, // Add email if provided
           clinic: {
             connect: { id: clinicId }
           }
@@ -114,6 +143,129 @@ export const patientController = {
       return res.status(500).json({
         success: false,
         error: 'Failed to register patient'
+      });
+    }
+  },
+
+  // Check if patient exists by phone number and name
+  async checkPatientByPhone(req: Request, res: Response) {
+    try {
+      const { phone, name } = req.query;
+
+      if (!phone || typeof phone !== 'string') {
+        return res.status(400).json({
+          success: false,
+          error: 'Phone number is required'
+        });
+      }
+
+      // Clean the phone number to keep only digits
+      const cleanedPhone = phone.replace(/\D/g, '');
+
+      if (cleanedPhone.length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: 'Phone number must have at least 10 digits'
+        });
+      }
+
+      let whereCondition: any = {
+        phone: {
+          contains: cleanedPhone
+        }
+      };
+
+      // If name is provided, include it in the search
+      if (name && typeof name === 'string') {
+        whereCondition = {
+          AND: [
+            whereCondition,
+            { name: { equals: name, mode: 'insensitive' } }
+          ]
+        };
+      }
+
+      // Search for patient with the specified criteria
+      const patient = await prisma.patient.findFirst({
+        where: whereCondition,
+        include: {
+          clinic: {
+            select: {
+              id: true,
+              name: true
+            }
+          }
+        }
+      });
+
+      logger.info('Patient lookup', {
+        phone: cleanedPhone,
+        name: name || 'not provided',
+        found: !!patient
+      });
+
+      return res.status(200).json({
+        success: true,
+        data: patient // Will be null if no patient is found
+      });
+    } catch (error) {
+      logger.error('Error checking patient', { error });
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to check patient'
+      });
+    }
+  },
+
+  // Utility endpoint to clean phone numbers in the database
+  async cleanPhoneNumbers(req: Request, res: Response) {
+    try {
+      // Get all patients
+      const patients = await prisma.patient.findMany();
+      const updatedPatients = [];
+      const errors = [];
+
+      // Process each patient
+      for (const patient of patients) {
+        try {
+          if (patient.phone) {
+            // Clean phone number to only contain digits
+            const cleanedPhone = patient.phone.replace(/\D/g, '');
+            
+            // Only update if the phone number actually changed
+            if (cleanedPhone !== patient.phone) {
+              const updatedPatient = await prisma.patient.update({
+                where: { id: patient.id },
+                data: { phone: cleanedPhone }
+              });
+              updatedPatients.push(updatedPatient);
+            }
+          }
+        } catch (err) {
+          errors.push({ patientId: patient.id, error: err });
+        }
+      }
+
+      logger.info('Phone number cleanup completed', {
+        processed: patients.length,
+        updated: updatedPatients.length,
+        errors: errors.length
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Phone number cleanup completed',
+        stats: {
+          total: patients.length,
+          updated: updatedPatients.length,
+          errors: errors.length
+        }
+      });
+    } catch (error) {
+      logger.error('Error cleaning phone numbers', { error });
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to clean phone numbers'
       });
     }
   }

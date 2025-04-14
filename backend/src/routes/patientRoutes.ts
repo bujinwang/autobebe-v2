@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { patientController } from '../controllers/patientController';
-import { authenticate, authorizeClinicAdmin, authorizeStaff } from '../middleware/auth';
+import { authenticate, authorizeClinicAdmin } from '../middleware/auth';
 
 const router = Router();
 
@@ -39,7 +39,7 @@ const router = Router();
  *           description: ID of the clinic the patient belongs to
  */
 
-// Protect all patient routes with authentication
+// All routes in this file require JWT authentication
 router.use(authenticate);
 
 /**
@@ -64,7 +64,7 @@ router.use(authenticate);
  *       403:
  *         description: Forbidden
  */
-router.get('/', authorizeClinicAdmin, patientController.getAllPatients);
+router.get('/', patientController.getAllPatients);
 
 /**
  * @swagger
@@ -95,7 +95,7 @@ router.get('/', authorizeClinicAdmin, patientController.getAllPatients);
  *       404:
  *         description: Patient not found
  */
-router.get('/:id', authorizeClinicAdmin, patientController.getPatientById);
+router.get('/:id', patientController.getPatientById);
 
 /**
  * @swagger
@@ -125,7 +125,7 @@ router.get('/:id', authorizeClinicAdmin, patientController.getPatientById);
  *       403:
  *         description: Forbidden
  */
-router.post('/', authorizeStaff, patientController.createPatient);
+router.post('/', patientController.createPatient);
 
 /**
  * @swagger
@@ -164,7 +164,7 @@ router.post('/', authorizeStaff, patientController.createPatient);
  *       404:
  *         description: Patient not found
  */
-router.put('/:id', authorizeClinicAdmin, patientController.updatePatient);
+router.put('/:id', patientController.updatePatient);
 
 /**
  * @swagger
@@ -191,6 +191,9 @@ router.put('/:id', authorizeClinicAdmin, patientController.updatePatient);
  *       404:
  *         description: Patient not found
  */
-router.delete('/:id', authorizeClinicAdmin, patientController.deletePatient);
+router.delete('/:id', patientController.deletePatient);
+
+// Admin-only routes
+router.post('/cleanup-phone-numbers', authorizeClinicAdmin, patientController.cleanPhoneNumbers);
 
 export default router;

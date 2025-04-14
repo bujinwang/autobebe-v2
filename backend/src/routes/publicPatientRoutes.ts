@@ -73,4 +73,50 @@ router.post('/register',
   patientController.registerPatient
 );
 
+/**
+ * @swagger
+ * /public/patients/check:
+ *   get:
+ *     summary: Check if a patient exists by phone number
+ *     tags: [Public Patients]
+ *     description: Checks if a patient exists using their phone number
+ *     parameters:
+ *       - in: query
+ *         name: phone
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Patient's phone number (digits only)
+ *     responses:
+ *       200:
+ *         description: Success, with patient data if found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     clinicId:
+ *                       type: string
+ *       400:
+ *         description: Invalid input - phone parameter missing
+ */
+router.get('/check',
+  rateLimiter({ windowMs: 1 * 60 * 1000, max: 100 }), // 100 requests per minute
+  patientController.checkPatientByPhone
+);
+
 export default router; 

@@ -5,6 +5,9 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
+    "dev-start": "expo start --clear --localhost",
+    "dev": "npm run dev-start",
+    "local": "npx expo start --clear --localhost",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",

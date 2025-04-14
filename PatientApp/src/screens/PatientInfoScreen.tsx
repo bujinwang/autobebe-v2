@@ -115,6 +115,8 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
               setFormData({
                 name: appointment.patientName || '',
                 phone: appointment.patientPhone || '',
+                email: '',
+                dateOfBirth: '',
                 clinicId: clinicId
               });
             }
@@ -124,6 +126,8 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
             setFormData({
               name: patientInfo.name,
               phone: patientInfo.phone || '',
+              email: patientInfo.email || '',
+              dateOfBirth: patientInfo.dateOfBirth || '',
               clinicId: clinicId
             });
           } else {
@@ -212,7 +216,7 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
     // Remove any non-digit characters
     const cleaned = text.replace(/\D/g, '');
     
-    // Format the phone number
+    // Format the phone number for display only
     let formatted = cleaned;
     if (cleaned.length >= 3) {
       formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
@@ -221,6 +225,8 @@ const PatientInfoScreen = ({ navigation, route }: PatientInfoScreenProps) => {
       formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
     }
     
+    // For display purposes only, we use the formatted version
+    // but when we submit to the API, we'll use only the digits
     setFormData(prev => ({ ...prev, phone: formatted }));
   };
 
