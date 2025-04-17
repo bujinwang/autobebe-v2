@@ -22,6 +22,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 const HomePage = React.lazy(() => import('./pages/autobebesys/Home'));
 const BlogPage = React.lazy(() => import('./pages/autobebesys/Blog'));
 const JoyTriagePage = React.lazy(() => import('./pages/autobebesys/JoyTriage'));
+const AIBeautyLensPage = React.lazy(() => import('./pages/autobebesys/AIBeautyLens'));
 const AboutPage = React.lazy(() => import('./pages/autobebesys/About'));
 const ContactPage = React.lazy(() => import('./pages/autobebesys/Contact'));
 const DemoPage = React.lazy(() => import('./pages/autobebesys/Demo'));
@@ -47,14 +48,15 @@ const AppRoutes = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
-        
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        
+
         {/* Signup route that redirects to login */}
-        <Route path="/joytriage/signup" element={<Navigate to="/login" replace />} />
-        
+        <Route path="/joytriage/signup" element={<Navigate to="/platforms" replace />} />
+        <Route path="/aibeautylens/signup" element={<Navigate to="/platforms" replace />} />
+
         <Route path="/blog" element={
           <PublicLayout>
             <BlogPage />
@@ -63,6 +65,11 @@ const AppRoutes = () => {
         <Route path="/joytriage" element={
           <PublicLayout>
             <JoyTriagePage />
+          </PublicLayout>
+        } />
+        <Route path="/aibeautylens" element={
+          <PublicLayout>
+            <AIBeautyLensPage />
           </PublicLayout>
         } />
         <Route path="/about" element={
@@ -95,7 +102,7 @@ const AppRoutes = () => {
             <PrivacyPage />
           </PublicLayout>
         } />
-        
+
         {/* Protected Routes */}
         <Route path="/dashboard" element={
           <ProtectedRoute>
@@ -118,7 +125,7 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         {/* Staff Management Routes */}
         <Route path="/staff" element={
           <ProtectedRoute>
@@ -141,7 +148,7 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         {/* User Routes */}
         <Route path="/profile" element={
           <ProtectedRoute>
@@ -157,7 +164,7 @@ const AppRoutes = () => {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         {/* 404 Route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -165,4 +172,4 @@ const AppRoutes = () => {
   );
 };
 
-export default AppRoutes; 
+export default AppRoutes;

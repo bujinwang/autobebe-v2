@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import Button from '../../components/autobebesys/Button';
+import { Link } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  TextField,
+  MenuItem,
+  Paper,
+  Alert,
+  useTheme,
+  alpha
+} from '@mui/material';
 
 export default function Demo() {
   const [mounted, setMounted] = useState(false);
@@ -9,17 +24,18 @@ export default function Demo() {
     company: '',
     role: '',
     phone: '',
-    platformInterest: 'clinic', // clinic, patient, or both
+    platformInterest: 'aibeautylens', // aibeautylens, joytriage, or both
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const theme = useTheme();
 
   useEffect(() => {
     setMounted(true);
     window.scrollTo(0, 0);
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
@@ -39,213 +55,268 @@ export default function Demo() {
         company: '',
         role: '',
         phone: '',
-        platformInterest: 'clinic',
+        platformInterest: 'aibeautylens',
         message: ''
       });
     }, 5000);
   };
 
+  const features = [
+    {
+      title: "Intuitive Dashboard",
+      description: "Experience our user-friendly interface designed specifically for healthcare providers."
+    },
+    {
+      title: "Patient Management",
+      description: "See how easily you can manage patient records, appointments, and communications."
+    },
+    {
+      title: "Analytics & Reporting",
+      description: "Preview powerful insights and reporting capabilities to optimize your practice."
+    },
+    {
+      title: "Security Features",
+      description: "Learn about our robust security measures ensuring HIPAA compliance."
+    },
+    {
+      title: "Integration Capabilities",
+      description: "Discover how our platform integrates with your existing systems."
+    },
+    {
+      title: "Mobile Experience",
+      description: "See the platform in action on mobile devices for on-the-go access."
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <Box sx={{ minHeight: '100vh' }}>
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl">
+      <Box
+        sx={{
+          bgcolor: 'primary.main',
+          color: 'common.white',
+          py: { xs: 8, md: 12 },
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography
+              variant="h1"
+              sx={{
+                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                fontWeight: 'bold',
+                mb: 3
+              }}
+            >
               Experience AutoBebeSys in Action
-            </h1>
-            <p className="mt-6 text-xl text-blue-100 max-w-3xl mx-auto">
+            </Typography>
+            <Typography
+              variant="h5"
+              sx={{
+                color: alpha(theme.palette.common.white, 0.9),
+                maxWidth: 'md',
+                mx: 'auto'
+              }}
+            >
               See how our healthcare solutions can transform your practice with a personalized demo
-            </p>
-          </div>
-        </div>
-      </div>
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Demo Request Form Section */}
-      <div className="py-16 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`${mounted ? 'animate-fadeIn' : 'opacity-0'}`}>
+      <Box sx={{ py: 8, bgcolor: 'background.paper' }}>
+        <Container maxWidth="md">
+          <Box sx={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.5s ease-in' }}>
             {submitted ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-center">
-                <h3 className="text-lg font-semibold text-green-800 mb-2">Thank You!</h3>
-                <p className="text-green-700">
+              <Alert severity="success" sx={{ p: 3, mb: 4 }}>
+                <Typography variant="h6" gutterBottom>Thank You!</Typography>
+                <Typography>
                   Your demo request has been received. Our team will contact you within 24 hours to schedule your personalized demo.
-                </p>
-              </div>
+                </Typography>
+              </Alert>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name*
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      required
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                      Work Email*
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                      Company/Organization*
-                    </label>
-                    <input
-                      type="text"
-                      id="company"
-                      name="company"
-                      required
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                      Job Role*
-                    </label>
-                    <input
-                      type="text"
-                      id="role"
-                      name="role"
-                      required
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="platformInterest" className="block text-sm font-medium text-gray-700 mb-1">
-                      Platform Interest*
-                    </label>
-                    <select
-                      id="platformInterest"
-                      name="platformInterest"
-                      required
-                      value={formData.platformInterest}
-                      onChange={handleInputChange}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    >
-                      <option value="clinic">Clinic Platform</option>
-                      <option value="patient">Patient Platform</option>
-                      <option value="both">Both Platforms</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Information
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-3 px-4 border"
-                    placeholder="Tell us about your specific needs or any questions you have..."
-                  />
-                </div>
-
-                <div>
-                  <button
-                    type="submit"
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    Request Demo
-                  </button>
-                </div>
-              </form>
+              <Paper elevation={2} sx={{ p: 4, borderRadius: 2 }}>
+                <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
+                  Request Your Demo
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="name"
+                        label="Full Name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="email"
+                        label="Work Email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="company"
+                        label="Company/Organization"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        required
+                        fullWidth
+                        id="role"
+                        label="Job Role"
+                        name="role"
+                        value={formData.role}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        id="phone"
+                        label="Phone Number"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        required
+                        fullWidth
+                        select
+                        id="platformInterest"
+                        label="Platform Interest"
+                        name="platformInterest"
+                        value={formData.platformInterest}
+                        onChange={handleInputChange}
+                      >
+                        <MenuItem value="aibeautylens">AIBeautyLens™ with DermaGraph™</MenuItem>
+                        <MenuItem value="joytriage">JoyTriage™ Intake Management</MenuItem>
+                        <MenuItem value="both">Both Platforms</MenuItem>
+                      </TextField>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        id="message"
+                        label="Additional Information"
+                        name="message"
+                        multiline
+                        rows={4}
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        placeholder="Tell us about your specific needs or any questions you have..."
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        size="large"
+                        sx={{ py: 1.5 }}
+                      >
+                        Request Demo
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Paper>
             )}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Container>
+      </Box>
 
       {/* Features Preview Section */}
-      <div className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">What You'll See in the Demo</h2>
-            <p className="mt-4 text-lg text-gray-600">
+      <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography variant="h3" gutterBottom>
+              What You'll See in the Demo
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
               Get a comprehensive look at our platform's capabilities
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Intuitive Dashboard",
-                description: "Experience our user-friendly interface designed specifically for healthcare providers."
-              },
-              {
-                title: "Patient Management",
-                description: "See how easily you can manage patient records, appointments, and communications."
-              },
-              {
-                title: "Analytics & Reporting",
-                description: "Preview powerful insights and reporting capabilities to optimize your practice."
-              },
-              {
-                title: "Security Features",
-                description: "Learn about our robust security measures ensuring HIPAA compliance."
-              },
-              {
-                title: "Integration Capabilities",
-                description: "Discover how our platform integrates with your existing systems."
-              },
-              {
-                title: "Mobile Experience",
-                description: "See the platform in action on mobile devices for on-the-go access."
-              }
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className={`bg-white p-6 rounded-lg shadow-md ${mounted ? 'animate-fadeIn' : 'opacity-0'}`}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
+          <Grid container spacing={3}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    opacity: mounted ? 1 : 0,
+                    transform: mounted ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `all 0.5s ease-in ${index * 0.1}s`,
+                    '&:hover': {
+                      boxShadow: 4,
+                      transform: 'translateY(-4px)',
+                    }
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {feature.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {feature.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Box
+        sx={{
+          bgcolor: 'primary.main',
+          color: 'common.white',
+          py: 6,
+          textAlign: 'center'
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h4" gutterBottom>
+            Ready to transform your healthcare practice?
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, opacity: 0.9 }}>
+            Join the hundreds of healthcare providers already using our platform
+          </Typography>
+          <Button
+            component={Link}
+            to="/contact"
+            variant="contained"
+            color="secondary"
+            size="large"
+            sx={{ px: 4, py: 1.5 }}
+          >
+            Contact Sales
+          </Button>
+        </Container>
+      </Box>
+    </Box>
   );
-} 
+}

@@ -108,7 +108,16 @@ export default function Home() {
                 component={Link}
                 to="/joytriage"
               >
-                Try JoyTriage
+                Try JoyTriage™ Intake Management
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="large"
+                component={Link}
+                to="/platforms"
+              >
+                Try AIBeautyLens™ with DermaGraph™
               </Button>
               <Button
                 variant="outlined"
@@ -135,35 +144,78 @@ export default function Home() {
           >
             Our Platforms
           </Typography>
-          <Card sx={{ maxWidth: 'lg', mx: 'auto' }}>
-            <CardMedia
-              component="div"
-              sx={{
-                height: { xs: 200, sm: 300 },
-                bgcolor: 'grey.100',
-                backgroundImage: 'url(https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h3" gutterBottom>
-                JoyTriage Patient Platform
-              </Typography>
-              <Typography variant="body1" color="text.secondary" paragraph>
-                Experience the future of patient care with our comprehensive platform designed to streamline clinical workflows and enhance patient engagement.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                component={Link}
-                to="/joytriage"
-                size="large"
-              >
-                Learn More
-              </Button>
-            </CardContent>
-          </Card>
+          <Grid container spacing={4}>
+            {/* JoyTriage Platform Card */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="div"
+                  sx={{
+                    height: { xs: 200, sm: 240 },
+                    bgcolor: 'grey.100',
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                />
+                <CardContent sx={{ p: 4, flexGrow: 1 }}>
+                  <Typography variant="h3" gutterBottom>
+                    JoyTriage™ Intake Management Platform
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" paragraph>
+                    Streamline your practice operations with our comprehensive patient management system. JoyTriage™
+                    optimizes patient flow, reduces administrative burden, and enhances clinical decision-making.
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/joytriage"
+                    size="large"
+                  >
+                    Learn More
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* AIBeautyLens Platform Card */}
+            <Grid item xs={12} md={6}>
+              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardMedia
+                  component="div"
+                  sx={{
+                    height: { xs: 200, sm: 240 },
+                    bgcolor: 'grey.100',
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=2000&q=80)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                />
+                <CardContent sx={{ p: 4, flexGrow: 1 }}>
+                  <Typography variant="h3" gutterBottom>
+                    AIBeautyLens™ with DermaGraph™ Analysis
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" paragraph>
+                    Elevate your aesthetic practice with our AI-powered clinical assessment system. AIBeautyLens™
+                    transforms patient consultations with precise skin analysis and evidence-based treatment planning.
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" paragraph>
+                    <strong>Features:</strong> DermaGraph™ Analysis, RejuvenationRx™, TreatmentVision™, and BeautyBlueprint™
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    component={Link}
+                    to="/platforms"
+                    size="large"
+                  >
+                    Learn More
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
         </Container>
       </Box>
 
@@ -219,7 +271,12 @@ export default function Home() {
               <Box component="ul" sx={{ p: 0, m: 0, listStyle: 'none' }}>
                 <Box component="li" sx={{ mb: 1 }}>
                   <Link to="/joytriage" style={{ color: theme.palette.grey[400], textDecoration: 'none' }}>
-                    JoyTriage Patient Platform
+                    JoyTriage™ Intake Management Platform
+                  </Link>
+                </Box>
+                <Box component="li" sx={{ mb: 1 }}>
+                  <Link to="/platforms" style={{ color: theme.palette.grey[400], textDecoration: 'none' }}>
+                    AIBeautyLens™ with DermaGraph™ Analysis
                   </Link>
                 </Box>
                 <Box component="li" sx={{ mb: 1 }}>
@@ -276,4 +333,4 @@ export default function Home() {
       </Box>
     </Box>
   );
-} 
+}
