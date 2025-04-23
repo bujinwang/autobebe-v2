@@ -239,14 +239,36 @@ export default function Platforms() {
                 zIndex: -1
               }
             }}>
-              <AppQRCode
-                appName="Download JoyTriage™ Intake Management"
-                iosUrl="https://apps.apple.com/ca/app/joytriage/id6743717260"
-                androidUrl="https://play.google.com/store/apps/details?id=com.autobebesys.joytriage"
-                size={180}
-                bgColor="#FFFFFF"
-                fgColor="#2196F3"
-              />
+              <Box sx={{
+                bgcolor: 'white',
+                p: 3,
+                borderRadius: 3,
+                textAlign: 'center'
+              }}>
+                <Typography variant="h6" sx={{ 
+                  color: '#2196F3',
+                  fontWeight: 600,
+                  fontSize: '1.25rem',
+                  mb: 2
+                }}>
+                  Download JoyTriage™ Intake Management
+                </Typography>
+                <AppQRCode
+                  appName="Download JoyTriage™ Intake Management"
+                  iosUrl="https://apps.apple.com/ca/app/joytriage/id6743717260"
+                  androidUrl="https://play.google.com/store/apps/details?id=com.autobebesys.joytriage"
+                  size={180}
+                  bgColor="#FFFFFF"
+                  fgColor="#2196F3"
+                />
+                <Typography variant="body2" sx={{ 
+                  mt: 2,
+                  color: '#5D6D7E',
+                  fontSize: '0.875rem'
+                }}>
+                  Scan to download on iOS & Android
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Card>
@@ -416,14 +438,36 @@ export default function Platforms() {
                 zIndex: -1
               }
             }}>
-              <AppQRCode
-                appName="Download AIBeautyLens™ with DermaGraph™"
-                iosUrl="https://apps.apple.com/ca/app/aibeautylens/id6743717260"
-                androidUrl="https://play.google.com/store/apps/details?id=com.autobebesys.aibeautylens"
-                size={180}
-                bgColor="#FFFFFF"
-                fgColor="#2196F3"
-              />
+              <Box sx={{
+                bgcolor: 'white',
+                p: 3,
+                borderRadius: 3,
+                textAlign: 'center'
+              }}>
+                <Typography variant="h6" sx={{ 
+                  color: '#2196F3',
+                  fontWeight: 600,
+                  fontSize: '1.25rem',
+                  mb: 2
+                }}>
+                  Download AIBeautyLens™ with DermaGraph™
+                </Typography>
+                <AppQRCode
+                  appName="Download AIBeautyLens™ with DermaGraph™"
+                  iosUrl="https://apps.apple.com/app/id6744707751"
+                  androidUrl="https://play.google.com/store/apps/details?id=com.autobebesys.aibeautylens"
+                  size={180}
+                  bgColor="#FFFFFF"
+                  fgColor="#2196F3"
+                />
+                <Typography variant="body2" sx={{ 
+                  mt: 2,
+                  color: '#5D6D7E',
+                  fontSize: '0.875rem'
+                }}>
+                  Scan to download on iOS & Android
+                </Typography>
+              </Box>
             </Box>
           </Box>
         </Card>
