@@ -21,9 +21,16 @@ prisma.$connect()
 app.use(cors());
 app.use(express.json());
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+// Health check endpoint (includes database check)
+app.get('/health', async (req, res) => {
+  try {
+    // Perform a simple query to check database connectivity
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), db: 'connected' });
+  } catch (error) {
+    console.error('Health check failed - Database connection error:', error);
+    res.status(503).json({ status: 'error', timestamp: new Date().toISOString(), db: 'disconnected', error: 'Database connection failed' });
+  }
 });
 
 // Error handling middleware
