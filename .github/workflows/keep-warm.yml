@@ -1,0 +1,14 @@
+name: Keep Fly.io App Warm (Mountain Time Daytime)
+
+on:
+  schedule:
+    # Every 5 minutes from 2 PM to 11:55 PM UTC (8 AM – 5:55 PM MT)
+    - cron: '*/5 14-23 * * *'
+  workflow_dispatch:  # allows manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the app to keep it warm
+        run: curl -s https://autobebe-backend.fly.dev/api/public/clinics/list || echo "Ping failed"
